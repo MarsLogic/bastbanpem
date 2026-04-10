@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
-from pdf_pattern_learner import discover_pdfs, is_valid_pdf, extract_pages
+from pdf_pattern_learner import discover_pdfs, is_valid_pdf, extract_pages, split_page1_sections
 
 PDF_ROOT = r"C:\Users\Wyx\Desktop\Project 2026"
 
@@ -51,3 +51,42 @@ def test_page_1_contains_pemesan_and_penyedia():
 def test_page_2_contains_pengiriman():
     pages = extract_pages(SAMPLE_PDF)
     assert "Nama Penerima" in pages[1]
+
+
+def test_section_keys_present():
+    pages = extract_pages(SAMPLE_PDF)
+    sections = split_page1_sections(pages[0])
+    expected_keys = {
+        'HEADER', 'PEMESAN', 'PAYMENT_SUMMARY',
+        'PENYEDIA', 'RINGKASAN_PESANAN', 'RINGKASAN_PEMBAYARAN'
+    }
+    assert expected_keys.issubset(set(sections.keys())), \
+        f"Missing keys: {expected_keys - set(sections.keys())}"
+
+def test_header_section_has_nomor_and_tanggal():
+    pages = extract_pages(SAMPLE_PDF)
+    sections = split_page1_sections(pages[0])
+    assert "No. Surat Pesanan" in sections['HEADER']
+    assert "Tanggal Surat Pesanan" in sections['HEADER']
+
+def test_pemesan_section_isolated_from_penyedia():
+    pages = extract_pages(SAMPLE_PDF)
+    sections = split_page1_sections(pages[0])
+    assert "KARYA ALFREDO" not in sections['PEMESAN']
+    assert "DIREKTORAT JENDERAL" not in sections['PENYEDIA']
+
+def test_penyedia_section_has_company_name():
+    pages = extract_pages(SAMPLE_PDF)
+    sections = split_page1_sections(pages[0])
+    assert "KARYA ALFREDO NUSANTARA" in sections['PENYEDIA']
+
+def test_ringkasan_pesanan_has_product_name():
+    pages = extract_pages(SAMPLE_PDF)
+    sections = split_page1_sections(pages[0])
+    assert "INSEKTISIDA VISTA" in sections['RINGKASAN_PESANAN']
+
+def test_no_section_is_empty():
+    pages = extract_pages(SAMPLE_PDF)
+    sections = split_page1_sections(pages[0])
+    for key, text in sections.items():
+        assert len(text.strip()) > 10, f"Section '{key}' is suspiciously short: {repr(text)}"

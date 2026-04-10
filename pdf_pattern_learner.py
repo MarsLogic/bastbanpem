@@ -45,6 +45,44 @@ def extract_pages(pdf_path: str) -> list[str]:
     return pages
 
 
+# Ordered list of (section_name, regex_anchor) pairs.
+# Anchors are searched sequentially in page 1 text.
+# Each section spans from its anchor to the next anchor's position.
+SECTION_ANCHORS = [
+    ('HEADER',               r'Surat Pesanan'),
+    ('PEMESAN',              r'\bPemesan\b'),
+    ('PAYMENT_SUMMARY',      r'Informasi Pembayaran dan Pengiriman'),
+    ('PENYEDIA',             r'\bPenyedia\b'),
+    ('RINGKASAN_PESANAN',    r'Ringkasan Pesanan'),
+    ('RINGKASAN_PEMBAYARAN', r'Ringkasan Pembayaran'),
+    ('DETAIL_END',           r'Detail Informasi Pembayaran & Pengiriman(?!\))'),  # sentinel — marks end of page 1 contract data (excludes parenthetical reference)
+]
+
+
+def split_page1_sections(page1_text: str) -> dict[str, str]:
+    """
+    Split page 1 text into named sections using sequential anchor detection.
+    Returns dict mapping section name → section text (anchor label excluded).
+    """
+    positions: list[tuple[str, int]] = []
+    for name, pattern in SECTION_ANCHORS:
+        match = re.search(pattern, page1_text)
+        if match:
+            positions.append((name, match.start()))
+
+    positions.sort(key=lambda x: x[1])
+
+    sections: dict[str, str] = {}
+    for i, (name, start) in enumerate(positions):
+        if name == 'DETAIL_END':
+            break
+        end = positions[i + 1][1] if i + 1 < len(positions) else len(page1_text)
+        section_text = page1_text[start:end].strip()
+        sections[name] = section_text
+
+    return sections
+
+
 if __name__ == "__main__":
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     pdfs = discover_pdfs(PDF_ROOT)
