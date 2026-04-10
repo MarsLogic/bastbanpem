@@ -29,6 +29,22 @@ def discover_pdfs(root: str) -> list[str]:
     return found
 
 
+def extract_pages(pdf_path: str) -> list[str]:
+    """
+    Extract text from each page as a separate string.
+    Returns a list where index 0 = page 1 text, index 1 = page 2 text, etc.
+    Each page's text items are joined with a single space and normalised.
+    """
+    reader = pypdf.PdfReader(pdf_path)
+    pages = []
+    for page in reader.pages:
+        raw = page.extract_text() or ""
+        # Collapse all whitespace runs to single space, strip edges
+        normalised = re.sub(r'\s+', ' ', raw).strip()
+        pages.append(normalised)
+    return pages
+
+
 if __name__ == "__main__":
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     pdfs = discover_pdfs(PDF_ROOT)
