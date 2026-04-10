@@ -3,7 +3,12 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
-from pdf_pattern_learner import discover_pdfs, is_valid_pdf, extract_pages, split_page1_sections
+from pdf_pattern_learner import (
+    discover_pdfs, is_valid_pdf, extract_pages, split_page1_sections,
+    parse_header, parse_pemesan, parse_penyedia,
+    parse_ringkasan_pesanan, parse_ringkasan_pembayaran, parse_payment_summary,
+    extract_delivery_blocks, parse_pdf,
+)
 
 PDF_ROOT = r"C:\Users\Wyx\Desktop\Project 2026"
 
@@ -108,3 +113,114 @@ def test_split_handles_missing_anchor_gracefully():
     assert 'PENYEDIA' in sections
     assert 'RINGKASAN_PESANAN' in sections
     assert 'RINGKASAN_PEMBAYARAN' in sections
+
+
+# ── Task 4: Contract-Level Field Extractors ──────────────────────────────────
+
+def _get_sections():
+    pages = extract_pages(SAMPLE_PDF)
+    return split_page1_sections(pages[0])
+
+def test_parse_header_nomor():
+    h = parse_header(_get_sections()['HEADER'])
+    assert h['nomorKontrak'] == 'EP-01K7N8N66XF1P31F35YXJJ1RFG'
+
+def test_parse_header_tanggal_includes_time():
+    h = parse_header(_get_sections()['HEADER'])
+    assert h['tanggalKontrak'] == '22 Okt 2025, 00:13:16 WIB'
+
+def test_parse_pemesan_org_name_only():
+    p = parse_pemesan(_get_sections()['PEMESAN'])
+    assert p['nama'] == 'DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN'
+    assert 'Kementerian Pertanian' not in p['nama']
+
+def test_parse_pemesan_pj_and_npwp():
+    p = parse_pemesan(_get_sections()['PEMESAN'])
+    assert p['pj'] == 'HANDI ARIEF'
+    assert p['jabatan'] == 'Pejabat Pembuat Komitmen (PPK)'
+    assert p['npwp'] == '00.013.411.4-017.000'
+
+def test_parse_penyedia_includes_umkk():
+    p = parse_penyedia(_get_sections()['PENYEDIA'])
+    assert p['nama'] == 'KARYA ALFREDO NUSANTARA UMKK'
+
+def test_parse_penyedia_pj_and_npwp():
+    p = parse_penyedia(_get_sections()['PENYEDIA'])
+    assert p['pj'] == 'ferdy nurmansyah'
+    assert p['jabatan'] == 'DIREKTUR'
+    assert p['npwp'] == '84.299.005.3-416.000'
+
+def test_parse_ringkasan_pesanan_product_with_unit():
+    r = parse_ringkasan_pesanan(_get_sections()['RINGKASAN_PESANAN'])
+    assert r['namaProduk'] == 'INSEKTISIDA VISTA 400 SL'
+    assert r['kuantitas'] == '11.538,00'
+    assert r['satuan'] == 'liter'
+    assert r['hargaSatuan'] == 'Rp66.936,00'
+
+def test_parse_ringkasan_pembayaran_total():
+    r = parse_ringkasan_pembayaran(_get_sections()['RINGKASAN_PEMBAYARAN'])
+    assert r['totalPembayaran'] == 'Rp922.174.200,00'
+
+def test_parse_payment_summary_termin_and_tahap():
+    ps = parse_payment_summary(_get_sections()['PAYMENT_SUMMARY'])
+    assert ps['jumlahTermin'] == 1
+    assert ps['jumlahTahap'] == 2
+
+
+# ── Task 5: Delivery Block Extractor ────────────────────────────────────────
+
+def test_delivery_block_count():
+    pages = extract_pages(SAMPLE_PDF)
+    blocks = extract_delivery_blocks(pages)
+    assert len(blocks) >= 2, f"Too few blocks: {len(blocks)}"
+
+def test_first_block_fields_complete():
+    pages = extract_pages(SAMPLE_PDF)
+    blocks = extract_delivery_blocks(pages)
+    b = blocks[0]
+    assert b['namaPenerima'] == 'Ii Liri'
+    assert b['telepon'] == '6285221043186'
+    assert 'Pangalengan' in b['alamatLengkap']
+    assert b['kabupaten'] == 'Kab. Bandung'
+    assert b['provinsi'] == 'Jawa Barat'
+    assert b['kodePos'] == '40378'
+
+def test_block_has_quantity_and_costs():
+    pages = extract_pages(SAMPLE_PDF)
+    blocks = extract_delivery_blocks(pages)
+    b = blocks[0]
+    assert b['jumlahProduk'] == 6088.0
+    assert 'Rp' in b['hargaProdukTotal']
+    assert 'Rp' in b['ongkosKirim']
+
+def test_catatan_alamat_extracted_when_present():
+    pages = extract_pages(SAMPLE_PDF)
+    blocks = extract_delivery_blocks(pages)
+    b = blocks[0]
+    assert b['catatanAlamat'] is not None
+    assert 'TITIK BAGI' in b['catatanAlamat']
+
+def test_permintaan_tiba_extracted():
+    pages = extract_pages(SAMPLE_PDF)
+    blocks = extract_delivery_blocks(pages)
+    b = blocks[0]
+    assert b['permintaanTiba'] is not None
+    assert '2025' in b['permintaanTiba']
+
+
+# ── Task 6: Full PDF Parser Assembler ───────────────────────────────────────
+
+def test_parse_pdf_full_contract():
+    contract = parse_pdf(SAMPLE_PDF)
+    assert contract['nomorKontrak'] == 'EP-01K7N8N66XF1P31F35YXJJ1RFG'
+    assert contract['pemesan']['nama'] == 'DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN'
+    assert contract['penyedia']['nama'] == 'KARYA ALFREDO NUSANTARA UMKK'
+    assert contract['produk']['namaProduk'] == 'INSEKTISIDA VISTA 400 SL'
+    assert contract['produk']['satuan'] == 'liter'
+    assert len(contract['pengiriman']) >= 2
+    assert contract['pengiriman'][0]['namaPenerima'] == 'Ii Liri'
+
+def test_parse_pdf_includes_source_file():
+    contract = parse_pdf(SAMPLE_PDF)
+    assert 'sourceFile' in contract
+    assert contract['sourceFile'].endswith('.pdf')
