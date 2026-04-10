@@ -4,7 +4,7 @@ import json
 import pypdf
 
 PDF_ROOT = r"C:\Users\Wyx\Desktop\Project 2026"
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
 
 
 def is_valid_pdf(path: str) -> bool:
