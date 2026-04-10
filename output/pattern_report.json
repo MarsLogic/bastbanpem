@@ -1,0 +1,244 @@
+{
+  "totalPdfs": 88,
+  "validPdfs": 88,
+  "skippedFiles": [],
+  "contractFields": {
+    "nomorKontrak": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "EP-01K6CSBW9V7ZGHARSFQH0CG1JQ",
+        "EP-01K7NRVA2AEABZTFR6BAKNQAEN",
+        "EP-01K8FZ53TJHFAHA7Y5PTKDEJDW",
+        "EP-01K886YF9X4CP4XDH1XM5KH461",
+        "EP-01K7QWC3T8MNCHGHZWW9W04D7M"
+      ]
+    },
+    "tanggalKontrak": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "13 Okt 2025, 13:57:04 WIB",
+        "22 Okt 2025, 12:20:59 WIB",
+        "05 Nov 2025, 07:44:41 WIB",
+        "31 Okt 2025, 09:39:43 WIB",
+        "17 Okt 2025, 11:13:50 WIB"
+      ]
+    },
+    "jumlahTermin": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "1"
+      ]
+    },
+    "jumlahTahap": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "3",
+        "6",
+        "2",
+        "5",
+        "9"
+      ]
+    },
+    "pemesan.nama": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN"
+      ]
+    },
+    "pemesan.pj": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "HANDI ARIEF"
+      ]
+    },
+    "pemesan.npwp": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "00.013.411.4-017.000"
+      ]
+    },
+    "penyedia.nama": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "SETIA WICAKSANA SEJAHTERA",
+        "KARYA ALFREDO NUSANTARA UMKK",
+        "HARDJO JAYA AGRO UMKK",
+        "KARYA ALFREDO NUSANTARAUMKK"
+      ]
+    },
+    "penyedia.pj": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "Ifalludin Akbar",
+        "ferdy nurmansyah",
+        "WAHYU PRAYOGASP.SE MAB"
+      ]
+    },
+    "penyedia.npwp": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "086.567.943.5-072.000",
+        "84.299.005.3-416.000",
+        "084.113.870.4-623.000"
+      ]
+    },
+    "namaProduk": {
+      "presentIn": 78,
+      "rate": 0.886,
+      "samples": [
+        "Insektisida Gallery 403 SL",
+        "INSEKTISIDA VISTA 400 SL",
+        "Fungisida CONASOL 50 SC",
+        "RATGONE RODENTISIDA 1KG"
+      ]
+    },
+    "satuan": {
+      "presentIn": 78,
+      "rate": 0.886,
+      "samples": [
+        "botol",
+        "liter",
+        "kg"
+      ]
+    },
+    "hargaSatuan": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "Rp65.696,00",
+        "Rp66.936,00",
+        "Rp68.604,00",
+        "Rp62.100,00",
+        "Rp48.378,00"
+      ]
+    },
+    "totalPembayaran": {
+      "presentIn": 88,
+      "rate": 1.0,
+      "samples": [
+        "Rp1.165.485.357,00",
+        "Rp1.343.028.338,00",
+        "Rp403.515.947,00",
+        "Rp720.098.324,00",
+        "Rp633.667.266,00"
+      ]
+    }
+  },
+  "pengirimanStats": {
+    "totalBlocks": 338,
+    "minBlocksPerContract": 1,
+    "maxBlocksPerContract": 9,
+    "avgBlocksPerContract": 3.8,
+    "fields": {
+      "namaPenerima": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "DORATIA",
+          "Darpin",
+          "WINARNO"
+        ]
+      },
+      "telepon": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "6285259436719",
+          "6285294479427",
+          "62882005350043"
+        ]
+      },
+      "permintaanTiba": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "13 Oktober 2025 - 03 Desember 2025",
+          "22 Oktober 2025 - 09 Desember 2025",
+          "05 November 2025 - 13 Desember 2025"
+        ]
+      },
+      "alamatLengkap": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "Poktan SINTUVU SINGGANI Desa SIBOWI Kec TANAMBULAVA Kab. Sigi, Sibowi, Tanambulava, Kab. Sigi, Sulawesi Tengah, 94368",
+          "Poktan Cirati Desa Sukamaju Kec Sukasari Kab. Subang, Sukamaju, Sukasari, Kab. Subang, Jawa Barat, 41250",
+          "Poktan WINARNO Desa KARANGANYAR Kec SAMBUNG MACAN Kab. Sragen, Karanganyar, Sambungmacan, Kab. Sragen, Jawa Tengah, 57253"
+        ]
+      },
+      "kabupaten": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "Kab. Sigi",
+          "Kab. Subang",
+          "Kab. Sragen"
+        ]
+      },
+      "provinsi": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "Sulawesi Tengah",
+          "Jawa Barat",
+          "Jawa Tengah"
+        ]
+      },
+      "kodePos": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "94368",
+          "41250",
+          "57253"
+        ]
+      },
+      "catatanAlamat": {
+        "presentInAllBlocks": false,
+        "rate": 0.929,
+        "samples": [
+          "TITIK BAGI DI POKTAN DAN BARANG TIDAK BISA DIPERJUALBELIKAN",
+          "BARANG TIDAK BISA DIPERJUALBELIKAN",
+          "BARANG TIDAK BISA DIPERJUALBELIKAN Halaman 2/12 Surat Pesanan No. Surat Pesanan : EP-01K7QWC3T8MNCHGHZWW9W04D7M Tanggal Surat Pesanan : 17 Okt 2025, 11:13:50 WIB"
+        ]
+      },
+      "jumlahProduk": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "3430.0",
+          "5768.0",
+          "5000.0"
+        ]
+      },
+      "hargaProdukTotal": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "Rp225.337.280,00",
+          "Rp378.934.528,00",
+          "Rp328.480.000,00"
+        ]
+      },
+      "ongkosKirim": {
+        "presentInAllBlocks": true,
+        "rate": 1.0,
+        "samples": [
+          "Rp48.120.000,00",
+          "Rp34.105.000,00",
+          "Rp35.010.000,00"
+        ]
+      }
+    }
+  }
+}
