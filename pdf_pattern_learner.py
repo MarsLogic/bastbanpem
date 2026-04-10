@@ -62,7 +62,9 @@ SECTION_ANCHORS = [
 def split_page1_sections(page1_text: str) -> dict[str, str]:
     """
     Split page 1 text into named sections using sequential anchor detection.
-    Returns dict mapping section name → section text (anchor label excluded).
+    Returns dict mapping section name → section text.
+    Each section spans from its own anchor (inclusive) to the start of the next anchor (exclusive).
+    If an anchor is not found in the text, that section is omitted from the result without error.
     """
     positions: list[tuple[str, int]] = []
     for name, pattern in SECTION_ANCHORS:

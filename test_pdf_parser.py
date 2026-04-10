@@ -90,3 +90,21 @@ def test_no_section_is_empty():
     sections = split_page1_sections(pages[0])
     for key, text in sections.items():
         assert len(text.strip()) > 10, f"Section '{key}' is suspiciously short: {repr(text)}"
+
+def test_split_handles_missing_anchor_gracefully():
+    # If DETAIL_END sentinel is absent, other sections still extract
+    mock_text = (
+        "Surat Pesanan No. Surat Pesanan : EP-TEST "
+        "Pemesan KEMENTERIAN TEST Nama Penanggung Jawab : TEST "
+        "Informasi Pembayaran dan Pengiriman Pembayaran : 1 Termin "
+        "Penyedia PERUSAHAAN TEST Nama Penanggung Jawab : DIREKTUR "
+        "Ringkasan Pesanan Melalui Negosiasi PDN PRODUK TEST 1,00 liter "
+        "Ringkasan Pembayaran Estimasi Total Pembayaran Rp1.000,00"
+        # Note: no 'Detail Informasi Pembayaran' sentinel
+    )
+    sections = split_page1_sections(mock_text)
+    assert 'HEADER' in sections
+    assert 'PEMESAN' in sections
+    assert 'PENYEDIA' in sections
+    assert 'RINGKASAN_PESANAN' in sections
+    assert 'RINGKASAN_PEMBAYARAN' in sections
