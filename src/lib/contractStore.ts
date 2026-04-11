@@ -23,6 +23,7 @@ export interface ContractData {
   contractPdfPath: string | null;
   nomorKontrak: string;
   tanggalKontrak: string;
+  contractYear?: number;
   namaPemesan?: string;
   namaPenyedia?: string;
   namaProduk?: string;
@@ -36,6 +37,10 @@ export interface ContractData {
   sskkPageRange?: [number, number];
   specsTable?: any[];
   specsPageRange?: [number, number];
+
+  // Folders
+  ktpDir?: string;
+  proofDir?: string;
 
   // Excel Data
   excelPath: string | null;

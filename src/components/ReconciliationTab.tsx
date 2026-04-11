@@ -1,13 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ContractData } from '../lib/contractStore';
 import { performReconciliation, calculateNameSimilarity } from '../lib/auditEngine';
+import { generateContractZip } from '../lib/bundlerService';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeFile } from '@tauri-apps/plugin-fs';
+import { toast } from 'sonner';
 import { 
     CheckCircle2, AlertTriangle, XCircle, FileText, 
-    ArrowRight, Info, ExternalLink, Download, Search
+    ArrowRight, Info, ExternalLink, Download, Search, Loader2
 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
@@ -16,6 +20,9 @@ interface ReconciliationTabProps {
 }
 
 export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }) => {
+  const [isBundling, setIsBundling] = useState(false);
+  const [bundleProgress, setBundleProgress] = useState({ current: 0, total: 0 });
+
   const result = useMemo(() => {
     return performReconciliation(contract.deliveryBlocks || [], contract.recipients || []);
   }, [contract.deliveryBlocks, contract.recipients]);
@@ -26,6 +33,35 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
     const warnings = result.issues.filter(i => i.severity === 'medium').length;
     return { total, critical, warnings };
   }, [contract.deliveryBlocks, result]);
+
+  const handleExportBundle = async () => {
+    if (contract.recipients.length === 0) {
+        toast.error("No recipients to bundle.");
+        return;
+    }
+    setIsBundling(true);
+    try {
+        const zipBlob = await generateContractZip(contract, (current, total) => {
+            setBundleProgress({ current, total });
+        });
+
+        const savePath = await save({
+            defaultPath: `${contract.name.replace(/[^a-z0-9]/gi, '_')}_Audit_Bundle.zip`,
+            filters: [{ name: 'ZIP', extensions: ['zip'] }]
+        });
+
+        if (savePath) {
+            const arrayBuffer = await zipBlob.arrayBuffer();
+            await writeFile(savePath, new Uint8Array(arrayBuffer));
+            toast.success("Audit Bundle exported successfully!");
+        }
+    } catch (e) {
+        console.error(e);
+        toast.error("Failed to generate Audit Bundle.");
+    } finally {
+        setIsBundling(false);
+    }
+  };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -75,8 +111,23 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
         </Card>
         <Card className="bg-white border-slate-200 text-right">
           <CardContent className="pt-6 flex justify-end gap-2">
-             <Button variant="outline" size="sm" className="h-10 gap-2 font-bold">
-                <Download size={16} /> Export Report
+             <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-10 gap-2 font-bold bg-slate-900 text-white hover:bg-black hover:text-white"
+                onClick={handleExportBundle}
+                disabled={isBundling}
+             >
+                {isBundling ? (
+                    <>
+                        <Loader2 className="animate-spin" size={16} />
+                        {bundleProgress.current}/{bundleProgress.total}
+                    </>
+                ) : (
+                    <>
+                        <Download size={16} /> Export Audit Bundle
+                    </>
+                )}
              </Button>
           </CardContent>
         </Card>

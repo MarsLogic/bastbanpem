@@ -41,7 +41,7 @@ const DashboardSection = ({ id, icon: Icon, title, subtitle, badge, actions, chi
   </section>
 );
 
-export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract, onBack, onUpdate }) => {
+export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract, globalNIKRegistry, onBack, onUpdate }) => {
   const [activeSection, setActiveSection] = useState<'all' | 'pdf' | 'excel' | 'ktp' | 'proof' | 'docs'>('all');
 
   const ktpDir = contract.ktpDir || '';

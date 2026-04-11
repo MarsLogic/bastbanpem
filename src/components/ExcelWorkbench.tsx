@@ -4,7 +4,7 @@ import {
     FileSpreadsheet, AlertCircle, CheckCircle2, Wand2, Download, Trash2, 
     Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter,
     Eye, EyeOff, XCircle, ShieldAlert, ArrowUpDown, RotateCcw,
-    CornerDownLeft, Info, RefreshCcw, PlusCircle, ChevronDown
+    CornerDownLeft, Info, RefreshCcw, PlusCircle, ChevronDown, ExternalLink
 } from 'lucide-react';
 import Decimal from 'decimal.js';
 import { 
@@ -75,7 +75,7 @@ const TablePagination = ({
         <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setCurrentPage(1)}>
           <ChevronsLeft size={16}/>
         </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage === 1} onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}>
           <ChevronLeft size={16}/>
         </Button>
         
@@ -92,7 +92,7 @@ const TablePagination = ({
           <span className="text-[10px] font-bold text-slate-500 uppercase">of {totalPages || 1}</span>
         </div>
 
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(prev => Math.min(totalPages || 1, prev + 1))}>
+        <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p: number) => Math.min(totalPages || 1, p + 1))}>
           <ChevronRight size={16}/>
         </Button>
         <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(totalPages)}>
@@ -206,7 +206,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
   const isBalanced = gap.abs().lessThan(1);
 
   const displayRows = useMemo(() => {
-    let result = [...rows];
+    let result = [...processedRows];
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(r => 
@@ -256,11 +256,11 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
     onDataLoaded(updated);
   };
 
-  const resetRow = (rowId: string) => onDataLoaded(rows.map(r => (r.rowId === rowId ? { ...r.originalValues } : r)));
+  const resetRow = (rowId: string) => onDataLoaded(rows.map(r => (r.rowId === rowId ? { ...r.originalValues as ExcelRow } : r)));
   
   const resetAll = () => {
     if (window.confirm("ARE YOU SURE? This will revert ALL manual edits to the original Excel data.")) {
-        onDataLoaded(rows.map(r => ({ ...r.originalValues })));
+        onDataLoaded(rows.map(r => ({ ...r.originalValues as ExcelRow })));
         toast.success("All data reset to original");
     }
   };

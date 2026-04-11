@@ -22,6 +22,9 @@ export interface ExcelRow {
   gridRowIndex: number;
   duplicateStatus?: 'exact' | 'partial' | 'unique';
   isExcluded?: boolean;
+  isGlobalDouble?: boolean;
+  otherContracts?: { id: string, name: string }[];
+  hasPhoto?: boolean;
   originalValues: Record<string, any>;
   editedValues?: Record<string, any>;
   isIncomplete?: boolean;

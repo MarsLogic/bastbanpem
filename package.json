@@ -24,6 +24,7 @@
     "cropperjs": "^1.6.2",
     "decimal.js": "^10.4.3",
     "idn-area-data": "^4.0.1",
+    "jszip": "^3.10.1",
     "localforage": "^1.10.0",
     "lucide-react": "^1.7.0",
     "next-themes": "^0.4.6",
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.1.0",
+    "@types/jszip": "^3.4.0",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

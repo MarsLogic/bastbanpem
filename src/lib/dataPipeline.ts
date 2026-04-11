@@ -401,7 +401,7 @@ function num(v: string | undefined): number {
 }
 
 /** Normalize a single SourceRow into a PipelineRow (financials default to 0). */
-function normalizeRow(src: SourceRow, idx: number, contractYear: string): PipelineRow {
+export function normalizeRow(src: SourceRow, idx: number, contractYear: string): PipelineRow {
   const r = src.raw;
   const nik = normalizeNik(r.nik ?? '');
   const qty = num(r.qty);
