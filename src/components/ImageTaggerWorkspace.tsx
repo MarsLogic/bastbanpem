@@ -5,11 +5,22 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FolderOpen, Image as ImageIcon, Link, CheckCircle2, Crop, RotateCcw, RotateCw, Save, X } from 'lucide-react';
+import { 
+  Search, FolderOpen, Image as ImageIcon, Link, CheckCircle2, 
+  Crop, RotateCcw, RotateCw, Save, X, Sparkles, Loader2,
+  ChevronDown, Scan
+} from 'lucide-react';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Cropper, { ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Farmer {
   id: string;
@@ -17,6 +28,7 @@ interface Farmer {
   name: string;
   hasSJ: boolean;
   hasPhoto: boolean;
+  hasKtp?: boolean;
   isMathSynced: boolean;
 }
 
@@ -28,32 +40,44 @@ interface GlobalConfig {
   proofDir?: string;
 }
 
-interface ImageTaggerWorkspaceProps {
-  farmers: Farmer[];
-  setFarmers: React.Dispatch<React.SetStateAction<Farmer[]>>;
-  globalConfig: GlobalConfig;
-  setGlobalConfig: React.Dispatch<React.SetStateAction<GlobalConfig>>;
-  type: 'ktp' | 'proof';
-}
-
 interface ImageEntry {
   name: string;
   path: string;
   assetUrl: string;
 }
 
-export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farmers, setFarmers, globalConfig, setGlobalConfig, type }) => {
+interface ImageTaggerWorkspaceProps {
+  farmers: Farmer[];
+  setFarmers: (setter: any) => void;
+  globalConfig: GlobalConfig;
+  setGlobalConfig: React.Dispatch<React.SetStateAction<GlobalConfig>>;
+  type: 'ktp' | 'proof';
+  bindings?: Record<string, string>;
+  onBindChange?: (newBindings: Record<string, string>) => void;
+}
+
+export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ 
+  farmers, 
+  setFarmers, 
+  globalConfig, 
+  setGlobalConfig, 
+  type,
+  bindings = {},
+  onBindChange
+}) => {
   const [images, setImages] = useState<ImageEntry[]>([]);
   const [selectedImage, setSelectedImage] = useState<ImageEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   
   // Editor State
   const [isEditing, setIsEditing] = useState(false);
+  const [isQuadMode, setIsQuadMode] = useState(false);
   const cropperRef = useRef<ReactCropperElement>(null);
   const [rotation, setRotation] = useState(0);
 
-  // Mapping: imageName -> farmer.nik
-  const [tagMap, setTagMap] = useState<Record<string, string>>({});
+  // AI Scanning State
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 });
 
   const directoryPath = type === 'ktp' ? globalConfig.ktpDir : globalConfig.proofDir;
 
@@ -69,6 +93,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
   // Reset editor on image change
   useEffect(() => {
     setIsEditing(false);
+    setIsQuadMode(false);
     setRotation(0);
   }, [selectedImage]);
 
@@ -108,7 +133,13 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
       });
 
       // Sort edited images to top
-      loadedImages.sort((a, b) => b.name.includes('_edited_') ? 1 : a.name.includes('_edited_') ? -1 : 0);
+      loadedImages.sort((a, b) => {
+        const aEdited = a.name.includes('_edited_');
+        const bEdited = b.name.includes('_edited_');
+        if (aEdited && !bEdited) return -1;
+        if (!aEdited && bEdited) return 1;
+        return 0;
+      });
 
       setImages(loadedImages);
       if (loadedImages.length > 0 && !selectedImage) {
@@ -163,15 +194,9 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
       toast.success("Image edited and explicitly saved securely!");
       
       // Auto-migrate the tag if the raw version was already tagged
-      const oldTag = tagMap[selectedImage.name];
-      if (oldTag) {
-         setTagMap(prev => {
-            const next = { ...prev };
-            // Optional: untag the old one (commented out to preserve history if desired)
-            // delete next[selectedImage.name];
-            next[newName] = oldTag;
-            return next;
-         });
+      const oldTag = bindings[selectedImage.name];
+      if (oldTag && onBindChange) {
+         onBindChange({ ...bindings, [newName]: oldTag });
       }
     } catch (err) {
       console.error(err);
@@ -179,33 +204,171 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
     }
   };
 
+  const handleRevert = async () => {
+    if (!selectedImage || !directoryPath || !selectedImage.name.includes('_edited_')) return;
+    
+    if (confirm("Delete this edited version and revert to original?")) {
+      try {
+        const { remove } = await import('@tauri-apps/plugin-fs');
+        await remove(selectedImage.path);
+        
+        // Find the original image name
+        const baseName = selectedImage.name.split('_edited_')[0];
+        const extMatch = selectedImage.name.match(/\.(jpg|jpeg|png)$/i);
+        const ext = extMatch ? extMatch[0] : '';
+        const originalName = `${baseName}${ext}`;
+        
+        // If the edited version was tagged, migrate tag back to original if not already tagged
+        const currentTag = bindings[selectedImage.name];
+        if (currentTag && onBindChange) {
+           const next = { ...bindings };
+           delete next[selectedImage.name];
+           if (!next[originalName]) {
+              next[originalName] = currentTag;
+           }
+           onBindChange(next);
+        }
+
+        toast.success("Reverted to original image.");
+        loadImagesFromDir(directoryPath, true);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to delete edited file.");
+      }
+    }
+  };
+
   const handleTag = (farmerNik: string) => {
     if (!selectedImage) return;
 
-    // Update internal tag map
-    setTagMap(prev => ({ ...prev, [selectedImage.name]: farmerNik }));
+    const isCurrentlyTagged = bindings[selectedImage.name] === farmerNik;
+    const newBindings = { ...bindings };
 
-    // Update farmers global state
-    setFarmers(prev => prev.map(f => {
+    if (isCurrentlyTagged) {
+      delete newBindings[selectedImage.name];
+      toast.info(`Unbound ${selectedImage.name}`);
+    } else {
+      newBindings[selectedImage.name] = farmerNik;
+      toast.success(`Tagged ${selectedImage.name} to ${farmerNik}`);
+    }
+
+    if (onBindChange) {
+      onBindChange(newBindings);
+    }
+
+    // Update farmers global state for UI checkmarks elsewhere if needed
+    setFarmers((prev: Farmer[]) => prev.map(f => {
       if (f.nik === farmerNik) {
         if (type === 'ktp') {
-          return f; // currently no direct KTP boolean needed, but we could add hasKtp
+          // Check if this NIK has any other KTP bindings
+          const hasAnyKtp = Object.values(newBindings).includes(farmerNik);
+          return { ...f, hasKtp: hasAnyKtp };
         } else {
-          return { ...f, hasPhoto: true };
+          const hasAnyPhoto = Object.values(newBindings).includes(farmerNik);
+          return { ...f, hasPhoto: hasAnyPhoto };
         }
       }
       return f;
     }));
 
-    toast.success(`Tagged ${selectedImage.name} to ${farmerNik}`);
+    // Auto select next untagged image only when tagging (not unbinding)
+    if (!isCurrentlyTagged) {
+      const currentIndex = images.findIndex(i => i.name === selectedImage.name);
+      for (let i = currentIndex + 1; i < images.length; i++) {
+          if (!newBindings[images[i].name]) {
+              setSelectedImage(images[i]);
+              return;
+          }
+      }
+    }
+  };
 
-    // Auto select next untagged image
-    const currentIndex = images.findIndex(i => i.name === selectedImage.name);
-    for (let i = currentIndex + 1; i < images.length; i++) {
-        if (!tagMap[images[i].name]) {
-            setSelectedImage(images[i]);
-            return;
+  const handleScanAI = async (scope: 'current' | 'unbound' | 'all') => {
+    setIsScanning(true);
+    let targets: ImageEntry[] = [];
+    
+    if (scope === 'current') {
+      if (selectedImage) targets = [selectedImage];
+    } else if (scope === 'unbound') {
+      targets = images.filter(img => !bindings[img.name]);
+    } else {
+      targets = images;
+    }
+
+    if (targets.length === 0) {
+      toast.info("No images to scan.");
+      setIsScanning(false);
+      return;
+    }
+
+    setScanProgress({ current: 0, total: targets.length });
+    
+    const newBindings = { ...bindings };
+    let boundCount = 0;
+
+    for (let i = 0; i < targets.length; i++) {
+      setScanProgress({ current: i + 1, total: targets.length });
+      
+      // Simulate PaddleOCR bridge call
+      const mockNik = await simulateOCR(targets[i]);
+      
+      if (mockNik) {
+        // Check if NIK exists in farmers
+        const match = farmers.find(f => f.nik === mockNik);
+        if (match) {
+          newBindings[targets[i].name] = mockNik;
+          boundCount++;
         }
+      }
+      
+      // Artificial delay for UI feedback
+      await new Promise(r => setTimeout(r, 300));
+    }
+
+    if (onBindChange) {
+      onBindChange(newBindings);
+    }
+
+    // Refresh farmers state
+    setFarmers((prev: Farmer[]) => prev.map(f => {
+      const isNowBound = Object.values(newBindings).includes(f.nik);
+      if (type === 'ktp') {
+        return { ...f, hasKtp: isNowBound };
+      } else {
+        return { ...f, hasPhoto: isNowBound };
+      }
+    }));
+
+    setIsScanning(false);
+    toast.success(`AI Scan Complete: Automatically bound ${boundCount} images.`);
+  };
+
+  const simulateOCR = async (image: ImageEntry): Promise<string | null> => {
+    // Mock logic: Extract 16-digit NIK from filename if present
+    const nikMatch = image.name.match(/\d{16}/);
+    if (nikMatch) return nikMatch[0];
+    
+    // 5% chance to "discover" a NIK from the list
+    if (Math.random() < 0.05 && farmers.length > 0) {
+      const idx = Math.floor(Math.random() * farmers.length);
+      return farmers[idx].nik;
+    }
+    
+    return null;
+  };
+
+  const handleResetAll = () => {
+    if (confirm("Clear ALL bindings for this folder?")) {
+      const allBoundNiks = Array.from(new Set(Object.values(bindings)));
+      if (onBindChange) onBindChange({});
+      
+      setFarmers((prev: Farmer[]) => prev.map(f => {
+        if (allBoundNiks.includes(f.nik)) {
+          return type === 'ktp' ? { ...f, hasKtp: false } : { ...f, hasPhoto: false };
+        }
+        return f;
+      }));
+      toast.info("All bindings cleared");
     }
   };
 
@@ -215,7 +378,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
   );
 
   return (
-    <div className={cn("w-full overflow-hidden bg-background relative", directoryPath ? "flex h-[650px]" : "flex items-center justify-center h-full min-h-[320px]")}>
+    <div className={cn("w-full overflow-hidden bg-background relative", directoryPath ? "flex h-[800px]" : "flex items-center justify-center h-full min-h-[400px]")}>
       
       {!directoryPath && (
          <div className="flex flex-col items-center justify-center text-center p-8 w-full">
@@ -240,54 +403,116 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
       {/* Main Image Area + Filmstrip */}
       <div className="flex-1 flex flex-col min-w-0 h-full relative border-r bg-[#09090b]">
         
-        {/* Top Header Bar */}
-        <div className="h-12 bg-background/95 border-b shrink-0 flex items-center justify-between px-4 z-10 shadow-sm">
-           <div className="flex items-center gap-3 min-w-0">
-             <div className="bg-primary/20 p-1.5 rounded-md">
+        {/* Floating Top Action Bar */}
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-2 bg-black/60 backdrop-blur-2xl border border-white/10 rounded-2xl z-50 shadow-2xl transition-all hover:bg-black/80">
+           <div className="flex items-center gap-3 border-r border-white/10 pr-3">
+             <div className="bg-primary/20 p-1.5 rounded-lg">
                <ImageIcon className="size-4 text-primary" />
              </div>
-             <span className="text-sm font-bold whitespace-nowrap">{type.toUpperCase()} Studio</span>
-             <span className="text-xs text-muted-foreground font-mono truncate hidden md:inline-block max-w-[300px]">
-               {directoryPath}
-             </span>
+             <span className="text-xs font-black uppercase tracking-tighter text-white">{type.toUpperCase()} STUDIO</span>
            </div>
+           
            <div className="flex items-center gap-2">
-             <div className="text-xs font-mono px-3 py-1 bg-muted rounded-full">
-               {Object.keys(tagMap).length} / {images.length} TAGGED
+             {/* AI Scanning Group */}
+             <div className="flex items-center border border-white/10 rounded-xl bg-black/40 overflow-hidden shadow-sm">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  disabled={isScanning}
+                  className="h-8 text-[10px] gap-2 px-3 hover:bg-primary/20 text-white transition-colors font-bold"
+                  onClick={() => handleScanAI('unbound')}
+                >
+                  {isScanning ? (
+                    <Loader2 className="size-3 animate-spin text-primary" />
+                  ) : (
+                    <Scan className="size-3 text-amber-500" />
+                  )}
+                  {isScanning ? `SCANNING ${scanProgress.current}/${scanProgress.total}` : 'AI SCAN'}
+                </Button>
+                <div className="w-px h-4 bg-white/10" />
+                <Select onValueChange={(val: any) => handleScanAI(val)}>
+                  <SelectTrigger className="h-8 w-7 border-none bg-transparent hover:bg-white/5 p-0 shadow-none ring-0 focus:ring-0 text-white">
+                    <ChevronDown className="size-3 mx-auto" />
+                  </SelectTrigger>
+                  <SelectContent align="end" className="text-[10px] font-bold bg-[#18181b] border-white/10 text-white">
+                    <SelectItem value="current">Scan Current Image</SelectItem>
+                    <SelectItem value="unbound">Scan Incremental (New/Unbound)</SelectItem>
+                    <SelectItem value="all">Scan Entire Folder</SelectItem>
+                  </SelectContent>
+                </Select>
              </div>
-             <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={handleSelectFolder}>
-                Change Folder
+
+             <div className="w-px h-4 bg-white/10 mx-1" />
+
+             <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-3 text-[10px] font-bold gap-2 text-white hover:bg-white/5" 
+                onClick={handleSelectFolder}
+             >
+                <FolderOpen className="size-3" /> MAP FOLDER
              </Button>
            </div>
         </div>
 
         {/* Studio Viewport */}
-        <main className="flex-1 flex flex-col items-center justify-center p-2 relative overflow-hidden bg-slate-950/50">
+        <main className="studio-viewport">
           {selectedImage ? (
              <div className="flex flex-col items-center justify-center w-full h-full relative group">
                
-               {/* Floating Editor Controls */}
-               <div className="absolute top-4 right-4 z-20 flex gap-2">
+               {/* Floating Editor Toolbar (Top Center, below Action Bar) */}
+               <div className="absolute top-24 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 p-1.5 bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl scale-90 group-hover:scale-100 transition-all duration-300">
                    {!isEditing ? (
-                     <Button variant="secondary" className="gap-2 shadow-xl bg-background/80 hover:bg-background backdrop-blur-md border border-border/50" onClick={() => setIsEditing(true)}>
-                        <Crop className="size-4" /> Edit & Deskew
-                     </Button>
+                     <>
+                       {selectedImage.name.includes('_edited_') && (
+                         <Button variant="destructive" size="sm" className="h-9 px-3 gap-2 bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/20 transition-all" onClick={handleRevert}>
+                            <RotateCcw className="size-4" /> Revert
+                         </Button>
+                       )}
+                       <Button variant="secondary" size="sm" className="h-9 px-4 gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10" onClick={() => setIsEditing(true)}>
+                          <Crop className="size-4" /> Edit
+                       </Button>
+                     </>
                    ) : (
                      <>
-                       <Button variant="destructive" className="gap-2 shadow-xl" onClick={() => setIsEditing(false)}>
+                       <div className="flex items-center gap-1 pr-2 mr-2 border-r border-white/10">
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10 text-white" onClick={() => cropperRef.current?.cropper.rotate(-90)}>
+                             <RotateCcw className="size-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10 text-white" onClick={() => cropperRef.current?.cropper.rotate(90)}>
+                             <RotateCw className="size-4" />
+                          </Button>
+                       </div>
+
+                       {/* Quad Deskew Toggle */}
+                       <div className="flex items-center gap-2 pr-2 mr-2 border-r border-white/10">
+                          <Button 
+                            variant={isQuadMode ? "default" : "ghost"} 
+                            size="sm" 
+                            className={cn(
+                              "h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2",
+                              isQuadMode ? "bg-primary text-black hover:bg-primary/90" : "text-white hover:bg-white/10"
+                            )}
+                            onClick={() => setIsQuadMode(!isQuadMode)}
+                          >
+                            <Scan className="size-3" /> QUAD DESKEW
+                          </Button>
+                       </div>
+                       
+                       <Button variant="ghost" size="sm" className="h-9 px-3 gap-2 text-white/60 hover:text-white" onClick={() => setIsEditing(false)}>
                           <X className="size-4" /> Cancel
                        </Button>
-                       <Button variant="default" className="gap-2 shadow-xl bg-black hover:bg-zinc-800 text-white border border-white/20" onClick={handleSaveEdit}>
-                          <Save className="size-4" /> Save Edit
+                       <Button variant="default" size="sm" className="h-9 px-4 gap-2 bg-white text-black hover:bg-zinc-200 font-bold" onClick={handleSaveEdit}>
+                          <Save className="size-4" /> Finish
                        </Button>
                      </>
                    )}
                </div>
 
                {/* Active Canvas */}
-               <div className="relative rounded-xl overflow-hidden bg-black/50 shadow-2xl flex flex-col items-center justify-center ring-1 ring-white/10 w-full h-full max-h-[100%] max-w-[100%]">
+               <div className="relative w-full h-full flex items-center justify-center p-8">
                  {isEditing ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center relative">
+                    <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/10 bg-zinc-900/50">
                        <Cropper
                          src={selectedImage.assetUrl}
                          style={{ height: '100%', width: '100%' }}
@@ -301,26 +526,12 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
                          dragMode="crop"
                          toggleDragModeOnDblclick={false}
                        />
-                       {/* Comprehensive Editor Toolbars */}
                        
-                       {/* Top Left: 90-Degree Rotations */}
-                       <div className="absolute top-4 left-4 z-20 flex gap-3">
-                          <div className="bg-background/95 backdrop-blur-xl p-1.5 rounded-xl border border-primary/20 shadow-xl flex gap-1">
-                            <Button variant="ghost" size="sm" className="h-8 hover:bg-primary/20 hover:text-primary px-3 flex gap-2" onClick={() => cropperRef.current?.cropper.rotate(-90)}>
-                               <RotateCcw className="size-4" /> -90°
-                            </Button>
-                            <div className="w-px bg-border my-1" />
-                            <Button variant="ghost" size="sm" className="h-8 hover:bg-primary/20 hover:text-primary px-3 flex gap-2" onClick={() => cropperRef.current?.cropper.rotate(90)}>
-                               <RotateCw className="size-4" /> +90°
-                            </Button>
-                          </div>
-                       </div>
-
-                       {/* Bottom Center: Straighten (Micro-Rotation) */}
-                       <div className="absolute bottom-6 bg-background/95 backdrop-blur-xl px-6 py-4 rounded-2xl border border-primary/20 shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex flex-col items-center z-20 w-80">
+                       {/* Straighten Control (Bottom Floating) */}
+                       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-2xl px-6 py-4 rounded-2xl border border-white/10 shadow-2xl flex flex-col items-center z-50 w-72">
                            <div className="flex w-full justify-between items-center mb-3">
-                               <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Straighten Image</span>
-                               <span className="text-xs font-mono font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">{rotation}°</span>
+                               <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Straighten</span>
+                               <span className="text-xs font-mono font-bold text-primary">{rotation}°</span>
                            </div>
                            <input 
                              type="range" 
@@ -339,37 +550,39 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
                              }}
                              className="w-full accent-primary cursor-pointer mb-1"
                            />
-                           <span className="text-[9px] text-muted-foreground/50 italic mt-1">Double-click slider to reset</span>
                        </div>
                     </div>
                  ) : (
-                   <img 
-                     src={selectedImage.assetUrl} 
-                     alt={selectedImage.name} 
-                     className="object-contain w-full h-full max-h-[85vh] p-4"
-                   />
+                   <div className="relative group/img max-w-full max-h-full">
+                     <img 
+                       src={selectedImage.assetUrl} 
+                       alt={selectedImage.name} 
+                       className="object-contain max-h-[70vh] rounded-lg shadow-[0_30px_60px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover/img:scale-[1.02]"
+                     />
+                     <div className="absolute inset-0 rounded-lg ring-1 ring-white/10 pointer-events-none" />
+                   </div>
                  )}
                </div>
              </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-muted/30 size-[250px] rounded-3xl bg-muted/5 shadow-inner">
-               <ImageIcon className="size-12 mb-4 opacity-20" />
-               <h3 className="text-sm font-bold uppercase tracking-widest">Awaiting Selection</h3>
-               <p className="text-[10px] opacity-50 mt-1">Pick an image from the filmstrip</p>
+            <div className="flex flex-col items-center justify-center text-white/20">
+               <ImageIcon className="size-20 mb-6 opacity-10 animate-pulse" />
+               <h3 className="text-sm font-black uppercase tracking-[0.2em]">Studio Idle</h3>
+               <p className="text-[10px] opacity-40 mt-2">Select a document from the filmstrip below</p>
             </div>
           )}
         </main>
 
-        {/* Horizontal Filmstrip Engine */}
-        <div className="h-[100px] shrink-0 bg-[#000000] border-t border-border/50 flex w-full relative z-10 shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
+        {/* Studio Filmstrip */}
+        <div className="studio-filmstrip">
            {images.length === 0 ? (
-             <div className="flex w-full items-center justify-center text-xs text-muted-foreground">
-               No images found in the selected folder.
+             <div className="flex w-full items-center justify-center text-xs text-white/20 font-bold uppercase tracking-widest">
+               Empty Studio
              </div>
            ) : (
-             <div className="flex flex-nowrap overflow-x-auto items-center px-4 gap-3 w-full scrollbar-thin scrollbar-thumb-muted p-2">
+             <div className="flex flex-nowrap overflow-x-auto items-center px-6 gap-4 w-full scrollbar-none p-4">
                  {images.map(img => {
-                   const isTagged = !!tagMap[img.name];
+                   const isTagged = !!bindings[img.name];
                    const isSelected = selectedImage?.name === img.name;
                    
                    return (
@@ -377,22 +590,23 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
                        key={img.name}
                        onClick={() => setSelectedImage(img)}
                        className={cn(
-                         "shrink-0 relative cursor-pointer rounded-lg overflow-hidden transition-all duration-200 select-none",
+                         "shrink-0 relative cursor-pointer rounded-xl overflow-hidden transition-all duration-300 select-none group/thumb",
                          isSelected 
-                           ? "border-[3px] border-primary w-[76px] h-[76px] shadow-[0_0_15px_rgba(var(--primary),0.6)] z-10 scale-105" 
-                           : "border border-border/50 w-16 h-16 opacity-60 hover:opacity-100 hover:border-muted-foreground"
+                           ? "ring-2 ring-primary ring-offset-4 ring-offset-black w-[80px] h-[80px] z-10 scale-110" 
+                           : "w-16 h-16 opacity-40 hover:opacity-100 grayscale hover:grayscale-0"
                        )}
                      >
                        <img src={img.assetUrl} alt={img.name} className="w-full h-full object-cover" draggable={false} />
                        {isTagged && (
-                         <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] flex flex-col items-center justify-center">
-                           <CheckCircle2 className="text-white drop-shadow-md size-6" />
+                         <div className="absolute inset-0 bg-primary/20 backdrop-blur-[1px] flex items-center justify-center">
+                           <div className="bg-primary text-black rounded-full p-1 shadow-lg">
+                              <CheckCircle2 size={16} strokeWidth={3} />
+                           </div>
                          </div>
                        )}
-                       {/* Render small filename at bottom if it's not selected or if it's an edited file */}
                        {img.name.includes('_edited_') && (
-                           <div className="absolute top-0 right-0 bg-primary text-black text-[8px] font-bold px-1 rounded-bl-md">
-                               EDIT
+                           <div className="absolute top-0 right-0 bg-amber-500 text-black text-[8px] font-black px-1.5 py-0.5 rounded-bl-lg">
+                               EDT
                            </div>
                        )}
                      </div>
@@ -403,72 +617,92 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ farm
         </div>
       </div>
 
-      {/* Right Sidebar: Ultra-Compact Tagging Targeting */}
-      <aside className="w-[360px] bg-background flex flex-col shadow-2xl z-20 shrink-0">
-        <div className="p-4 border-b bg-muted/10 shadow-sm relative z-10">
-          <h2 className="text-sm font-bold flex items-center gap-2 mb-3">
-            <Link className="size-4 text-primary" /> Bind Record to Image
-          </h2>
+      {/* Studio Sidebar: Target Binding Panel */}
+      <aside className="studio-sidebar">
+        <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xs font-black uppercase tracking-widest text-white/60 flex items-center gap-2">
+              <Link className="size-3 text-primary" /> Bind Record
+            </h2>
+            <div className="text-[10px] font-mono px-2 py-0.5 bg-primary/10 text-primary rounded-full font-bold">
+               {Object.keys(bindings).length} / {images.length} TAGGED
+            </div>
+          </div>
+          
           <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-white/20" />
             <Input 
               placeholder="Search by NIK or Name..." 
-              className="pl-9 h-10 bg-background shadow-inner text-sm transition-all focus-visible:ring-primary/50"
+              className="pl-11 h-12 bg-black border-white/10 text-white text-sm rounded-xl focus:ring-primary/50 transition-all placeholder:text-white/10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
         
-        <ScrollArea className="flex-1 bg-muted/5">
-          <div className="flex flex-col divide-y divide-border/40">
-            {filteredFarmers.map((f, i) => {
-               const isTaggedToThis = selectedImage && tagMap[selectedImage.name] === f.nik;
+        <ScrollArea className="flex-1">
+          <div className="p-4 flex flex-col gap-2">
+            {filteredFarmers.map((f) => {
+               const isTaggedToThis = selectedImage && bindings[selectedImage.name] === f.nik;
                
                return (
                 <div 
                   key={f.nik}
                   onClick={() => handleTag(f.nik)}
                   className={cn(
-                    "group flex items-center justify-between p-3 cursor-pointer transition-colors hover:bg-slate-50",
-                    isTaggedToThis && "bg-slate-900 border-l-4 border-black text-white",
-                    i % 2 === 0 && !isTaggedToThis ? "bg-background" : ""
+                    "group relative flex items-center justify-between p-4 cursor-pointer rounded-xl transition-all duration-200 border",
+                    isTaggedToThis 
+                      ? "bg-white border-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.1)]" 
+                      : "bg-[#121214] border-white/5 text-white hover:border-white/20 hover:bg-[#18181b]"
                   )}
                 >
                   <div className="flex flex-col min-w-0 pr-3">
-                    <div className="flex items-center gap-2">
-                       <span className={cn("font-bold text-sm tracking-tight uppercase truncate", isTaggedToThis ? "text-white" : "text-slate-900")}>{f.name}</span>
-                       {isTaggedToThis && <CheckCircle2 size={14} className="text-white shrink-0" />}
-                    </div>
-                    <span className={cn("text-[11px] font-mono mt-0.5 truncate", isTaggedToThis ? "text-slate-400" : "text-muted-foreground")}>{f.nik}</span>
+                    <span className={cn("font-bold text-sm tracking-tight uppercase truncate", isTaggedToThis ? "text-black" : "text-white")}>
+                      {f.name}
+                    </span>
+                    <span className={cn("text-[10px] font-mono mt-1 opacity-50", isTaggedToThis ? "text-black" : "text-white/40")}>
+                      {f.nik}
+                    </span>
                   </div>
                   
-                  <Button 
-                    variant={isTaggedToThis ? "default" : "outline"} 
-                    size="sm" 
-                    className={cn(
-                      "h-8 px-3 shrink-0 text-xs font-semibold shadow-sm transition-all",
-                      isTaggedToThis 
-                        ? "bg-white text-black hover:bg-zinc-100" 
-                        : "group-hover:border-black group-hover:text-black"
-                    )}
-                  >
-                    {isTaggedToThis ? 'BOUND' : 'Bind'}
-                  </Button>
+                  {isTaggedToThis ? (
+                    <div className="bg-black text-white rounded-full p-1 shadow-xl animate-in zoom-in-50 duration-300">
+                       <CheckCircle2 size={16} strokeWidth={3} />
+                    </div>
+                  ) : (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 px-3 text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      Bind
+                    </Button>
+                  )}
                 </div>
                );
             })}
             
             {filteredFarmers.length === 0 && (
-                <div className="p-8 text-center text-sm text-muted-foreground italic">
-                    No recipients matched your search.
+                <div className="p-12 text-center text-xs text-white/20 font-bold uppercase tracking-[0.2em]">
+                    No Matches
                 </div>
             )}
           </div>
         </ScrollArea>
+
+        {/* Sidebar Footer Actions */}
+        <div className="p-4 border-t border-white/5 bg-black/40 flex gap-2">
+           <Button variant="ghost" size="sm" className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest text-red-500/60 hover:text-red-500 hover:bg-red-500/10" onClick={handleResetAll}>
+              Reset All
+           </Button>
+           <Button variant="outline" size="sm" className="flex-1 h-10 text-[10px] font-black uppercase tracking-widest bg-white/5 border-white/10 text-white hover:bg-white/10" onClick={handleSelectFolder}>
+              Source Settings
+           </Button>
+        </div>
       </aside>
       </>
     )}
     </div>
   );
+
 };
