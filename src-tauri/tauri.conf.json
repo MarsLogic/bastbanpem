@@ -20,7 +20,11 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: http://localhost:* https://bastbanpem.pertanian.go.id; connect-src 'self' http://localhost:* https://bastbanpem.pertanian.go.id;"
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      },
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: asset: http://asset.localhost http://localhost:* https://bastbanpem.pertanian.go.id; connect-src 'self' asset: http://asset.localhost http://localhost:* https://bastbanpem.pertanian.go.id;"
     }
   },
   "bundle": {

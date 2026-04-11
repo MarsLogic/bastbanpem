@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
 import { 
   CheckCircle2,
   Crosshair,
@@ -7,12 +6,16 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCw,
-  Globe,
+  UploadCloud,
   FileText,
-  UploadCloud
+  User
 } from 'lucide-react';
 import * as pdfjs from 'pdfjs-dist';
-import './SlicerWorkspace.css';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -24,11 +27,6 @@ interface Farmer {
   hasSJ: boolean;
   hasPhoto: boolean;
   isMathSynced: boolean;
-  useGlobal: {
-    ujiLab: boolean;
-    sertifikasiLab: boolean;
-    transportInvoice: boolean;
-  }
 }
 
 interface SlicerWorkspaceProps {
@@ -46,16 +44,8 @@ export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFa
   
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [isSniperMode, setIsSniperMode] = useState(false);
-  const [cropBox, setCropBox] = useState<{ x: number, y: number, w: number, h: number } | null>(null);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const startPos = useRef({ x: 0, y: 0 });
-
-  const isFarmerReady = (farmer: Farmer) => {
-    return farmer.hasSJ && farmer.hasPhoto && farmer.isMathSynced;
-  };
 
   const renderPage = useCallback(async (pageNum: number, currentScale: number, currentRotation: number) => {
     if (!pdfDoc || !canvasRef.current) return;
@@ -87,103 +77,146 @@ export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFa
        setPdfDoc(doc);
        setNumPages(doc.numPages);
        setCurrentPage(1);
+       toast.success(`PDF Loaded: ${doc.numPages} pages`);
     }
   };
 
   return (
-    <div className="slicer-container" onDragOver={e => e.preventDefault()} onDrop={onFileDrop}>
-      <aside className="slicer-sidebar">
-        <div className="sidebar-header">
-          <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Daftar Penerima</h2>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-            Sync from Data Engine: {farmers.length}
+    <div className="flex h-full w-full overflow-hidden" onDragOver={e => e.preventDefault()} onDrop={onFileDrop}>
+      {/* Sidebar: Recipient List */}
+      <aside className="w-80 border-r bg-muted/20 flex flex-col">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <User className="size-5 text-primary" /> Recipients
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">Sync from Data Engine: {farmers.length}</p>
+        </div>
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-2">
+            {farmers.length === 0 ? (
+              <div className="text-center py-10 text-muted-foreground text-sm">
+                No recipients loaded. <br/>Go to Data Engine first.
+              </div>
+            ) : (
+              farmers.map(farmer => (
+                <Card 
+                  key={farmer.id}
+                  className={cn(
+                    "cursor-pointer transition-all hover:bg-slate-50 border-slate-100",
+                    selectedFarmerId === farmer.id && "border-black bg-black/5 ring-1 ring-black"
+                  )}
+                  onClick={() => setSelectedFarmerId(farmer.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="font-black text-[10px] uppercase truncate w-[80%] text-slate-900 tracking-tight">{farmer.name}</span>
+                      {farmer.hasSJ && <CheckCircle2 size={12} className="text-black" />}
+                    </div>
+                    <div className="flex gap-1.5">
+                       <div className={cn("size-2 rounded-full border border-slate-200", farmer.hasSJ ? "bg-black" : "bg-slate-100")} title="SJ" />
+                       <div className={cn("size-2 rounded-full border border-slate-200", farmer.hasPhoto ? "bg-black" : "bg-slate-100")} title="Photo" />
+                       <div className={cn("size-2 rounded-full border border-slate-200", farmer.isMathSynced ? "bg-black" : "bg-slate-100")} title="Math" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
-        </div>
-        <div className="farmer-list">
-          {farmers.map(farmer => (
-            <div 
-              key={farmer.id}
-              className={`farmer-card ${selectedFarmerId === farmer.id ? 'active' : ''}`}
-              onClick={() => setSelectedFarmerId(farmer.id)}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{farmer.name}</span>
-                {isFarmerReady(farmer) && <CheckCircle2 size={16} color="var(--success)" />}
-              </div>
-              <div className="indicator-row">
-                <div className={`dot-v4 ${farmer.hasSJ ? 'active' : ''}`} title="Surat Jalan Ready" />
-                <div className={`dot-v4 ${farmer.hasPhoto ? 'active' : ''}`} title="Photo Ready" />
-                <div className={`dot-v4 ${farmer.isMathSynced ? 'inherited' : ''}`} title="Math Balanced" />
-              </div>
-            </div>
-          ))}
-        </div>
+        </ScrollArea>
       </aside>
 
-      <main className="slicer-main">
+      {/* Main Slicer View */}
+      <main className="flex-1 flex flex-col relative bg-slate-950/40">
         {/* Floating Toolbar */}
-        <div className="floating-toolbar">
-          <button className="magic-button" style={{ width: '2rem', padding: 0 }} onClick={() => setScale(s => Math.max(0.5, s - 0.2))}>
-            <ZoomOut size={18} />
-          </button>
-          <span className="scale-display">{Math.round(scale * 100)}%</span>
-          <button className="magic-button" style={{ width: '2rem', padding: 0 }} onClick={() => setScale(s => Math.min(4, s + 0.2))}>
-            <ZoomIn size={18} />
-          </button>
-          
-          <div className="tool-divider" />
-          
-          <button className="magic-button" style={{ width: '2rem', padding: 0 }} onClick={() => setRotation(r => (r + 90) % 360)}>
-            <RotateCw size={18} />
-          </button>
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="bg-background/80 backdrop-blur-md border rounded-full px-4 py-2 flex items-center gap-4 shadow-2xl">
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="size-8 hover:bg-black hover:text-white" onClick={() => setScale(s => Math.max(0.5, s - 0.2))}>
+                <ZoomOut className="size-4" />
+              </Button>
+              <span className="text-[10px] font-mono font-black w-10 text-center">{Math.round(scale * 100)}%</span>
+              <Button variant="ghost" size="icon" className="size-8 hover:bg-black hover:text-white" onClick={() => setScale(s => Math.min(4, s + 0.2))}>
+                <ZoomIn className="size-4" />
+              </Button>
+            </div>
+            
+            <div className="w-px h-6 bg-border" />
+            
+            <Button variant="ghost" size="icon" className="size-8" onClick={() => setRotation(r => (r + 90) % 360)}>
+              <RotateCw className="size-4" />
+            </Button>
 
-          <div className="tool-divider" />
+            <div className="w-px h-6 bg-border" />
 
-          <button 
-            className={`magic-button ${isSniperMode ? 'active' : ''}`} 
-            style={{ padding: '0 1rem', background: isSniperMode ? 'var(--warning)' : undefined }}
-            onClick={() => setIsSniperMode(!isSniperMode)}
-          >
-            <Crosshair size={18} /> {isSniperMode ? 'Sniper Active' : 'Sniper Mode'}
-          </button>
+            <Button 
+              variant={isSniperMode ? "default" : "secondary"} 
+              size="sm" 
+              className={cn("gap-2 rounded-full h-8 text-[10px] uppercase font-black tracking-widest", isSniperMode && "bg-black text-white hover:bg-zinc-800")}
+              onClick={() => setIsSniperMode(!isSniperMode)}
+            >
+              <Crosshair className="size-4" /> {isSniperMode ? 'Sniper Active' : 'Sniper Mode'}
+            </Button>
 
-          <button className="magic-button" disabled={!selectedFarmerId || selectedPages.length === 0}>
-            <Scissors size={18} /> Split PDF
-          </button>
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="px-6 h-8 rounded-full bg-black text-white hover:bg-zinc-800 font-bold text-[10px] uppercase"
+              disabled={!selectedFarmerId || selectedPages.length === 0}
+            >
+              <Scissors className="size-4 mr-2" /> Split Buffer
+            </Button>
+          </div>
         </div>
 
-        <div className="canvas-area">
+        {/* Canvas / Viewport */}
+        <div className="flex-1 overflow-auto flex items-center justify-center p-20 custom-scrollbar">
           {!pdfDoc ? (
-            <div className="drop-instruction">
-              <UploadCloud size={64} color="var(--primary)" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-              <h3 style={{ margin: 0, color: 'var(--text-muted)' }}>Tarik file PDF ke sini</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>Satu PDF berisi semua Surat Jalan</p>
+            <div className="flex flex-col items-center justify-center text-muted-foreground border-2 border-dashed border-muted size-[500px] rounded-3xl animate-in fade-in zoom-in duration-500">
+               <UploadCloud className="size-16 mb-6 opacity-20" />
+               <h3 className="text-xl font-bold">Drop PDF Here</h3>
+               <p className="text-sm mt-2 opacity-50 text-center max-w-[200px]">Combine all letters into one file for batch processing</p>
             </div>
           ) : (
-            <div className="pdf-page-container">
+            <div className="relative shadow-2xl ring-1 ring-white/10 rounded-sm overflow-hidden bg-white">
                <canvas ref={canvasRef} />
             </div>
           )}
         </div>
 
+        {/* Thumbnail Selector */}
         {pdfDoc && (
-          <div className="thumbnail-bar">
-            {Array.from({ length: numPages }).map((_, i) => (
-              <div 
-                key={i} 
-                className={`thumbnail-item ${currentPage === i + 1 ? 'active' : ''} ${selectedPages.includes(i + 1) ? 'selected' : ''}`}
-                onClick={() => {
-                   setCurrentPage(i + 1);
-                   if (!selectedPages.includes(i+1)) {
-                      setSelectedPages(prev => [...prev, i+1]);
-                   } else {
-                      setSelectedPages(prev => prev.filter(p => p !== i+1));
-                   }
-                }}
-              >
-                <div className="thumbnail-number">{i + 1}</div>
+          <div className="h-40 bg-muted/10 border-t backdrop-blur-sm p-4">
+            <ScrollArea className="h-full">
+              <div className="flex gap-4 pb-4">
+                {Array.from({ length: numPages }).map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={cn(
+                      "flex-shrink-0 w-24 aspect-[3/4] rounded-md border text-center overflow-hidden cursor-pointer relative group transition-all",
+                      currentPage === i + 1 ? "border-black ring-2 ring-black/5 scale-105" : "border-slate-200 opacity-60 hover:opacity-100",
+                      selectedPages.includes(i + 1) && "opacity-100 ring-4 ring-black/10 shadow-lg"
+                    )}
+                    onClick={() => {
+                       setCurrentPage(i + 1);
+                       if (!selectedPages.includes(i+1)) {
+                          setSelectedPages(prev => [...prev, i+1]);
+                       } else {
+                          setSelectedPages(prev => prev.filter(p => p !== i+1));
+                       }
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
+                      Pg {i + 1}
+                    </div>
+                    {selectedPages.includes(i + 1) && (
+                       <div className="absolute top-1 right-1 bg-black text-white rounded-full p-0.5 z-10 box-content border-2 border-white">
+                          <CheckCircle2 size={10} />
+                       </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
+            </ScrollArea>
           </div>
         )}
       </main>

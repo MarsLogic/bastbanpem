@@ -1,0 +1,21 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml"
+  },
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "node_modules",
+      "dist",
+      "src-tauri/target",
+      ".vite",
+      "public/master_locations.json",
+      "sitemap_bastbanpem.html",
+      "pdf_extract_out.txt",
+      "pdf_extract_utf8.txt",
+      "repomix-output.xml"
+    ]
+  }
+}
