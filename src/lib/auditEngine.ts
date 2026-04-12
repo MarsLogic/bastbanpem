@@ -5,6 +5,7 @@
  */
 
 import Decimal from 'decimal.js';
+import { ExcelRow, DeliveryBlock } from './contractStore';
 
 export interface AuditIssue {
   type: 'QUANTITY_MISMATCH' | 'NAME_FUZZY_MATCH' | 'MISSING_DATA' | 'ROUNDING_ERROR';
@@ -19,15 +20,13 @@ export interface ReconciliationResult {
   isMatched: boolean;
   score: number; // 0-100
   issues: AuditIssue[];
-  appliedBalance?: boolean;
 }
 
 /**
  * Simple token-based fuzzy matching for Indonesian recipient names.
- * Handles common abbreviations like KLP, POKTAN, GAPOKTAN.
  */
 export function calculateNameSimilarity(pdfName: string, excelName: string): number {
-  const normalize = (s: string) => s.toUpperCase()
+  const normalize = (s: string) => (s || "").toUpperCase()
     .replace(/\b(KLP|POKTAN|GAPOKTAN|KELOMPOK|TANI)\b/g, '')
     .replace(/[^A-Z0-9]/g, ' ')
     .split(/\s+/)
@@ -45,17 +44,12 @@ export function calculateNameSimilarity(pdfName: string, excelName: string): num
   return (intersection.length / union.length) * 100;
 }
 
-export function performReconciliation(pdfBlocks: any[], excelRows: any[]): ReconciliationResult {
+export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: ExcelRow[]): ReconciliationResult {
   const issues: AuditIssue[] = [];
-  let totalScore = 0;
 
-  // 1. Group Excel rows by recipient (simplified for this audit)
-  // In reality, one PDF block might correspond to multiple Excel rows if split by stage
-  const excelTotalQty = excelRows.reduce((acc, row) => acc.plus(new Decimal(row.qty || 0)), new Decimal(0));
-  const pdfTotalQty = pdfBlocks.reduce((acc, block) => {
-    const qty = parseFloat(block.kuantitas.replace(/\./g, '').replace(/,/g, '.')) || 0;
-    return acc.plus(new Decimal(qty));
-  }, new Decimal(0));
+  // 1. Total Quantity Check
+  const excelTotalQty = excelRows.reduce((acc, row) => acc.plus(new Decimal(row.financials.qty || 0)), new Decimal(0));
+  const pdfTotalQty = pdfBlocks.reduce((acc, block) => acc.plus(new Decimal(block.jumlahProduk || 0)), new Decimal(0));
 
   if (!excelTotalQty.equals(pdfTotalQty)) {
     issues.push({
@@ -67,18 +61,16 @@ export function performReconciliation(pdfBlocks: any[], excelRows: any[]): Recon
     });
   }
 
-  // 2. Block-by-block comparison (Naive 1:1 mapping for now)
-  // Future: Implement more complex bipartite matching
-  pdfBlocks.forEach((block, idx) => {
-    const pdfName = block.nama;
-    const pdfQty = parseFloat(block.kuantitas.replace(/\./g, '').replace(/,/g, '.')) || 0;
+  // 2. Block-by-block comparison
+  pdfBlocks.forEach((block) => {
+    const pdfName = block.namaPenerima || '';
+    const pdfQty = block.jumlahProduk || 0;
 
-    // Find best match in Excel
-    let bestMatch: any = null;
+    let bestMatch: ExcelRow | null = null;
     let maxSimilarity = -1;
 
     excelRows.forEach(row => {
-      const sim = calculateNameSimilarity(pdfName, row.nama || '');
+      const sim = calculateNameSimilarity(pdfName, row.name || '');
       if (sim > maxSimilarity) {
         maxSimilarity = sim;
         bestMatch = row;
@@ -89,37 +81,38 @@ export function performReconciliation(pdfBlocks: any[], excelRows: any[]): Recon
       issues.push({
         type: 'MISSING_DATA',
         severity: 'high',
-        message: `Recipient "${pdfName}" not found in Excel (Best match: ${maxSimilarity.toFixed(1)}%)`,
+        message: `Recipient "${pdfName}" not found in Excel`,
         pdfValue: pdfName,
-        excelValue: bestMatch?.nama || 'N/A',
-        pageSource: block.pageSource
+        excelValue: bestMatch?.name || 'N/A',
+        pageSource: (block as any).pageSource
       });
-    } else if (maxSimilarity < 95) {
-      issues.push({
-        type: 'NAME_FUZZY_MATCH',
-        severity: 'low',
-        message: `Fuzzy match for "${pdfName}"`,
-        pdfValue: pdfName,
-        excelValue: bestMatch.nama,
-        pageSource: block.pageSource
-      });
-    }
-
-    if (bestMatch && Math.abs(pdfQty - (bestMatch.qty || 0)) > 0.01) {
-      issues.push({
-        type: 'QUANTITY_MISMATCH',
-        severity: 'medium',
-        message: `Quantity mismatch for ${pdfName}`,
-        pdfValue: pdfQty.toString(),
-        excelValue: (bestMatch.qty || 0).toString(),
-        pageSource: block.pageSource
-      });
+    } else {
+        if (bestMatch && Math.abs(pdfQty - (bestMatch.financials.qty || 0)) > 0.01) {
+            issues.push({
+                type: 'QUANTITY_MISMATCH',
+                severity: 'medium',
+                message: `Quantity mismatch for ${pdfName}`,
+                pdfValue: pdfQty.toString(),
+                excelValue: (bestMatch.financials.qty || 0).toString(),
+                pageSource: (block as any).pageSource
+            });
+        }
+        if (maxSimilarity < 95) {
+            issues.push({
+                type: 'NAME_FUZZY_MATCH',
+                severity: 'low',
+                message: `Fuzzy match for "${pdfName}" (${maxSimilarity.toFixed(0)}%)`,
+                pdfValue: pdfName,
+                excelValue: bestMatch?.name || '',
+                pageSource: (block as any).pageSource
+            });
+        }
     }
   });
 
   return {
     isMatched: issues.length === 0,
-    score: Math.max(0, 100 - (issues.length * 10)),
+    score: Math.max(0, 100 - (issues.length * 5)),
     issues
   };
 }

@@ -5,7 +5,7 @@
  * Splits page 1 into HEADER, PEMESAN, PENYEDIA, etc. using anchor detection.
  */
 
-import { formatDataString } from './normalization';
+import { formatDataString } from './utils';
 
 export interface ContractMetadata {
   nomorKontrak?: string;
@@ -147,49 +147,57 @@ function parseAddress(raw: string): Partial<DeliveryBlock> {
  * Scan all pages for Pengiriman blocks.
  */
 export function extractDeliveryBlocks(pages: string[]): DeliveryBlock[] {
-  const fullText = pages.join(' ');
-  const rawBlocks = fullText.split(/Pengiriman\s+Nama Penerima\s*:/);
   const blocks: DeliveryBlock[] = [];
 
-  for (const raw of rawBlocks.slice(1)) {
-    const block = raw.trim();
+  for (let i = 0; i < pages.length; i++) {
+    const pageText = pages[i];
+    const pageNumber = i + 1;
     
-    // Nama Penerima + phone
-    const namaMatch = block.match(/^(.+?)\s*\((\d{8,15})\)/);
-    const nama = namaMatch ? namaMatch[1].trim() : undefined;
-    const telepon = namaMatch ? namaMatch[2] : undefined;
+    // Search for "Pengiriman Nama Penerima :" on this page
+    // The blocks might span across pages, but typically the "Nama Penerima" anchor is on the start page.
+    const rawBlocks = pageText.split(/Pengiriman\s+Nama Penerima\s*:/);
+    
+    for (const raw of rawBlocks.slice(1)) {
+      const block = raw.trim();
+      
+      // Nama Penerima + phone
+      const namaMatch = block.match(/^(.+?)\s*\((\d{8,15})\)/);
+      const nama = namaMatch ? namaMatch[1].trim() : undefined;
+      const telepon = namaMatch ? namaMatch[2] : undefined;
 
-    // Permintaan Tiba
-    const tibaMatch = block.match(/Permintaan Tiba\s*:\s*(.+?)(?:\s+Alamat Pengiriman|\s+Kurir)/);
+      // Permintaan Tiba
+      const tibaMatch = block.match(/Permintaan Tiba\s*:\s*(.+?)(?:\s+Alamat Pengiriman|\s+Kurir)/);
 
-    // Alamat Pengiriman
-    const alamatMatch = block.match(/Alamat Pengiriman\s*:\s*(.+?)(?:\s+Catatan Alamat|\s+Kurir Pengiriman)/);
-    const addrData = alamatMatch ? parseAddress(alamatMatch[1]) : {};
+      // Alamat Pengiriman
+      const alamatMatch = block.match(/Alamat Pengiriman\s*:\s*(.+?)(?:\s+Catatan Alamat|\s+Kurir Pengiriman)/);
+      const addrData = alamatMatch ? parseAddress(alamatMatch[1]) : {};
 
-    // Catatan Alamat
-    const catatanMatch = block.match(/Catatan Alamat Pengiriman\s*(.+?)(?:\s+Kurir Pengiriman)/);
-    const catatan = catatanMatch ? catatanMatch[1].replace(/\s+/g, ' ').trim() : undefined;
+      // Catatan Alamat
+      const catatanMatch = block.match(/Catatan Alamat Pengiriman\s*(.+?)(?:\s+Kurir Pengiriman)/);
+      const catatan = catatanMatch ? catatanMatch[1].replace(/\s+/g, ' ').trim() : undefined;
 
-    // Quantity
-    const qtyMatch = block.match(/Harga Produk\s*\(\s*([\d.,]+)\s*\)/);
-    const jumlahRaw = qtyMatch ? qtyMatch[1].replace(/\./g, '').replace(/,/g, '.') : undefined;
-    const jumlah = jumlahRaw ? parseFloat(jumlahRaw) : undefined;
+      // Quantity
+      const qtyMatch = block.match(/Harga Produk\s*\(\s*([\d.,]+)\s*\)/);
+      const jumlahRaw = qtyMatch ? qtyMatch[1].replace(/\./g, '').replace(/,/g, '.') : undefined;
+      const jumlah = jumlahRaw ? parseFloat(jumlahRaw) : undefined;
 
-    // Harga & Ongkir
-    const hargaMatch = block.match(/Harga Produk\s*\([\d.,]+\)\s*(Rp[\d.,]+)/);
-    const ongkosMatch = block.match(/Ongkos Kirim\s*\([\d.,\s]+(?:kg|liter|gr)?\s*\)\s*(Rp[\d.,]+)/);
+      // Harga & Ongkir
+      const hargaMatch = block.match(/Harga Produk\s*\([\d.,]+\)\s*(Rp[\d.,]+)/);
+      const ongkosMatch = block.match(/Ongkos Kirim\s*\([\d.,\s]+(?:kg|liter|gr)?\s*\)\s*(Rp[\d.,]+)/);
 
-    if (nama) {
-      blocks.push({
-        namaPenerima: nama,
-        telepon,
-        permintaanTiba: tibaMatch ? tibaMatch[1].trim() : undefined,
-        ...addrData,
-        catatanAlamat: catatan,
-        jumlahProduk: jumlah,
-        hargaProdukTotal: hargaMatch ? hargaMatch[1] : undefined,
-        ongkosKirim: ongkosMatch ? ongkosMatch[1] : undefined,
-      });
+      if (nama) {
+        blocks.push({
+          namaPenerima: nama,
+          telepon,
+          permintaanTiba: tibaMatch ? tibaMatch[1].trim() : undefined,
+          ...addrData,
+          catatanAlamat: catatan,
+          jumlahProduk: jumlah,
+          hargaProdukTotal: hargaMatch ? hargaMatch[1] : undefined,
+          ongkosKirim: ongkosMatch ? ongkosMatch[1] : undefined,
+          pageSource: pageNumber
+        } as any);
+      }
     }
   }
 

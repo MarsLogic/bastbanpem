@@ -1,11 +1,69 @@
 import { useState, useEffect, useMemo } from 'react';
 import localforage from 'localforage';
-import { ExcelRow } from './excelParser';
 
 localforage.config({
   name: 'BASTAutomator',
   storeName: 'contracts'
 });
+
+export interface ContractMetadata {
+  nomorKontrak?: string;
+  tanggalKontrak?: string;
+  namaPemesan?: string;
+  namaPenyedia?: string;
+  namaProduk?: string;
+  kuantitasProduk?: string;
+  totalPembayaran?: string;
+  jumlahTermin?: number;
+  jumlahTahap?: number;
+}
+
+export interface DeliveryBlock {
+  namaPenerima?: string;
+  telepon?: string;
+  permintaanTiba?: string;
+  alamatLengkap?: string;
+  kecamatan?: string;
+  kabupaten?: string;
+  provinsi?: string;
+  kodePos?: string;
+  catatanAlamat?: string;
+  jumlahProduk?: number;
+  hargaProdukTotal?: string;
+  ongkosKirim?: string;
+  pageSource?: number;
+}
+
+export interface ExcelRow {
+  id: string;
+  nik: string;
+  name: string;
+  location: {
+    provinsi: string;
+    kabupaten: string;
+    kecamatan: string;
+    desa: string;
+  };
+  financials: {
+    qty: number;
+    unit_price: number;
+    shipping: number;
+    target_value: number;
+    calculated_value: number;
+    gap: number;
+  };
+  jadwal_tanam: string;
+  group: string;
+  is_synced: boolean;
+  is_excluded: boolean;
+  page_source: number;
+  column_data: Record<string, any>;
+  original_row: Record<string, any>;
+  // UI-only temporary fields
+  isDuplicate?: boolean;
+  isGlobalDouble?: boolean;
+  otherContracts?: { id: string, name: string }[];
+}
 
 export interface GlobalConfig {
   nomor_sertifikat: string;
@@ -17,7 +75,7 @@ export interface GlobalConfig {
 
 export interface ContractData {
   id: string;
-  name: string; // User friendly name
+  name: string; 
   
   // PDF Data
   contractPdfPath: string | null;
@@ -38,9 +96,11 @@ export interface ContractData {
   specsTable?: any[];
   specsPageRange?: [number, number];
 
-  // Folders
+  // Folders and Bindings
   ktpDir?: string;
   proofDir?: string;
+  ktpBindings?: Record<string, string>;   // imageName -> recipientNik
+  proofBindings?: Record<string, string>; // imageName -> recipientNik
 
   // Excel Data
   excelPath: string | null;
@@ -90,29 +150,30 @@ export function useContracts() {
     localforage.setItem(STORAGE_KEY, newContracts).catch(e => console.error("Failed to save to localforage", e));
   };
 
-  const createContract = (name: string, pdfPath?: string) => {
+  const createContract = (name: string, initialData?: any) => {
     const newContract: ContractData = {
       id: crypto.randomUUID(),
       name,
-      contractPdfPath: pdfPath || null,
-      nomorKontrak: '',
-      tanggalKontrak: '',
-      namaPemesan: '',
-      namaPenyedia: '',
-      namaProduk: '',
-      kuantitasProduk: '',
-      totalPembayaran: '',
+      contractPdfPath: initialData?.master_pdf_path || null,
+      nomorKontrak: initialData?.contract_no || '',
+      tanggalKontrak: initialData?.contract_date || '',
+      namaPemesan: initialData?.nama_pemesan || '',
+      namaPenyedia: initialData?.nama_penyedia || '',
+      namaProduk: initialData?.nama_produk || '',
+      kuantitasProduk: initialData?.kuantitas_produk || '',
+      totalPembayaran: initialData?.total_pembayaran || '',
       sskkText: '',
       specsTable: [],
       excelPath: null,
-      recipients: [],
+      recipients: initialData?.rows || [],
       bastbPath: null,
       suratJalanPath: null,
       invoiceOngkirPath: null,
       sertifikatLabPath: null,
       lastModified: Date.now()
     };
-    saveContracts([...contracts, newContract]);
+    const updated = [...contracts, newContract];
+    saveContracts(updated);
     return newContract.id;
   };
 
