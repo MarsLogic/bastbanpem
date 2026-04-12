@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ContractData } from '../lib/contractStore';
 import { performReconciliation, calculateNameSimilarity } from '../lib/auditEngine';
-import { generateContractZip } from '../lib/bundlerService';
+import { bundleContract, submitAutomation } from '../lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,6 @@ interface ReconciliationTabProps {
 
 export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }) => {
   const [isBundling, setIsBundling] = useState(false);
-  const [bundleProgress, setBundleProgress] = useState({ current: 0, total: 0 });
 
   const result = useMemo(() => {
     return performReconciliation(contract.deliveryBlocks || [], contract.recipients || []);
@@ -34,16 +33,74 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
     return { total, critical, warnings };
   }, [contract.deliveryBlocks, result]);
 
+  const [isInjecting, setIsInjecting] = useState(false);
+
+  const handleInjectToGov = async () => {
+    if (result.score < 100) {
+      toast.error("Integrity score must be 100% before injection.");
+      return;
+    }
+    
+    setIsInjecting(true);
+    try {
+      toast.info("Playwright Stealth service initializing...");
+      
+      const payload = {
+        nik: contract.nomorKontrak, // Using contract info as placeholder
+        payload: {
+          contract_no: contract.nomorKontrak,
+          name: contract.name,
+          recipients_count: contract.recipients.length
+        },
+        headless: true
+      };
+
+      const res = await submitAutomation(payload);
+      
+      if (res.status === 'success') {
+        toast.success("Injection sequence initiated! Check backend logs.");
+      } else {
+        toast.error(`Injection failed: ${res.message}`);
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Injection failed.");
+    } finally {
+      setIsInjecting(false);
+    }
+  };
+
   const handleExportBundle = async () => {
     if (contract.recipients.length === 0) {
         toast.error("No recipients to bundle.");
         return;
     }
+    
     setIsBundling(true);
     try {
-        const zipBlob = await generateContractZip(contract, (current, total) => {
-            setBundleProgress({ current, total });
-        });
+        // Map to Elite Python Models
+        const payload = {
+            contract_id: contract.id,
+            contract_no: contract.nomorKontrak,
+            contract_date: contract.tanggalKontrak,
+            contract_name: contract.name,
+            master_pdf_path: contract.contractPdfPath,
+            ktp_dir: contract.ktpDir,
+            proof_dir: contract.proofDir,
+            ktp_bindings: contract.ktpBindings || {},
+            proof_bindings: contract.proofBindings || {},
+            recipients: contract.recipients.map(r => ({
+                id: r.rowId,
+                nik: r.nik,
+                name: r.name,
+                raw_values: r.originalValues || {},
+                balanced_values: r.editedValues || {},
+                is_balanced: r.isSynced,
+                page_source: (r as any).pageSource || 0
+            }))
+        };
+
+        const zipBlob = await bundleContract(payload);
 
         const savePath = await save({
             defaultPath: `${contract.name.replace(/[^a-z0-9]/gi, '_')}_Audit_Bundle.zip`,
@@ -53,11 +110,11 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
         if (savePath) {
             const arrayBuffer = await zipBlob.arrayBuffer();
             await writeFile(savePath, new Uint8Array(arrayBuffer));
-            toast.success("Audit Bundle exported successfully!");
+            toast.success("Audit Bundle exported successfully via Python Engine!");
         }
     } catch (e) {
         console.error(e);
-        toast.error("Failed to generate Audit Bundle.");
+        toast.error("Failed to generate Audit Bundle via Python Engine.");
     } finally {
         setIsBundling(false);
     }
@@ -114,14 +171,32 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
              <Button 
                 variant="outline" 
                 size="sm" 
+                className="h-10 gap-2 font-bold bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white border-indigo-500 shadow-sm"
+                onClick={handleInjectToGov}
+                disabled={isInjecting || isBundling}
+             >
+                {isInjecting ? (
+                    <>
+                        <Loader2 className="animate-spin" size={16} />
+                        Injecting...
+                    </>
+                ) : (
+                    <>
+                        <ExternalLink size={16} /> Inject to Gov
+                    </>
+                )}
+             </Button>
+             <Button 
+                variant="outline" 
+                size="sm" 
                 className="h-10 gap-2 font-bold bg-slate-900 text-white hover:bg-black hover:text-white"
                 onClick={handleExportBundle}
-                disabled={isBundling}
+                disabled={isBundling || isInjecting}
              >
                 {isBundling ? (
                     <>
                         <Loader2 className="animate-spin" size={16} />
-                        {bundleProgress.current}/{bundleProgress.total}
+                        Generating Bundle...
                     </>
                 ) : (
                     <>

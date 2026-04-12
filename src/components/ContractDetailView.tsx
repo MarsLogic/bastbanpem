@@ -75,6 +75,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
     name: r.name,
     hasSJ: false,
     hasPhoto: r.hasPhoto || false,
+    hasKtp: r.hasKtp || false,
     isMathSynced: r.isSynced,
     useGlobal: { ujiLab: true, sertifikasiLab: true, transportInvoice: true }
   }));
@@ -85,7 +86,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
     const updatedRecipients = contract.recipients.map(r => {
         const matchingFarmer = updatedFarmers.find((f:any) => f.nik === r.nik);
         if (matchingFarmer) {
-            return { ...r, hasPhoto: matchingFarmer.hasPhoto };
+            return { ...r, hasPhoto: matchingFarmer.hasPhoto, hasKtp: matchingFarmer.hasKtp };
         }
         return r;
     });
@@ -182,6 +183,8 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
             globalConfig={globalConfig}
             setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
             type="ktp"
+            bindings={contract.ktpBindings}
+            onBindChange={(newBindings) => onUpdate(contract.id, { ktpBindings: newBindings })}
           />
         </DashboardSection>
 
@@ -202,6 +205,8 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
             globalConfig={globalConfig}
             setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
             type="proof"
+            bindings={contract.proofBindings}
+            onBindChange={(newBindings) => onUpdate(contract.id, { proofBindings: newBindings })}
           />
         </DashboardSection>
 

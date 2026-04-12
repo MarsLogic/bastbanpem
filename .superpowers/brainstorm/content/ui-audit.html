@@ -1,0 +1,75 @@
+<h2>KTP Command Center: UI/UX Audit</h2>
+<p class="subtitle">Identifying current pain points and layout obstructions</p>
+
+<div class="mockup">
+  <div class="mockup-header">Current Layout Analysis</div>
+  <div class="mockup-body" style="background: #f8fafc; padding: 2rem;">
+    <div style="display: flex; gap: 1rem; height: 400px;">
+      <!-- Filmstrip -->
+      <div style="width: 100px; border: 2px dashed #cbd5e1; display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem;">
+        <div class="label" style="font-size: 8px;">Filmstrip</div>
+        <div style="height: 60px; background: #e2e8f0; border-radius: 4px;"></div>
+        <div style="height: 60px; background: #e2e8f0; border-radius: 4px;"></div>
+        <div style="height: 60px; background: #3b82f6; border-radius: 4px; position: relative;">
+          <div style="position: absolute; top: -5px; right: -5px; background: red; width: 10px; height: 10px; border-radius: 50%;"></div>
+        </div>
+      </div>
+      
+      <!-- Main Workspace -->
+      <div style="flex: 1; border: 2px solid #ef4444; background: #000; position: relative; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+        <div style="color: white; font-weight: bold;">KTP IMAGE VIEWPORT</div>
+        
+        <!-- Blocking Overlay -->
+        <div style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; border: 2px solid #ef4444;">
+          <button class="mock-button" style="background: #ef4444; color: white;">Edit & Deskew</button>
+          <div style="font-size: 10px; color: #ef4444; margin-top: 4px;">⚠️ BLOCKING VIEW</div>
+        </div>
+        
+        <!-- Header Cramp -->
+        <div style="position: absolute; top: -40px; left: 0; right: 0; height: 30px; background: #fff; border: 1px solid #cbd5e1; display: flex; align-items: center; padding: 0 10px; gap: 5px;">
+          <span style="font-size: 10px; font-weight: bold;">STUDIO</span>
+          <div style="flex: 1;"></div>
+          <button class="mock-button" style="font-size: 8px; padding: 2px 5px;">AI SCAN</button>
+          <button class="mock-button" style="font-size: 8px; padding: 2px 5px;">RESET</button>
+          <div style="font-size: 10px; color: #ef4444;">CRAMPED Header ⚠️</div>
+        </div>
+      </div>
+      
+      <!-- Sidebar -->
+      <div style="width: 200px; border: 1px solid #cbd5e1; background: #fff; padding: 0.5rem;">
+        <div class="label">Recipients</div>
+        <input class="mock-input" style="height: 24px; margin-bottom: 5px;" placeholder="Search...">
+        <div style="border-bottom: 1px solid #f1f5f9; padding: 5px 0;">
+          <div style="font-weight: bold; font-size: 10px;">POKTAN MAJU</div>
+          <div style="font-size: 8px; color: #64748b;">3201...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Key UI Issues Observed</h3>
+  <ul>
+    <li><strong>Overlay Obstruction:</strong> The floating edit buttons compete with the KTP content, especially for small screens.</li>
+    <li><strong>Header Congestion:</strong> AI actions and folder management are forced into a single thin row.</li>
+    <li><strong>Visual Hierarchy:</strong> Secondary actions (Scan Current) are buried or scaled down too far to be usable.</li>
+  </ul>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="propose-layout" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Propose New Layout</h3>
+      <p>I'll draft a spacious "Studio" layout with dedicated toolbars.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="explain-ai" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Explain AI Logic First</h3>
+      <p>Let's clarify how OCR connects to Excel data before fixing UI.</p>
+    </div>
+  </div>
+</div>

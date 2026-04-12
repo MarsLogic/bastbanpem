@@ -1,0 +1,48 @@
+<h2>Data Source Clarity</h2>
+<p class="subtitle">Where does the "Search" data come from?</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Section 1: PDF Extract</div>
+    <div class="mockup-body" style="padding: 1rem; opacity: 0.5;">
+      <p style="font-size: 10px;">Scanned Contract PDF</p>
+      <div style="border: 1px solid #ddd; padding: 5px; font-size: 9px; background: #fff;">
+        EP-2026-X... <br>
+        POKTAN MAJU (500 units)
+      </div>
+      <p style="color: #ef4444; font-weight: bold; font-size: 10px; margin-top: 10px;">❌ NOT FOR SEARCH</p>
+    </div>
+  </div>
+
+  <div class="mockup" style="border: 2px solid #10b981;">
+    <div class="mockup-header" style="background: #10b981; color: white;">Section 2: Excel Matrix</div>
+    <div class="mockup-body" style="padding: 1rem;">
+      <p style="font-size: 10px;">The "Source of Truth"</p>
+      <div style="border: 1px solid #10b981; padding: 5px; font-size: 9px; background: #fff;">
+        320101... | BUDI SUDARSONO <br>
+        320102... | JOKO WIDODO
+      </div>
+      <p style="color: #10b981; font-weight: bold; font-size: 10px; margin-top: 10px;">✅ PRIMARY SEARCH TARGET</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>How Binding Works</h3>
+  <ol>
+    <li><strong>Input:</strong> User selects an image from the local folder.</li>
+    <li><strong>Search:</strong> User searches the <strong>Excel Data (Section 2)</strong> by Name or NIK.</li>
+    <li><strong>Action:</strong> Clicking "Bind" creates a persistent link between <code>image_001.jpg</code> and <code>NIK_3201...</code>.</li>
+    <li><strong>AI Role:</strong> AI Scan reads the image and tries to find a matching NIK in the <strong>Excel Data</strong> automatically.</li>
+  </ol>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="propose-layout" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Design Studio Layout</h3>
+      <p>I'll create a mockup with clean toolbars that don't block the KTP.</p>
+    </div>
+  </div>
+</div>

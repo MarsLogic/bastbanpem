@@ -12,17 +12,16 @@ interface DocumentManagerProps {
 
 export const DocumentManager: React.FC<DocumentManagerProps> = ({ contract, onUpdate }) => {
   const attachFile = (key: keyof ContractData) => {
-    // In a real Tauri environment, we would use window.__TAURI__.dialog.open
-    // For now we simulate with a hidden input
+    // Standard file input for cross-platform support
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'application/pdf,image/*';
     input.onchange = (e: any) => {
       const file = e.target.files[0];
       if (file) {
-        // Tauri injects 'path' into the File object
-        const finalPath = file.path || file.name;
-        onUpdate({ [key]: finalPath });
+        // In local development/portable mode, we use the filename as a handle
+        // The backend will resolve this from the App_Data folder
+        onUpdate({ [key]: file.name });
       }
     };
     input.click();

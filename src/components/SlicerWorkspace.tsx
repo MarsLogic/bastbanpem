@@ -26,12 +26,13 @@ interface Farmer {
   name: string;
   hasSJ: boolean;
   hasPhoto: boolean;
+  hasKtp?: boolean;
   isMathSynced: boolean;
 }
 
 interface SlicerWorkspaceProps {
   farmers: Farmer[];
-  setFarmers: React.Dispatch<React.SetStateAction<Farmer[]>>;
+  setFarmers: (setter: any) => void;
 }
 
 export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFarmers }) => {
@@ -115,6 +116,7 @@ export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFa
                     <div className="flex gap-1.5">
                        <div className={cn("size-2 rounded-full border border-slate-200", farmer.hasSJ ? "bg-black" : "bg-slate-100")} title="SJ" />
                        <div className={cn("size-2 rounded-full border border-slate-200", farmer.hasPhoto ? "bg-black" : "bg-slate-100")} title="Photo" />
+                       <div className={cn("size-2 rounded-full border border-slate-200", farmer.hasKtp ? "bg-indigo-600" : "bg-slate-100")} title="KTP" />
                        <div className={cn("size-2 rounded-full border border-slate-200", farmer.isMathSynced ? "bg-black" : "bg-slate-100")} title="Math" />
                     </div>
                   </CardContent>

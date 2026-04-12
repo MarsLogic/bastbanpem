@@ -92,13 +92,15 @@
         console.log("[SEARCH] Detected NIK:", nik);
 
         try {
-            // Call Tauri Backend
-            const data = await window.__TAURI__.invoke('get_data_for_nik', { nik });
-            if (data) {
-                magicFill(modal, data);
-            }
+            // TODO: Migrate to FastAPI endpoint (/automation/data)
+            // const response = await axios.get(`${API_BASE_URL}/automation/data/${nik}`);
+            // const data = response.data;
+            console.log("[VA] Skipping Tauri invoke for NIK:", nik);
+            // if (data) {
+            //     magicFill(modal, data);
+            // }
         } catch (err) {
-            console.error("[ERROR] Tauri Bridge Error:", err);
+            console.error("[ERROR] Automation Bridge Error:", err);
         }
     }
 

@@ -1,56 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ContractData } from '../lib/contractStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, FileText, Trash2, ArrowRight, X, FileUp } from 'lucide-react';
-import { open } from '@tauri-apps/plugin-dialog';
+import { Plus, Search, FileText, Trash2, ArrowRight, X, FileUp, Loader2 } from 'lucide-react';
+import { reconcileFiles } from '../lib/api';
+import { toast } from 'sonner';
 
 interface ContractListViewProps {
   contracts: ContractData[];
-  onCreateContract: (name: string, pdfPath?: string) => void;
+  onCreateContract: (name: string, data?: any) => void;
   onSelectContract: (id: string) => void;
   onDeleteContract: (id: string) => void;
 }
 
 export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, onCreateContract, onSelectContract, onDeleteContract }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
-  const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
+  const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
+  const [selectedExcel, setSelectedExcel] = useState<File | null>(null);
+  
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const excelInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenModal = () => {
     setNewName('');
     setSelectedPdf(null);
+    setSelectedExcel(null);
     setIsModalOpen(true);
   };
 
-  const handleBrowsePdf = async () => {
-    try {
-      const selected = await open({
-        multiple: false,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }]
-      });
-      if (selected && typeof selected === 'string') {
-        setSelectedPdf(selected);
-        // Auto-fill filename if name is currently empty
-        if (!newName.trim()) {
-          const filename = selected.split(/[/\\]/).pop()?.replace('.pdf', '') || '';
-          setNewName(filename);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const submitCreate = () => {
+  const submitCreate = async () => {
     if (!newName.trim()) return;
-    onCreateContract(newName, selectedPdf || undefined);
-    setIsModalOpen(false);
+    
+    if (selectedPdf && selectedExcel) {
+      setIsProcessing(true);
+      try {
+        const result = await reconcileFiles(selectedPdf, selectedExcel);
+        onCreateContract(newName, result);
+        toast.success('Reconciliation completed successfully');
+      } catch (e: any) {
+        toast.error(`Processing failed: ${e.message}`);
+      } finally {
+        setIsProcessing(false);
+        setIsModalOpen(false);
+      }
+    } else {
+      onCreateContract(newName);
+      setIsModalOpen(false);
+    }
   };
 
   const filtered = contracts.filter(c => {
@@ -157,46 +160,52 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
             </div>
             
             <div className="p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="p-8 border rounded-xl bg-slate-50 border-slate-200 border-dashed border-2 flex flex-col items-center justify-center gap-4">
-                  {selectedPdf ? (
-                    <div className="text-center w-full">
-                      <div className="flex items-center justify-center gap-2 text-slate-900 mb-2">
-                        <FileText className="h-6 w-6" />
-                        <span className="font-black text-sm uppercase tracking-tighter">PDF Locked</span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 truncate px-8 font-mono">{selectedPdf}</p>
-                      <Button variant="link" size="sm" onClick={() => setSelectedPdf(null)} className="mt-2 text-[10px] text-slate-400 font-bold uppercase h-auto p-0">Unlink File</Button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 mb-1">
-                        <FileUp className="h-6 w-6" />
-                      </div>
-                      <p className="text-sm font-black uppercase tracking-tight text-center">Master Source</p>
-                      <p className="text-[10px] text-slate-500 text-center mb-2 px-8 font-medium">Link the official PDF to initialize extraction intelligence</p>
-                      <Button variant="outline" size="sm" onClick={handleBrowsePdf} className="h-8 font-bold text-[10px] border-zinc-300">ATTACH SOURCE</Button>
-                    </>
-                  )}
+              <div className="grid grid-cols-2 gap-4">
+                {/* PDF Upload */}
+                <div 
+                  className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${selectedPdf ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
+                  onClick={() => pdfInputRef.current?.click()}
+                >
+                  <input type="file" ref={pdfInputRef} onChange={(e) => setSelectedPdf(e.target.files?.[0] || null)} accept=".pdf" className="hidden" />
+                  <FileText className={`h-6 w-6 ${selectedPdf ? 'text-white' : 'text-slate-400'}`} />
+                  <span className="text-[10px] font-black uppercase tracking-tight text-center">
+                    {selectedPdf ? selectedPdf.name : 'Attach PDF'}
+                  </span>
+                </div>
+
+                {/* Excel Upload */}
+                <div 
+                  className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${selectedExcel ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
+                  onClick={() => excelInputRef.current?.click()}
+                >
+                  <input type="file" ref={excelInputRef} onChange={(e) => setSelectedExcel(e.target.files?.[0] || null)} accept=".xlsx,.xls" className="hidden" />
+                  <FileUp className={`h-6 w-6 ${selectedExcel ? 'text-white' : 'text-slate-400'}`} />
+                  <span className="text-[10px] font-black uppercase tracking-tight text-center">
+                    {selectedExcel ? selectedExcel.name : 'Attach Excel'}
+                  </span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Contract Display Name</label>
+                <label className="text-sm font-medium">Pipeline Identity</label>
                 <Input 
                   placeholder="e.g. Surat Pesanan 123..." 
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  autoFocus
-                  onKeyDown={e => e.key === 'Enter' && submitCreate()}
+                  disabled={isProcessing}
                 />
               </div>
             </div>
 
             <div className="px-6 py-4 bg-slate-50 border-t flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setIsModalOpen(false)} className="text-xs font-bold uppercase">Back</Button>
-              <Button onClick={submitCreate} disabled={!newName.trim()} className="px-10 bg-black text-white hover:bg-zinc-800 font-bold text-xs uppercase tracking-widest h-10 shadow-lg shadow-zinc-200">
-                Initialize Pipeline
+              <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={isProcessing} className="text-xs font-bold uppercase">Back</Button>
+              <Button onClick={submitCreate} disabled={!newName.trim() || isProcessing} className="px-10 bg-black text-white hover:bg-zinc-800 font-bold text-xs uppercase tracking-widest h-10 shadow-lg shadow-zinc-200">
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing
+                  </>
+                ) : 'Initialize Pipeline'}
               </Button>
             </div>
           </div>
