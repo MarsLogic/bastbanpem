@@ -19,3 +19,4 @@ rapidfuzz==3.6.1
 py-cpuinfo==9.0.0
 cryptography==42.0.2
 pydantic-settings==2.1.0
+setuptools
