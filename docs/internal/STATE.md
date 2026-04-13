@@ -2,7 +2,7 @@
 
 ## 📍 Current Status
 - **Elite Baseline**: 100% Complete.
-- **Dependency Sync**: Fixed missing `pydantic-settings` in `requirements.txt`. Updated `start.bat` to auto-sync dependencies.
+- **Dependency Sync**: Fixed missing `pydantic-settings` and NumPy 2.x compatibility issues (pinned `numpy<2`). Updated `start.bat` to auto-sync dependencies.
 - **Production Hardening**: Complete.
 - **Documentation**: Root `CLAUDE.md`, `README.md`, and `LOGICAL_MAP.md` are established.
 
