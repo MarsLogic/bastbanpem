@@ -9,6 +9,8 @@ if not exist ".venv" (
     pip install -r requirements.txt
 ) else (
     call .venv\Scripts\activate
+    echo Checking for new dependencies...
+    pip install -q -r requirements.txt
 )
 
 echo [2/3] Starting Elite Backend (FastAPI)...

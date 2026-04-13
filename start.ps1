@@ -6,6 +6,8 @@ if (-not (Test-Path ".venv")) {
     pip install -r requirements.txt
 } else {
     & .venv\Scripts\Activate.ps1
+    Write-Host "Checking for new dependencies..." -ForegroundColor Gray
+    pip install -q -r requirements.txt
 }
 
 Write-Host "[2/3] Starting Elite Backend (FastAPI)..." -ForegroundColor Cyan
