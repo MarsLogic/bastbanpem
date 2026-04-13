@@ -72,6 +72,9 @@ backend/services/pdf_intelligence.py
 backend/services/pdf_service.py
 backend/services/vault_service.py
 backend/services/watcher_service.py
+bastbanpem_vault.db
+bastbanpem_vault.db-shm
+bastbanpem_vault.db-wal
 CLAUDE.md
 components.json
 docs/internal/ARCHITECTURE.md
@@ -3607,8 +3610,9 @@ This document tracks the milestones and development velocity of the project.
 # Session Handoff — April 12, 2026
 
 ## 📍 Current Status
-- **Elite Baseline**: 100% Complete. The repository is now "AI-Expert Ready" with Logical ID tagging and GitHub synchronization.
-- **Production Hardening**: Complete. All file handles use context managers, memory management (GC) is active, and paths are centralized in `config.py`.
+- **Elite Baseline**: 100% Complete.
+- **Dependency Sync**: Verified. Backend starting successfully on http://127.0.0.1:8000.
+- **Production Hardening**: Complete.
 - **Documentation**: Root `CLAUDE.md`, `README.md`, and `LOGICAL_MAP.md` are established.
 
 ## 📊 Logical "Mental Map" (Pulse Check)
@@ -13016,6 +13020,8 @@ Every file is tagged with a barcode (e.g., `[DATA-001]`).
 </file>
 
 <file path="requirements.txt">
+numpy<2.0.0
+python-multipart
 fastapi==0.109.0
 uvicorn==0.27.0
 pywebview==5.0
@@ -13035,6 +13041,8 @@ psutil==5.9.8
 rapidfuzz==3.6.1
 py-cpuinfo==9.0.0
 cryptography==42.0.2
+pydantic-settings==2.1.0
+setuptools==69.5.1
 </file>
 
 <file path="scripts/debug-cilacap.ts">
@@ -34989,6 +34997,8 @@ if not exist ".venv" (
     pip install -r requirements.txt
 ) else (
     call .venv\Scripts\activate
+    echo Checking for new dependencies...
+    pip install -q -r requirements.txt
 )
 
 echo [2/3] Starting Elite Backend (FastAPI)...
@@ -35012,6 +35022,8 @@ if (-not (Test-Path ".venv")) {
     pip install -r requirements.txt
 } else {
     & .venv\Scripts\Activate.ps1
+    Write-Host "Checking for new dependencies..." -ForegroundColor Gray
+    pip install -q -r requirements.txt
 }
 
 Write-Host "[2/3] Starting Elite Backend (FastAPI)..." -ForegroundColor Cyan
