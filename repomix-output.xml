@@ -76,6 +76,7 @@ CLAUDE.md
 components.json
 docs/internal/ARCHITECTURE.md
 docs/internal/CONSTITUTION.md
+docs/internal/LOGICAL_MAP.md
 docs/internal/ROADMAP.md
 docs/internal/STATE.md
 docs/superpowers/plans/2026-04-10-pdf-pattern-learner.md
@@ -90,6 +91,7 @@ index.html
 output/parsed_contracts.json
 output/pattern_report.json
 package.json
+README.md
 repomix.config.json
 requirements.txt
 scripts/debug-cilacap.ts
@@ -1774,6 +1776,7 @@ async def search_vault(q: str, contract_id: Optional[str] = None):
 </file>
 
 <file path="backend/config.py">
+# [CORE-002] Global Settings Singleton
 import os
 from pydantic_settings import BaseSettings
 
@@ -1857,6 +1860,7 @@ db = Database()
 </file>
 
 <file path="backend/exceptions.py">
+# [CORE-004] Custom Exception Framework
 from typing import Any, Dict, Optional
 
 class EliteAppException(Exception):
@@ -1898,6 +1902,7 @@ ERROR_CODES = {
 </file>
 
 <file path="backend/main.py">
+# [CORE-001] FastAPI App & Entry Point
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -2044,6 +2049,7 @@ class PdfParseRequest(BaseModel):
 <file path="backend/services/automation_service.py">
 from playwright.async_api import async_playwright, Page
 from playwright_stealth import stealth_async
+# [AUTO-001] Playwright Government Site Injection
 import asyncio
 import logging
 
@@ -2119,6 +2125,7 @@ async def submit_to_government_site(data: dict):
 </file>
 
 <file path="backend/services/data_engine.py">
+# [DATA-001] Polars Excel Ingestion & Logic
 import polars as pl
 import re
 import os
@@ -2402,6 +2409,7 @@ def reconcile_files(pdf_text: str, excel_content: bytes) -> ReconciliationResult
 </file>
 
 <file path="backend/services/diagnostics.py">
+# [CORE-003] Forensic Logging & Diagnostics
 import logging
 import os
 import sys
@@ -2450,6 +2458,7 @@ diagnostics = EliteLogger()
 <file path="backend/services/hardware_orchestrator.py">
 import psutil
 import cpuinfo
+# [CORE-005] ONNX/RAM Auto-Detection
 import os
 import multiprocessing
 from typing import Dict, Any
@@ -2595,6 +2604,7 @@ if __name__ == "__main__":
 </file>
 
 <file path="backend/services/ktp_service.py">
+# [DOCS-002] RapidOCR Identity Extraction
 import cv2
 import numpy as np
 import os
@@ -2874,6 +2884,7 @@ if __name__ == "__main__":
 </file>
 
 <file path="backend/services/location_service.py">
+# [DATA-002] Master Location Resolver
 import json
 import os
 import polars as pl
@@ -2982,6 +2993,7 @@ location_service = EliteLocationService()
 </file>
 
 <file path="backend/services/pdf_intelligence.py">
+# [DOCS-003] Advanced Pattern Learning for PDFs
 import fitz  # PyMuPDF
 import polars as pl
 import re
@@ -3064,6 +3076,7 @@ pdf_intel = PDFIntelligence()
 </file>
 
 <file path="backend/services/pdf_service.py">
+# [DOCS-001] PyMuPDF Slicing & Report Generation
 import fitz # PyMuPDF
 import os
 import io
@@ -3235,6 +3248,7 @@ def create_contract_bundle_zip(request: BundleRequest) -> bytes:
 </file>
 
 <file path="backend/services/vault_service.py">
+# [DATA-003] SQLite Contract Storage
 import json
 from typing import List, Optional
 from backend.db import db
@@ -3297,6 +3311,7 @@ vault_service = VaultService()
 
 <file path="backend/services/watcher_service.py">
 import time
+# [DATA-004] File System Ingestion Watcher
 import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
@@ -3342,44 +3357,42 @@ if __name__ == "__main__":
 </file>
 
 <file path="CLAUDE.md">
-<!-- rtk-instructions v2 -->
-# BAST-Automator: Developer Hub
+# BAST-Automator: Expert AI Router
 
-## ⚠️ MANDATORY: AI AGENT CONSTITUTION
-All AI agents MUST read and follow the centralized documentation in **`docs/internal/`** before any implementation.
+Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 100% continuity and token efficiency, you MUST follow these rules.
 
-1.  **[CONSTITUTION.md](./docs/internal/CONSTITUTION.md)**: Rules, Tools, and Skills.
-2.  **[ARCHITECTURE.md](./docs/internal/ARCHITECTURE.md)**: Tech Stack and Data Models.
-3.  **[ROADMAP.md](./docs/internal/ROADMAP.md)**: Milestones and Progress.
-4.  **[STATE.md](./docs/internal/STATE.md)**: Current Session Status.
+## 🚀 1. Mandatory Session Start (Pulse Check)
+Before taking ANY action, you must run these commands to sync your mental map:
+1. `rtk git log -n 1` - Identify the last physical change.
+2. `cat docs/internal/STATE.md` - Identify current milestone and "Logic Ripples."
+3. `cat docs/internal/LOGICAL_MAP.md` - Understand the system's "Barcodes."
+
+## 🛠️ 2. Mandatory Tool Activation
+You MUST activate these skills immediately after the Pulse Check:
+- `activate_skill("superpowers")` - For design/plan workflows.
+- `activate_skill("caveman")` - If the session context exceeds 50k tokens.
+- **ALWAYS** prefix shell commands with `rtk` (e.g., `rtk git status`).
+
+## 🔍 3. Surgical Strategy (Token Saving)
+- **Search First:** Use `grep_search` for Logical IDs (e.g., `[DATA-001]`) before reading files.
+- **Read by Range:** Never read a whole file. Use `start_line` and `end_line` for 20-50 line chunks.
+- **Dependency Audit:** If you modify a Logical ID, you MUST search for all references to that ID to prevent breaking related modules.
+
+## 📦 4. Tech Stack & Mandates
+- **Memory:** 4GB RAM Target. Use Polars (Lazy), PyMuPDF (with statements), explicit `gc.collect()`.
+- **Backend:** FastAPI (Async) on Port 8000. Use `backend/config.py`.
+- **Frontend:** React 19 + Vite. Base URL in `src/lib/api.ts`.
+- **Context:** Use `repomix-output.xml` ONLY as a last-resort emergency map.
+
+## 📜 5. Logic Barcodes
+Every module has a Logical ID. Use them in your plans and commits.
+- `[CORE-###]` - Infrastructure
+- `[DATA-###]` - Data Engine
+- `[DOCS-###]` - PDF/Image Intel
+- `[UIUX-###]` - React Workbench
 
 ---
-
-# RTK (Rust Token Killer) - Token-Optimized Commands
-
-## Golden Rule
-**Always prefix commands with `rtk`**. If RTK has a dedicated filter, it uses it. If not, it passes through unchanged.
-
-```bash
-# ✅ Correct
-rtk git add . && rtk git commit -m "msg" && rtk git push
-```
-
-## Token Savings Overview
-| Category | Typical Savings |
-|----------|-----------------|
-| Tests (vitest) | 99.5% |
-| Build (tsc/lint) | 70-87% |
-| Git (status/diff) | 59-80% |
-| Package Managers | 70-90% |
-
----
-
-## Elite Workbench Mandate
-
-1.  **Single Entry Point**: `start.bat` is the ONLY authorized way to run or build this app.
-2.  **Forensic First**: Ensure all new services are hooked into `backend/services/diagnostics.py`.
-3.  **Hardware Awareness**: Always optimize for **4GB RAM**. Use `Polars` and `PyMuPDF`.
+**GOAL:** Minimal Tokens. Maximum Stability. Expert Quality.
 </file>
 
 <file path="components.json">
@@ -3466,58 +3479,84 @@ All distribution data MUST follow this schema in both Python (Pydantic) and Type
 </file>
 
 <file path="docs/internal/CONSTITUTION.md">
-# AI Agent Constitution: Rules for Development
+# AI Agent Constitution: GitHub & State Mandates
 
-This document is the **Mandatory Operational Framework** for any AI agent (Gemini, Claude, etc.) working on the BAST-Automator. These rules ensure project continuity, 4GB RAM optimization, and architectural integrity.
-
----
-
-## 🛠️ 1. Required Tooling (Confirm Installation)
-You MUST utilize these specialized tools to maintain context and efficiency:
-- **RTK (Rust Token Killer)**: Always prefix shell commands with `rtk` (e.g., `rtk git status`) to minimize token usage.
-- **Superpowers Framework**: You MUST use `activate_skill` for `brainstorming`, `writing-plans`, and `executing-plans` BEFORE implementation.
-- **Repomix**: Use `rtk npx repomix` to pack the repository whenever global context is needed or milestones are finished.
-- **Caveman Skill**: If tokens are low, `activate_skill("caveman")` for terse, high-density results.
-
-## 🏗️ 2. The Elite Stack (Non-Negotiable)
-Hardware Target: **4GB RAM / i5-10th Gen**. FORBIDDEN: `Pandas`, `PyPDF2`, `Selenium`.
-- **Container**: `PyWebView` (Native Edge engine).
-- **Backend**: `FastAPI` (Async Python).
-- **Frontend**: `React 19` + `Vite` + `shadcn/ui`.
-- **Excel**: `Polars` + `fastexcel` (High precision, low RAM).
-- **PDF**: `PyMuPDF` (`fitz`) for all slicing/merging.
-- **OCR**: `RapidOCR` (Quantized ONNX v5) with dual-model selection.
-- **Automation**: `Playwright` + `Stealth`.
-
-## 📜 3. Development Ethics & Workflow
-1.  **Read Docs First**: Every session MUST start by reading `docs/internal/ARCHITECTURE.md` and `docs/internal/ROADMAP.md`.
-2.  **Code Preservation**: Check current code before replacing. Keep high-quality logic; do not downgrade to generic implementations.
-3.  **Update Manifest**: If you improve a library or change a tech stack, update this document AND `ARCHITECTURE.md` immediately.
-4.  **Impact Analysis**: Grep the project before changing data models (like `PipelineRow`) to update all impacted UI and backend services.
-5.  **Clean Finish**: Delete orphan code and temporary files immediately after replacement.
-6.  **Forensics**: All errors must go to `forensic_diagnostics.log` via the `diagnostics` singleton.
-
-## 📂 4. Project Data Structure
-- **Unified Schema**: Always use `PipelineRow` (Python) and its corresponding TS interface in `contractStore.ts`.
-- **Location Repair**: Always use `location_service.py` (Master Registry) to fix messy Excel location data.
-- **Financial Precision**: Use `Decimal` internally; display 2 decimals in UI.
-
-## 🧠 5. Context Intelligence (Token Management)
-To prevent hitting token limits while staying "Smart," you MUST follow these reading rules:
-1.  **Surgical Reading**: NEVER `read_file` an entire large file. Use `grep_search` to find specific keywords, then use `read_file` with `start_line` and `end_line` to read only the relevant block.
-2.  **The "Big Picture" First**: Only read `STATE.md` and `ROADMAP.md` to understand current progress.
-3.  **Repomix as a Snapshot**: Use the `repomix-output.xml` only when you lose track of the global architecture.
-4.  **Incremental Documentation**: Update **`ARCHITECTURE.md`** immediately after every significant logic improvement.
-
-## 🔍 6. Forensic Cross-Verification (Anti-Hallucination)
-To ensure context is NEVER forgotten or missed between sessions:
-1.  **The Assumption Probe**: Before writing any code, the AI MUST explicitly list its assumptions (e.g., "I assume we are using Axios for API").
-2.  **Universal Grep**: For every assumption, the AI MUST run a global `grep_search` to confirm the pattern exists in the *actual* code. Never trust the documentation alone if the code might have evolved.
-3.  **Conflict Discovery**: If you find an old pattern (e.g., Tauri `invoke`) and a new pattern (e.g., `axios`) coexist, STOP. You must resolve the conflict and delete the old code before proceeding.
-4.  **Handoff Integrity**: Every session MUST end by updating `STATE.md` with a "Change Ripple Map." List exactly which files were modified and which *other* files might be impacted by those changes.
+This document establishes the **Required Version Control & Handoff Workflow** for all AI agents. Following these rules is non-negotiable to ensure repository integrity and session continuity.
 
 ---
-**GOAL**: Maintain the "Elite Workbench" standards. No matter which AI is active, the output must be consistent, professional, and optimized for low-resource hardware.
+
+## 🛠️ 1. GitHub Integration Rules
+
+1.  **Remote Authority**: The repository `https://github.com/MarsLogic/bastbanpem` is the absolute Source of Truth.
+2.  **Surgical Commits**: Every sub-task implementation MUST be followed by a detailed Git commit.
+    *   **Commit Message Format**:
+        ```text
+        feat/fix/refactor: [Subject]
+        
+        - Why: [Reason for change/Impact]
+        - Impact Map: [List of modified/related files]
+        - Verification: [Commands run to verify]
+        ```
+3.  **Branching Strategy**:
+    *   `main`: Production-ready, stable code only.
+    *   `feat/*`: Feature-specific development (e.g., `feat/automation-dry-run`).
+    *   `fix/*`: Bug fixes.
+4.  **Sync Requirement**: Every session MUST start with `git pull origin main` and end with a `git push` to the active branch.
+
+## 📜 2. The Handoff Constitution
+
+To ensure the "next" AI agent (or yourself in a new session) never loses context:
+
+1.  **STATE.md Maintenance**: Update `docs/internal/STATE.md` at the end of every task with the "Change Ripple Map."
+2.  **Repomix Snapshot**: Run `rtk npx repomix` after major commits to update the global project map.
+3.  **Constitution Check**: Before writing any code, the AI MUST verify if the proposed logic conflicts with `ARCHITECTURE.md` or this document.
+
+## 🤖 3. How AI Helps You Code
+
+*   **Design First**: AI must use `brainstorming` and `writing-plans` skills to create a Spec and Plan before touching code.
+*   **Audit Mode**: AI should proactively suggest optimizations (like the recent 4GB RAM hardening) but MUST get user approval via Plan Mode first.
+*   **Verification**: AI is responsible for providing the exact commands to verify their work. Never accept "it should work."
+
+---
+**GOAL**: 100% Traceability. 100% Stability. 4GB RAM Optimization always.
+</file>
+
+<file path="docs/internal/LOGICAL_MAP.md">
+# Master Logical ID Map: The "Barcodes" of BAST-Automator
+
+Every code module and UI component is mapped to a unique ID. Use these for surgical audits and AI context isolation.
+
+## 🏗️ [CORE] Infrastructure & Core Logic
+- **`[CORE-001]`**: `backend/main.py` - FastAPI App & Entry Point
+- **`[CORE-002]`**: `backend/config.py` - Global Settings Singleton
+- **`[CORE-003]`**: `backend/services/diagnostics.py` - Forensic Logging & Diagnostics
+- **`[CORE-004]`**: `backend/exceptions.py` - Custom Exception Framework
+- **`[CORE-005]`**: `backend/services/hardware_orchestrator.py` - ONNX/RAM Auto-Detection
+
+## 📊 [DATA] Data Engine & Excel Pipeline
+- **`[DATA-001]`**: `backend/services/data_engine.py` - Polars Excel Ingestion & Logic
+- **`[DATA-002]`**: `backend/services/location_service.py` - Master Location Resolver (83k entries)
+- **`[DATA-003]`**: `backend/services/vault_service.py` - SQLite Contract Storage
+- **`[DATA-004]`**: `backend/services/watcher_service.py` - File System Events for Ingestion
+
+## 📄 [DOCS] PDF & Image Intelligence
+- **`[DOCS-001]`**: `backend/services/pdf_service.py` - PyMuPDF Slicing & Report Generation
+- **`[DOCS-002]`**: `backend/services/ktp_service.py` - RapidOCR Identity Extraction
+- **`[DOCS-003]`**: `backend/services/pdf_intelligence.py` - Advanced Pattern Learning for PDFs
+
+## 🤖 [AUTO] Portal Automation
+- **`[AUTO-001]`**: `backend/services/automation_service.py` - Playwright Government Site Injection
+- **`[AUTO-002]`**: `src/lib/assist_script.js` - Injected Bridge Script for Portal Forms
+
+## 🎨 [UIUX] Workbench Frontend
+- **`[UIUX-001]`**: `src/lib/api.ts` - Axios Backend Communication Bridge
+- **`[UIUX-002]`**: `src/components/ExcelWorkbench.tsx` - Main Grid & Reconciliation Tab
+- **`[UIUX-003]`**: `src/components/DocumentManager.tsx` - PDF Slicing UI
+- **`[UIUX-004]`**: `src/components/ImageTaggerWorkspace.tsx` - OCR Tagging UI
+- **`[UIUX-005]`**: `src/components/PdfSyncModule.tsx` - Ground Truth vs Excel Sync
+
+---
+**RIPPLE AUDIT RULE:** If you modify a `[DATA]` module, you MUST check all `[UIUX]` modules that call those endpoints in `[UIUX-001]`.
 </file>
 
 <file path="docs/internal/ROADMAP.md">
@@ -3568,33 +3607,23 @@ This document tracks the milestones and development velocity of the project.
 # Session Handoff — April 12, 2026
 
 ## 📍 Current Status
-- **Evidence Bundling**: 100% Ported to Python. Ready for production use.
-- **Legacy Cleanup**: 100% Complete. Root-level sanitized, TS parsers removed, start command unified.
-- **Location Service**: Live with 83k entry master registry.
-- **Automation Service**: Playwright Stealth initialized with login/submission field mapping placeholders.
-- **UI**: "Inject to Gov" button fully wired to backend automation endpoint.
-- **Backend**: `/automation/submit` endpoint ready to trigger Playwright logic.
+- **Elite Baseline**: 100% Complete. The repository is now "AI-Expert Ready" with Logical ID tagging and GitHub synchronization.
+- **Production Hardening**: Complete. All file handles use context managers, memory management (GC) is active, and paths are centralized in `config.py`.
+- **Documentation**: Root `CLAUDE.md`, `README.md`, and `LOGICAL_MAP.md` are established.
 
-## 🛠️ Changes in this Session
-1.  **Documentation Consolidation**: Moved all system and AI docs to `docs/internal/`.
-2.  **Constitution Established**: Created `docs/internal/CONSTITUTION.md` to force AI quality.
-3.  **Code Purge**: Deleted legacy TypeScript parsers and root-level garbage files.
-    - Added to Purge List: `src-tauri/`, `app.py`, `smartbind11_analysis.txt`, `smartbind_workbench.bat`, `vendor_tool_plan.md`.
-    - Flagged Deadwood: `src/lib/assist_script.js` (L96) contains legacy `invoke()` call.
-4.  **Research Cleanup**: Moved miscellaneous scripts to `scripts/research/`.
-5.  **Automation Readiness**: Initialized `backend/services/automation_service.py` with stealth mode, logging, and field mapping placeholders.
-6.  **UI Injection**: Integrated and wired "Inject to Gov" button in `ReconciliationTab.tsx`.
-7.  **API Bridge**: Verified `submitAutomation` in `src/lib/api.ts` and wired frontend triggers.
-8.  **Legacy Audit**: Created `scripts/research/legacy_audit.txt` to map deadwood.
+## 📊 Logical "Mental Map" (Pulse Check)
+- **Active Feature Branch**: `feat/ktp-command-center` (Hardened code)
+- **Merged to Main**: YES. Local `main` and `origin/main` are synced.
+- **Next Milestone**: Milestone 5 - Portal Injection (Task 7.1).
 
-## ⚠️ Critical Context
-- **Models**: OCR models must live in `models/v4/` and `models/v5/`.
-- **API**: The frontend now communicates exclusively via `axios` to FastAPI (Port 8000).
-- **RAM**: Always keep 4GB RAM optimization in mind. Avoid large file copies.
+## 🌊 Logic Ripples (Impact Map)
+- Changing `backend/config.py` `[CORE-002]` affects ALL backend services.
+- Changing `src/lib/api.ts` `[UIUX-001]` affects ALL frontend communication.
+- Changing `backend/services/data_engine.py` `[DATA-001]` affects `[UIUX-002]` (Excel Workbench).
 
-## 📋 Immediate Next Tasks
-1.  **Task 7.1**: Implement a "Dry Run" mode in `automation_service.py` that only performs login and captures a screenshot without submitting data.
-2.  **Task 7.2**: Add a "Vault" viewer in the UI to inspect saved contracts and their reconciliation history.
+## ✅ Next Immediate Tasks
+1.  **Task 7.1**: Implement a "Dry Run" mode in `automation_service.py` `[AUTO-001]`.
+2.  **Task 7.2**: Enhance `assist_script.js` `[AUTO-002]` to pull data from the new FastAPI `/automation/data` endpoint.
 </file>
 
 <file path="docs/superpowers/plans/2026-04-10-pdf-pattern-learner.md">
@@ -12924,6 +12953,42 @@ interface AuditIssue {
     "vitest": "^4.1.4"
   }
 }
+</file>
+
+<file path="README.md">
+# BAST-Automator: Elite Distribution Workbench
+
+BAST-Automator is a high-precision distribution and reconciliation tool designed for the Indonesian BANPEM (Bantuan Pemerintah) program. It ensures 100% data integrity between Excel distribution payloads and PDF contract "Ground Truth."
+
+## 🚀 The Tech Stack (Elite Workbench)
+- **Shell:** Hybrid Native-Web via `PyWebView` (Edge Chromium engine).
+- **Backend:** `FastAPI` (Async Python) on Port 8000.
+- **Data Engine:** `Polars` (Blazing fast Lazy evaluation for 4GB RAM optimization).
+- **Intelligence:** `PyMuPDF` (PDF Slicing), `RapidOCR` (Identity Extraction), `Playwright` (Portal Automation).
+- **Frontend:** `React 19` + `Vite` + `shadcn/ui`.
+
+## 🧠 Expert AI Co-Coding Protocol
+This repository is optimized for **Stateless AI Development** (Free-tier friendly). It uses a "Logical ID" system to ensure perfect continuity between sessions.
+
+### Logical ID Mapping (The Barcodes)
+Every file is tagged with a barcode (e.g., `[DATA-001]`). 
+- **[CORE]**: Infrastructure & Diagnostics.
+- **[DATA]**: Polars Engine & SQLite Vault.
+- **[DOCS]**: OCR & PDF Intelligence.
+- **[UIUX]**: React Workbench.
+
+### Mandatory Workflow for Contributors
+1. **Pulse Check:** Every new session must run `rtk git log -n 1 && cat docs/internal/STATE.md`.
+2. **Surgical Edits:** Use `grep_search` for Logical IDs before modifying code.
+3. **Ripple Audit:** If you change a logic ID, you must check all related references to prevent breaking changes.
+
+## 🛠️ Installation & Setup
+1. Clone the repo: `git clone https://github.com/MarsLogic/bastbanpem.git`
+2. Run `start.bat` (Windows) or `start.ps1` (PowerShell).
+   - This will automatically create a `.venv`, install requirements, and start both Backend and Frontend.
+
+---
+**GOAL**: 100% Traceability. 4GB RAM Optimization. Zero Hallucinations.
 </file>
 
 <file path="repomix.config.json">
@@ -30598,6 +30663,7 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
 </file>
 
 <file path="src/components/DocumentManager.tsx">
+// [UIUX-003] PDF Slicing UI
 import React, { useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30746,6 +30812,7 @@ const FileSignature = ({ className }: { className?: string }) => (
 </file>
 
 <file path="src/components/ExcelWorkbench.tsx">
+// [UIUX-002] Main Grid & Reconciliation Tab
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { 
@@ -31186,6 +31253,7 @@ export default ExcelWorkbench;
 </file>
 
 <file path="src/components/ImageTaggerWorkspace.tsx">
+// [UIUX-004] OCR Tagging UI
 import React, { useState, useEffect, useRef } from 'react';
 import { readDir, writeFile } from '@tauri-apps/plugin-fs';
 import { convertFileSrc } from '@tauri-apps/api/core';
@@ -31897,6 +31965,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
 </file>
 
 <file path="src/components/PdfSyncModule.tsx">
+// [UIUX-005] Ground Truth vs Excel Sync
 import React, { useState } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Button } from "@/components/ui/button";
@@ -33741,6 +33810,7 @@ describe('contractStore data structures', () => {
 </file>
 
 <file path="src/lib/api.ts">
+// [UIUX-001] Axios Backend Communication Bridge
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
@@ -33814,6 +33884,7 @@ export default api;
 
 <file path="src/lib/assist_script.js">
 /**
+ * [AUTO-002] Injected Bridge Script for Portal Forms
  * assist_script.js
  * Injected into bastbanpem.pertanian.go.id
  * Handles auto-filling and file injection using Tauri bridge.

@@ -1,3 +1,4 @@
+# [CORE-002] Global Settings Singleton
 import os
 from pydantic_settings import BaseSettings
 

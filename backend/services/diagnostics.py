@@ -1,3 +1,4 @@
+# [CORE-003] Forensic Logging & Diagnostics
 import logging
 import os
 import sys

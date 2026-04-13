@@ -1,3 +1,4 @@
+// [UIUX-004] OCR Tagging UI
 import React, { useState, useEffect, useRef } from 'react';
 import { readDir, writeFile } from '@tauri-apps/plugin-fs';
 import { convertFileSrc } from '@tauri-apps/api/core';

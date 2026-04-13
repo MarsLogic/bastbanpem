@@ -1,3 +1,4 @@
+# [CORE-004] Custom Exception Framework
 from typing import Any, Dict, Optional
 
 class EliteAppException(Exception):

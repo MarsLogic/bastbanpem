@@ -1,4 +1,5 @@
 /**
+ * [AUTO-002] Injected Bridge Script for Portal Forms
  * assist_script.js
  * Injected into bastbanpem.pertanian.go.id
  * Handles auto-filling and file injection using Tauri bridge.

@@ -1,3 +1,4 @@
+# [DOCS-001] PyMuPDF Slicing & Report Generation
 import fitz # PyMuPDF
 import os
 import io

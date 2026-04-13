@@ -1,5 +1,6 @@
 import psutil
 import cpuinfo
+# [CORE-005] ONNX/RAM Auto-Detection
 import os
 import multiprocessing
 from typing import Dict, Any

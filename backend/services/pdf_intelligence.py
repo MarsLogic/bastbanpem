@@ -1,3 +1,4 @@
+# [DOCS-003] Advanced Pattern Learning for PDFs
 import fitz  # PyMuPDF
 import polars as pl
 import re

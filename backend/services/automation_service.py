@@ -1,5 +1,6 @@
 from playwright.async_api import async_playwright, Page
 from playwright_stealth import stealth_async
+# [AUTO-001] Playwright Government Site Injection
 import asyncio
 import logging
 

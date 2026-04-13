@@ -1,3 +1,4 @@
+# [DOCS-002] RapidOCR Identity Extraction
 import cv2
 import numpy as np
 import os
