@@ -6,8 +6,18 @@ BAST-Automator is a high-precision distribution and reconciliation tool designed
 - **Shell:** Hybrid Native-Web via `PyWebView` (Edge Chromium engine).
 - **Backend:** `FastAPI` (Async Python) on Port 8000.
 - **Data Engine:** `Polars` (Blazing fast Lazy evaluation for 4GB RAM optimization).
-- **Intelligence:** `PyMuPDF` (PDF Slicing), `RapidOCR` (Identity Extraction), `Playwright` (Portal Automation).
+- **Intelligence:** 
+  - **PDF:** `PyMuPDF` (High-precision slicing & metadata extraction).
+  - **OCR:** `RapidOCR` + `OpenCV` (Elite OCR Suite with Multi-Scale Inference & Spatial Binding).
+  - **Automation:** `Playwright` (Portal Automation & Submission).
 - **Frontend:** `React 19` + `Vite` + `shadcn/ui`.
+
+## 💎 Elite OCR Suite (Indonesian KTP)
+Our OCR implementation is "best of the best" for the Indonesian KTP, featuring:
+- **Spatial Binding:** 2D coordinate geometry to link labels and multi-line values.
+- **NIK Triangulation:** Cross-verifying Gender and DOB using 16-digit NIK checksums.
+- **Multi-Scale Scaling:** 1.5x auto-retry logic for low-res handheld photos.
+- **Location Repair:** Hierarchical fuzzy correction via master location database.
 
 ## 🧠 Expert AI Co-Coding Protocol
 This repository is optimized for **Stateless AI Development** (Free-tier friendly). It uses a "Logical ID" system to ensure perfect continuity between sessions.

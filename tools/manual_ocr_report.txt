@@ -1,0 +1,366 @@
+--- image1.png ---
+(No text found)
+
+--- image2.png ---
+BASTBANPEM 2021
+2021
+Anda login sebagai ?
+Vendor
+XXX'XXX-X'XXX'XXX'XX
+Password
+Login
+BUKU PANDUAN UNTUK VENDOR
+Aplikasi BASTBANPEM 2021
+Kementerian Pertanian
+SmartSoftStudio
+info@smartsoftstudio.com
+www.smartsoftstudio.com
+Telp.081233035559
+
+--- image3.png ---
+BASTBANPEM 2021
+2021
+Anda login sebagai?
+Vendor
+XXX'XXX-X'XXX'XXX'XX
+Password
+Login
+
+--- image4.png ---
+ESemuaBantuan
+
+--- image5.png ---
+ Filter
+
+--- image6.png ---
+BANPEM2021
+Home
+Semua Bantuan
+ Panduan
+F.A.Q
+QPertanyaan
+8 GENJES KASIH BUNDA 
+DATA KONTRAK
+t= RINCIAN PENYALURAN
+ BAST
+12345/COBA
+十 Tambah Rincian Penerima Bantuan
+ Import Penerima Dari File Excel
+Stotus Review:
+Belum diajukan
+→ Ajukon Pembayaran
+RINCIAN PENERIMA BANTUANI
+Export Exc
+Hapus Semua Rincian Kontrak
+kontrak yang odo dibowah don Postlbon sudoh qukon Pambayoron untuk dopot
+okukon pengajuon review.
+Show
+10
+√entries
+Eselonl
+DITJEN HORTIKULTURA
+No IF Penerima
+Titik Bagi
+Gapoktan
+Barang
+↓
+Qly
+↓↑
+IDIN
+Aksi
+Satker
+DINAS PERTANIAN PROVINSI SULAWESI SELATAN -
+Cari Penerima
+Cari Tlik Bagi
+Cari Gapoktan
+Cari Barang
+199126TP
+Tanggal Kontrak
+222222222222222
+PROV. JAWA TIMUR
+Testing Dinas
+Mesin Pemipil Jogung (Corn Sheller)
+1000.00
+10.000.000
+14-07-2021
+bunplIp ISIsod Ioqb)
+Nilai Kontrak
+Sudah Diterima
+Rp.10.000.000
+Nomor Dipa
+Showing 1to 1of 1entries
+ Previous
+Next
+12345
+2/2/2
+iotan/Output/Akun
+[608 41!
+Provinsi
+MONITOR RINCIAN KONTRAK DAN PENYALURANI
+Tipe Penerima
+Dinas
+Barang
+Jenis Kontrak
+Mesin Pemipil Jagung (Corn Sheller), Kubota TRD85DI-25 (Tipe 4 tak (Direct injection), Daya 8,5 HP)
+Reallsasi Qty:(0.00)
+VOklOr
+Qty
+Nilai
+GENJES KASIH BUNDA
+NPWP vendor
+No
+Provinsi
+Kota/Kec/Desa
+Ponerima
+Kontrak
+Real
+Kontrak
+Real
+00
+Testing Dinas
+File Kontrak/SPK
+1000.00
+0.00
+10.000.000
+0
+pooumop
+ DO & Bukti Terima
+x (Uppr 1Dins / ppIo AleNen) o0
+Horap disi Foto Bukti 1 Kosong Horap disi
+C Kalkulasi Monitoring Kontrak 
+Nilai Penyoluran
+Rp. 0
+1508 ,DI1N
+Rp.0
+REKAP RINCIAN PENYALURAN|
+ Nili SPM
+Rp. 0
+Nilai Konfimosl Penerima
+Rp.0
+Nilal Kontrak
+Total Nilai Rincian
+Selisih
+Dibuot oleh
+DINAS KETAHANAN PANGAN, TANAMAN PANGAN DAN
+10.000.000
+10.000.000
+HORTIKULTURA PROVINSI SULAWESI SELATAN
+Apokoh kontrak ini menggunakon ongkir terpisoh ?
+Note : Jika total nilai rincian tidak muncul silahkan klik button kalkulasi monitoring kontrak terlebih dahulu
+Tidak
+Apokoh kontrak ini swokelolo ?
+Tidak
+Apakah kontrak ini meggunakan Termin ?
+Tidak
+Copyright @ 2021 Biro Keuangan dan Perlengkapan Kementerian Pertanian.
+Version 2.0.0
+
+--- image7.png ---
+t: RINCIAN PENYALURAN
+
+--- image8.png ---
++
+ Tambah Rincian Penerima
+Bantuan
+
+--- image9.png ---
++Tambah Rincian Penerima Bantuan
+ Import Penerima Dari File Excel
+Pilih Barang
+Informasi Barang
+Mosin Pomipll Jagung (Corn Sheller), Merek : Kubota TRD85DI-25 (Tipe 4 tak (Direct injection), Daya 8,5 HP)
+Pilih Titik Bogi
+No ↓Provinsi
+Kota
+Kecamatan
+Kel/Deso
+Gapoktan
+Qty
+Nilai
+Cari Provinsi
+Cari Kota
+Cari Kecamatan
+Cari Kel/Desa
+Cari Gapoktan
+PROV.JAWA TIMUR
+Testing Dinas
+1000.00
+10.000.000
+Showing1to1of1entrios
+Previous
+Next
+RENCANAPENYALURANYGDIPILIH
+Provinsi
+Kota
+Kecamatan
+Kol/Desa
+Gapoktan
+Qty
+ Nilai
+PROV. JAWA TIMUR
+Testing Dinas
+1000.00
+10.000.000
+Penerima
+Tambahpenerimabaru
+Qly
+Nilai
+Search Penerima
+1000.00
+10.000.000
+ Simpan Rincian
+
+--- image10.png ---
+(No text found)
+
+--- image11.png ---
+RINCIANPENERIMABANTUAN
+Export Excel
+Hapus Semua Rincian Kontrak
+Show
+10
+entries
+No ↓FPenerima
+Titik Bagi
+Gapoktan
+Barang
+Qty
+Nilai
+Aksi
+Cari Penerima
+Cari Titik Bagi
+Cari Gapoktan
+Cari Barang
+222222222222222
+PROV.JAWA TIMUR
+Testing Dinas
+Mesin Pemipil Jagung (Corn Sheller)
+1000.00
+10.000.000
+lqbal Posisi di Tidung
+Sudah Diterima
+Showing1to1of1entries
+Previous
+Next
+
+--- image12.png ---
+(No text found)
+
+--- image13.png ---
+MONITORRINCIANKONTRAKDANPENYALURAN
+Edit Tiik Bagi
+Mesin PemipilJagung (Corn Sheller), Kubota TRD85Dl-25 (Tipe 4 tak (Direct injection), Daya 8,5 HP)
+Realisasi Qty:(1000.00)
+Qty
+Nilai
+No
+Provinsi
+Kota/Kec/Desa
+Penerima
+Kontrak
+Real
+Kontrak
+Real
+PROWIANLATIMUR
+Tosting Dinas
+1000.00
+1000.00
+10.000.000
+10.000.000
+DO&Bukti Terimo
+2
+
+--- image14.png ---
+Unggah DO & Bukti Terima
+DO (Delivery Order / Surat Jalan) 
+Choose File
+No file chosen
+Sertifikasi Lab
+Choose File
+No file chosen
+Foto Bukti Terima 1 *
+Choose File
+No file chosen
+Foto Bukti Terima 2
+Choose File
+No file chosen
+Foto Bukti Terima 3
+Choose File
+No file chosen
+Foto Bukti Terima 4
+Choose File
+No file chosen
+Foto Bukti Terima 5
+Choose File
+No file chosen
+ Nomor Rangka
+ Simpan
+No
+Nomor Rangka
+Aksi
+Tutup
+
+--- image15.png ---
+REKAPRINCIANPENVALURAN
+NilaiKontrak
+TotalNilaiRinclan
+Solisih
+10.000.000
+10.000.000
+Note : Jika total nilai rincian tidak muncul silahkan klik button kalkulasi monitoring kontrak terlebih dahulu
+
+--- image16.png ---
+BAST
+
+--- image17.png ---
+TAMBAHBAST
+Tidak O Ya
+NomorBAST
+Nilai BAST
+Tanggal BAST
+DokumenBAST
+Choose File
+No file choson
+PenerimaBAST
+222222222222222- lqbal Posisi di Tidung
+Simpan
+
+--- image18.png ---
+BASTPENERIMABANTUAN
+PenerimaBelumBAST
+Penerima Sudah BAS1
+PilihNomorBAST:
+NamaPenerima:
+Nama Desa:
+Penerima
+Dosa
+ Search
+Ceklist penerima untuk diberikan BAST yong dipilih
+SimpanBAsTPenerima
+
+--- image19.png ---
+HASILDATABAST
+十 Pengembalian Bantuan
+Show
+10
+ontrios
+Soarch:
+No
+Nomor
+Nilal
+Tanggal
+Dokumen
+Aksl
+No data cvailablo in tablo
+ShowingO to0of0ontrios
+Provious
+Noxt
+REKAPDATABAST
+No
+Nilai Kontrak
+Nilai BAST
+Selisih
+Rp.10.000.000
+Rp.0
+Rp.10.000.000
+

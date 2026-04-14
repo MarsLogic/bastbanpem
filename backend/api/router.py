@@ -16,7 +16,27 @@ from backend.models import (
     PdfParseResult, PdfParseRequest
 )
 
+from backend.services.cpcl_extractor import cpcl_extractor
+from backend.services.watcher_service import watcher_service
+
 router = APIRouter()
+
+@router.post("/contracts/cpcl")
+async def extract_cpcl(request: Dict[str, str]):
+    try:
+        path = request.get("path")
+        data = cpcl_extractor.extract(path)
+        return {"status": "success", "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/watcher/start")
+async def start_watcher(path: str = Body(...)):
+    try:
+        watcher_service.start(path)
+        return {"status": "success", "message": f"Watching {path}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/reconcile", response_model=ReconciliationResult)
 async def reconcile(
@@ -71,13 +91,13 @@ async def excel_balance(rows: List[PipelineRow] = Body(...), target_total: float
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/ktp/ocr", response_model=KtpResult)
-async def ocr_ktp(file: UploadFile = File(...)):
+async def ocr_ktp(file: UploadFile = File(...), model_version: Optional[str] = Body(None)):
     temp_path = f"temp_ocr_{file.filename}"
     try:
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         
-        data = extract_ktp_data(temp_path)
+        data = extract_ktp_data(temp_path, model_version=model_version)
         os.remove(temp_path)
         return KtpResult(**data)
     except Exception as e:
@@ -103,6 +123,19 @@ async def resolve_location(loc: LocationData):
             suggested_kecamatan=repaired["kecamatan"] if repaired["kecamatan"] != loc.kecamatan else None,
             suggested_desa=repaired["desa"] if repaired["desa"] != loc.desa else None
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/pdf/split")
+async def split_pdf(request: Dict[str, Any]):
+    try:
+        path = request.get("path")
+        pages = request.get("pages", [])
+        output_dir = request.get("output_dir", "output/splits")
+        prefix = request.get("prefix", "split")
+        
+        files = split_pdf_pages(path, pages, output_dir, prefix)
+        return {"status": "success", "files": files}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

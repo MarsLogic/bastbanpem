@@ -1,0 +1,4594 @@
+{
+  "737 Gabung.pdf": {
+    "metadata": {
+      "nomor_kontrak": "737/KPTS/KU",
+      "tanggal_kontrak": "20 Februari 2025",
+      "nama_penyedia": "AN PESTISIDA MENDUKUNG PENINGKATAN PRODUKSI \nPERTANIAN \nMELALUI KEGIATAN PADI LAHAN KERING"
+    },
+    "tables": [
+      {
+        "page": 4,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "1\nCianjur\n Tanggeung \nPadaluyu\nBaru\nDede\n3203190101900019\n085759145007\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.23892,107.12958",
+            "fields": [
+              "1",
+              "Cianjur",
+              "Tanggeung",
+              "Padaluyu",
+              "Baru",
+              "Dede",
+              "3203190101900019",
+              "085759145007",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.23892,107.12958"
+            ]
+          },
+          {
+            "raw_block": "Padaluyu\nPasir Peuteuy\nIwan\n3203190406680011\n085659896906\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.227633,107.125677",
+            "fields": [
+              "Padaluyu",
+              "Pasir Peuteuy",
+              "Iwan",
+              "3203190406680011",
+              "085659896906",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.227633,107.125677"
+            ]
+          },
+          {
+            "raw_block": "Padaluyu\nTani Mukti Ii\nE Sahroni\n3203191012500006\n082321041136\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.225328,107.143788",
+            "fields": [
+              "Padaluyu",
+              "Tani Mukti Ii",
+              "E Sahroni",
+              "3203191012500006",
+              "082321041136",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.225328,107.143788"
+            ]
+          },
+          {
+            "raw_block": "Cilongsong\nPadalaksana\nLukman\n3203191406750003\n081322565479\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.24329,107.12048",
+            "fields": [
+              "Cilongsong",
+              "Padalaksana",
+              "Lukman",
+              "3203191406750003",
+              "081322565479",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.24329,107.12048"
+            ]
+          },
+          {
+            "raw_block": "Tanggeung\nSarimukti\nHanapi\n3203190606650009\n085314863456\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.1646,107.794411",
+            "fields": [
+              "Tanggeung",
+              "Sarimukti",
+              "Hanapi",
+              "3203190606650009",
+              "085314863456",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.1646,107.794411"
+            ]
+          },
+          {
+            "raw_block": "Bojongpetir\nSumber Rejeki\nIlyas\n3203192303730002\n085798990153\nNon Kehutananan\n(\n            30)\n30\nInsektisida\n-\n-7.243298,107.120481",
+            "fields": [
+              "Bojongpetir",
+              "Sumber Rejeki",
+              "Ilyas",
+              "3203192303730002",
+              "085798990153",
+              "Non Kehutananan",
+              "(",
+              "30)",
+              "30",
+              "Insektisida",
+              "-",
+              "-7.243298,107.120481"
+            ]
+          },
+          {
+            "raw_block": "Bojongpetir\nSukamaju\nEndi\n3203191103650002\n085320238303\nNon Kehutananan\n(\n            20)\n20\nInsektisida\n-\n-7.242448,107.118742",
+            "fields": [
+              "Bojongpetir",
+              "Sukamaju",
+              "Endi",
+              "3203191103650002",
+              "085320238303",
+              "Non Kehutananan",
+              "(",
+              "20)",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.242448,107.118742"
+            ]
+          },
+          {
+            "raw_block": "Pagermaneuh\nRawakadu\nBarnas\n3203191501680004\n082128554510\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.226627,107.077145",
+            "fields": [
+              "Pagermaneuh",
+              "Rawakadu",
+              "Barnas",
+              "3203191501680004",
+              "082128554510",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.226627,107.077145"
+            ]
+          },
+          {
+            "raw_block": "Margaluyu\nSumber Jaya Ii\nAsep Ramdan\n3203191008800004\n085797159512\nNon Kehutananan\n(\n            30)\n30\nInsektisida\n-\n-7.2605,107.113762",
+            "fields": [
+              "Margaluyu",
+              "Sumber Jaya Ii",
+              "Asep Ramdan",
+              "3203191008800004",
+              "085797159512",
+              "Non Kehutananan",
+              "(",
+              "30)",
+              "30",
+              "Insektisida",
+              "-",
+              "-7.2605,107.113762"
+            ]
+          },
+          {
+            "raw_block": "Margaluyu\nPasir Sireum\nSodikin\n3203190306680005\n085659314860\nNon Kehutananan\n(\n            20)\n20\nInsektisida\n-\n-7.1539,107.558215",
+            "fields": [
+              "Margaluyu",
+              "Pasir Sireum",
+              "Sodikin",
+              "3203190306680005",
+              "085659314860",
+              "Non Kehutananan",
+              "(",
+              "20)",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.1539,107.558215"
+            ]
+          },
+          {
+            "raw_block": "Pasirjambu\nRancasoro Ii\nRuslan\n3203190103910010\n081224476634\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.24297,107.173619",
+            "fields": [
+              "Pasirjambu",
+              "Rancasoro Ii",
+              "Ruslan",
+              "3203190103910010",
+              "081224476634",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.24297,107.173619"
+            ]
+          },
+          {
+            "raw_block": "Pasirjambu\nCipicung\nNasirin\n3203190107650156\n082126649427\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.248893,107.157435",
+            "fields": [
+              "Pasirjambu",
+              "Cipicung",
+              "Nasirin",
+              "3203190107650156",
+              "082126649427",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.248893,107.157435"
+            ]
+          },
+          {
+            "raw_block": "Kertajaya\nLembur Sawah\nCeceng Rustandi\n3203193010940001\n082320062038\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.29047,107.14089",
+            "fields": [
+              "Kertajaya",
+              "Lembur Sawah",
+              "Ceceng Rustandi",
+              "3203193010940001",
+              "082320062038",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.29047,107.14089"
+            ]
+          },
+          {
+            "raw_block": "Sirnajaya\nKebon Kalapa\nWawan Setiawan\n3203192505700005\n081220805787\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.1559,107.817336",
+            "fields": [
+              "Sirnajaya",
+              "Kebon Kalapa",
+              "Wawan Setiawan",
+              "3203192505700005",
+              "081220805787",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.1559,107.817336"
+            ]
+          },
+          {
+            "raw_block": "Sirnajaya\nSugih Mukti\nAhya Rohmat Mulyana\n3203190506790004\n082316188199\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.165,107.83614029",
+            "fields": [
+              "Sirnajaya",
+              "Sugih Mukti",
+              "Ahya Rohmat Mulyana",
+              "3203190506790004",
+              "082316188199",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.165,107.83614029"
+            ]
+          },
+          {
+            "raw_block": "Sukajaya\nMulya Tani Iii\nAdung\n3203291905650001\n085624957433\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.27887,107.09936",
+            "fields": [
+              "Sukajaya",
+              "Mulya Tani Iii",
+              "Adung",
+              "3203291905650001",
+              "085624957433",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.27887,107.09936"
+            ]
+          },
+          {
+            "raw_block": "Rawagede\nTunas Unggul Ii\nHenra Gunawan\n3203192501820001\n081563482251\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.27414,107.09716",
+            "fields": [
+              "Rawagede",
+              "Tunas Unggul Ii",
+              "Henra Gunawan",
+              "3203192501820001",
+              "081563482251",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.27414,107.09716"
+            ]
+          },
+          {
+            "raw_block": "Karangtengah\nCitra Mandiri\nKusnadi\n3203191004740002\n085723655463\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.27668,107.07895",
+            "fields": [
+              "Karangtengah",
+              "Citra Mandiri",
+              "Kusnadi",
+              "3203191004740002",
+              "085723655463",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.27668,107.07895"
+            ]
+          },
+          {
+            "raw_block": "Karangtengah\nMekar Wangi\nSulaeman\n3203191709530004\n085759576079\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.27665,107.08441",
+            "fields": [
+              "Karangtengah",
+              "Mekar Wangi",
+              "Sulaeman",
+              "3203191709530004",
+              "085759576079",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.27665,107.08441"
+            ]
+          },
+          {
+            "raw_block": "Karangtengah\nCikarang\nLili\n3203191005830005\n085793515380\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n-7.16010,107.45476",
+            "fields": [
+              "Karangtengah",
+              "Cikarang",
+              "Lili",
+              "3203191005830005",
+              "085793515380",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "-7.16010,107.45476"
+            ]
+          },
+          {
+            "raw_block": "Agrabinta \nWanasari\nMitrasari\nH Jakaria Bin Hollil\n3203221507570001\n0856-2419-3655\nNon Kehutananan\n(\n            30)\n30\nInsektisida\n-\n-7⁰20'49,486\"S 106⁰56'20,024\"E",
+            "fields": [
+              "Agrabinta",
+              "Wanasari",
+              "Mitrasari",
+              "H Jakaria Bin Hollil",
+              "3203221507570001",
+              "0856-2419-3655",
+              "Non Kehutananan",
+              "(",
+              "30)",
+              "30",
+              "Insektisida",
+              "-",
+              "-7⁰20'49,486\"S 106⁰56'20,024\"E"
+            ]
+          },
+          {
+            "raw_block": "Mekarsari\nBelendung\nMamat\n3203220203730008\n85724755205\nNon Kehutananan\n(\n            35)\n35\nInsektisida\n-\n7°20'37,4''S 106°52'7,7''E",
+            "fields": [
+              "Mekarsari",
+              "Belendung",
+              "Mamat",
+              "3203220203730008",
+              "85724755205",
+              "Non Kehutananan",
+              "(",
+              "35)",
+              "35",
+              "Insektisida",
+              "-",
+              "7°20'37,4''S 106°52'7,7''E"
+            ]
+          },
+          {
+            "raw_block": "Mekarsari\nTani Mukti\nUsep Hidayat\n3203261008850004\n0858-6188-0738\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n7°37595S  106° 85151166\"E",
+            "fields": [
+              "Mekarsari",
+              "Tani Mukti",
+              "Usep Hidayat",
+              "3203261008850004",
+              "0858-6188-0738",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "7°37595S  106° 85151166\"E"
+            ]
+          },
+          {
+            "raw_block": "Karangsari\nKaryatani\nRisman \n3203221607900006\n085720328892\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n7°38892S  106° 94447\"E",
+            "fields": [
+              "Karangsari",
+              "Karyatani",
+              "Risman",
+              "3203221607900006",
+              "085720328892",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "7°38892S  106° 94447\"E"
+            ]
+          },
+          {
+            "raw_block": "Karangsari\nSugih Mukti\nDedi\n3203220107690092\n857222419984\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n7°45.769 S  106° 2012,238\"E",
+            "fields": [
+              "Karangsari",
+              "Sugih Mukti",
+              "Dedi",
+              "3203220107690092",
+              "857222419984",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "7°45.769 S  106° 2012,238\"E"
+            ]
+          },
+          {
+            "raw_block": "Wangunjaya\nSaluyu\nMiji\n3203220308530001\n081254364565 \nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n7°2549 S  106° 56938138\"E",
+            "fields": [
+              "Wangunjaya",
+              "Saluyu",
+              "Miji",
+              "3203220308530001",
+              "081254364565",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "7°2549 S  106° 56938138\"E"
+            ]
+          },
+          {
+            "raw_block": "Wangunjaya\nHarapan Tani\nAjat Bin Isob\n3203220406780010\n085732145854\nNon Kehutananan\n(\n            25)\n25\nInsektisida\n-\n7°434456 S  106° 933857\"E",
+            "fields": [
+              "Wangunjaya",
+              "Harapan Tani",
+              "Ajat Bin Isob",
+              "3203220406780010",
+              "085732145854",
+              "Non Kehutananan",
+              "(",
+              "25)",
+              "25",
+              "Insektisida",
+              "-",
+              "7°434456 S  106° 933857\"E"
+            ]
+          },
+          {
+            "raw_block": "Wanasari\nSri Mukti\nKandi\n3203220102560011\n085723618016\nNon Kehutananan\n(\n            30)\n30\nInsektisida\n-\n7°334325 S  106° 925436\"E",
+            "fields": [
+              "Wanasari",
+              "Sri Mukti",
+              "Kandi",
+              "3203220102560011",
+              "085723618016",
+              "Non Kehutananan",
+              "(",
+              "30)",
+              "30",
+              "Insektisida",
+              "-",
+              "7°334325 S  106° 925436\"E"
+            ]
+          },
+          {
+            "raw_block": "Sinarlaut\nCimapag 1\nAbdul Azis\n3203220405910007\n085723736736\nNon Kehutananan\n(\n            30)\n30\nInsektisida\n-\n-7.413421, 106.960570",
+            "fields": [
+              "Sinarlaut",
+              "Cimapag 1",
+              "Abdul Azis",
+              "3203220405910007",
+              "085723736736",
+              "Non Kehutananan",
+              "(",
+              "30)",
+              "30",
+              "Insektisida",
+              "-",
+              "-7.413421, 106.960570"
+            ]
+          },
+          {
+            "raw_block": "Sinarlaut\nLingkungsari\nRohayat\n3203220304650012\n081321095474\nNon Kehutananan\n(\n            30)\n30\nInsektisida\n-\n-7.419061, 106.957043",
+            "fields": [
+              "Sinarlaut",
+              "Lingkungsari",
+              "Rohayat",
+              "3203220304650012",
+              "081321095474",
+              "Non Kehutananan",
+              "(",
+              "30)",
+              "30",
+              "Insektisida",
+              "-",
+              "-7.419061, 106.957043"
+            ]
+          },
+          {
+            "raw_block": "Sinarlaut\nLingkungsari 1\nHikmat Soleh\n3203220708850008\n085798831552\nNon Kehutananan\n(\n            35)\n35\nInsektisida\n-\n-7.412537, 106.927942",
+            "fields": [
+              "Sinarlaut",
+              "Lingkungsari 1",
+              "Hikmat Soleh",
+              "3203220708850008",
+              "085798831552",
+              "Non Kehutananan",
+              "(",
+              "35)",
+              "35",
+              "Insektisida",
+              "-",
+              "-7.412537, 106.927942"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      },
+      {
+        "page": 5,
+        "headers": [
+          "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025",
+          "Col1",
+          "Col2",
+          "Col3",
+          "Col4",
+          "Col5",
+          "Col6",
+          "Col7",
+          "Col8",
+          "Col9",
+          "Col10",
+          "Col11",
+          "Col12",
+          "Col13",
+          "Col14"
+        ],
+        "rows": [
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "No.",
+            "Col1": "Kabupaten",
+            "Col2": "Kecamatan",
+            "Col3": "Desa",
+            "Col4": "Poktan/Gapoktan/LMDH/\nKoperasi/KTH/BPTPH/\nBrigade Pangan",
+            "Col5": "Ketua",
+            "Col6": "NIK",
+            "Col7": "NO HP",
+            "Col8": "Lokasi Pertanaman*",
+            "Col9": "Luas Lahan\n(Ha)",
+            "Col10": "Pestisida\n(l atau kg)",
+            "Col11": "Spesifikasi\nBantuan",
+            "Col12": "Jadwal\nTanam",
+            "Col13": "Titik Koordinat (1° 1‘ 1‘’ )",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": null,
+            "Col1": null,
+            "Col2": null,
+            "Col3": null,
+            "Col4": null,
+            "Col5": null,
+            "Col6": null,
+            "Col7": null,
+            "Col8": null,
+            "Col9": null,
+            "Col10": null,
+            "Col11": null,
+            "Col12": null,
+            "Col13": "Lintang (LU/LS)",
+            "Col14": "Bujur (BT)"
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Bojongkaso",
+            "Col4": "Suka Tani",
+            "Col5": "Hoerudin",
+            "Col6": "3203220508720005",
+            "Col7": "085887653245",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 35)",
+            "Col10": "35",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7°25'19.2\"S 106°49'13.6\"E",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Mulyasari",
+            "Col4": "Karya Mukti",
+            "Col5": "Ogan Peraja",
+            "Col6": "3203222905810004",
+            "Col7": "085794898575",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7°23'20,66''S 106°51'47,02''E",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Mulyasari",
+            "Col4": "Orija Sativa",
+            "Col5": "Hadim",
+            "Col6": "3203220503900015",
+            "Col7": "87708481149",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7°20'36,4''S 106°55'7,7''E",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Bunisari",
+            "Col4": "Sugih Tani",
+            "Col5": "Suhendar",
+            "Col6": "320322210850005",
+            "Col7": "081336015208",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 35)",
+            "Col10": "35",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7°26'4,212''S 106°56'2,806''E",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Tanjungsari",
+            "Col4": "Sarinande",
+            "Col5": "Kusmana",
+            "Col6": "3203221002760001",
+            "Col7": "085676545432",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 35)",
+            "Col10": "35",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7°24'29,4''S 106°55'18''E",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "Pagelaran",
+            "Col3": "Gelaranyar",
+            "Col4": "Separso",
+            "Col5": "Usep Sn",
+            "Col6": "3203182405740001",
+            "Col7": "085794620370",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.1223.92 107.517472",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Gelaranyar",
+            "Col4": "Mulya Tani",
+            "Col5": "Misbah",
+            "Col6": "3203180303700020",
+            "Col7": "081292948931",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.1153. 107.543,522",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukamaju",
+            "Col4": "Mukti Tani",
+            "Col5": "Hadi Mulyadi",
+            "Col6": "3203180204620012",
+            "Col7": "085316123324",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.1219. 107.514,497",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukamaju",
+            "Col4": "Lingkung Tani",
+            "Col5": "Sapidin",
+            "Col6": "3203181504780008",
+            "Col7": "082321529400",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.1350. 107.518,436",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukamaju",
+            "Col4": "Karya Mukti Tani",
+            "Col5": "Sarhindi",
+            "Col6": "3203118110460002",
+            "Col7": "081295643243",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 15)",
+            "Col10": "15",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.2119. 107.08913",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukamaju",
+            "Col4": "Tirta Mukti",
+            "Col5": "Sopian",
+            "Col6": "3203181206800007",
+            "Col7": "083197081222",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 15)",
+            "Col10": "15",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.21711. 107.08412.",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Mekarsari",
+            "Col4": "Warung Kadu",
+            "Col5": "T Suparyan",
+            "Col6": "3203181207700014",
+            "Col7": "082115250255",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7,18602.107.07582",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Mekarsari",
+            "Col4": "Cikawung",
+            "Col5": "Komar",
+            "Col6": "3203181302700004",
+            "Col7": "085724752618",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 20)",
+            "Col10": "20",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.17827. 107.07842",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Situhiang",
+            "Col4": "Simpay Wargi 2",
+            "Col5": "Kaedin",
+            "Col6": "3203182707810006",
+            "Col7": "087768902706",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.734, 107,115927",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Selagedang",
+            "Col4": "Subur Tani Ii",
+            "Col5": "Ruslih",
+            "Col6": "3203182502850003",
+            "Col7": "085220606277",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 15)",
+            "Col10": "15",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.20472, 107,11688",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Karangharja",
+            "Col4": "Hegarmukti Ii",
+            "Col5": "Dadang",
+            "Col6": "3203182905710002",
+            "Col7": "081322628288",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 15)",
+            "Col10": "15",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.17938. 107,11971",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "Bojongpicung",
+            "Col3": "Sukarama",
+            "Col4": "Cibubuay",
+            "Col5": "H. Saepudin",
+            "Col6": "3203061207500013",
+            "Col7": "081214564528",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6,90767 107,2169",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukarama",
+            "Col4": "Joglo",
+            "Col5": "Badar Muttaqin",
+            "Col6": "3203060106760009",
+            "Col7": "083107011730",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6,90581 107,22277",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukarama",
+            "Col4": "Mekar Wangi",
+            "Col5": "Ade Sulaeman",
+            "Col6": "3203061307660003",
+            "Col7": "085797988033",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6,90652 107,2574",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukarama",
+            "Col4": "Giri Mukti",
+            "Col5": "Saepuloh",
+            "Col6": "3203060401730003",
+            "Col7": "087703051967",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6,88487 107,27983",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukarama",
+            "Col4": "Tunas Mekar",
+            "Col5": "Adang Sudrajat",
+            "Col6": "3203060707680005",
+            "Col7": "083821468136",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6,88171 107,29258",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Sukajaya",
+            "Col4": "Curug Satu",
+            "Col5": "Anna",
+            "Col6": "3203060505750021",
+            "Col7": "083139846568",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6,90216 107,22798",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "Cugenang",
+            "Col3": "Wangunjaya",
+            "Col4": "Tapos Makmur",
+            "Col5": "Oneng",
+            "Col6": "3203110711590006",
+            "Col7": "085770167376",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6.774005, 107.106638",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Wangunjaya",
+            "Col4": "Tunagan",
+            "Col5": "Dadan",
+            "Col6": "3203110203800021",
+            "Col7": "083878891256",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6.772679, 107.101232",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Wangunjaya",
+            "Col4": "Milenial Gagak Lumayung",
+            "Col5": "Mumuh",
+            "Col6": "3203112103880015",
+            "Col7": "085640363961",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 10)",
+            "Col10": "10",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "6.784885, 107.115317",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "Cidaun",
+            "Col3": "Cidamar",
+            "Col4": "Sukamaju Bersama",
+            "Col5": "Mastur",
+            "Col6": "3203230108750010",
+            "Col7": "0812-2374-1766",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7484511107361926",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Cidamar",
+            "Col4": "Itikurih",
+            "Col5": "Johana",
+            "Col6": "3203230312680002",
+            "Col7": "0823-2029-7052",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7385049, 107443187",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Cidamar",
+            "Col4": "Sawah Tengah",
+            "Col5": "Dadang Royani",
+            "Col6": "3203230511700006",
+            "Col7": "0813 2246 2895",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.292072,107.212561",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Cidamar",
+            "Col4": "Sugih Mukti",
+            "Col5": "D Wajihadin",
+            "Col6": "3203230506540008",
+            "Col7": "0853-1406-3137",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.489573, 107.357073",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Cidamar",
+            "Col4": "Putra Mandiri",
+            "Col5": "Didin Syamsudin",
+            "Col6": "3203230405530001",
+            "Col7": "0857-2190-6700",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.292711,107.211331",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Kertajadi",
+            "Col4": "Tani Makmur",
+            "Col5": "Sobari",
+            "Col6": "'3203232109610002",
+            "Col7": "0823 1617 2577",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.476465, 107.356876",
+            "Col14": null
+          }
+        ],
+        "method": "find_tables"
+      },
+      {
+        "page": 6,
+        "headers": [
+          "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025",
+          "Col1",
+          "Col2",
+          "Col3",
+          "Col4",
+          "Col5",
+          "Col6",
+          "Col7",
+          "Col8",
+          "Col9",
+          "Col10",
+          "Col11",
+          "Col12",
+          "Col13",
+          "Col14"
+        ],
+        "rows": [
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "No.",
+            "Col1": "Kabupaten",
+            "Col2": "Kecamatan",
+            "Col3": "Desa",
+            "Col4": "Poktan/Gapoktan/LMDH/\nKoperasi/KTH/BPTPH/\nBrigade Pangan",
+            "Col5": "Ketua",
+            "Col6": "NIK",
+            "Col7": "NO HP",
+            "Col8": "Lokasi Pertanaman*",
+            "Col9": "Luas Lahan\n(Ha)",
+            "Col10": "Pestisida\n(l atau kg)",
+            "Col11": "Spesifikasi\nBantuan",
+            "Col12": "Jadwal\nTanam",
+            "Col13": "Titik Koordinat (1° 1‘ 1‘’ )",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": null,
+            "Col1": null,
+            "Col2": null,
+            "Col3": null,
+            "Col4": null,
+            "Col5": null,
+            "Col6": null,
+            "Col7": null,
+            "Col8": null,
+            "Col9": null,
+            "Col10": null,
+            "Col11": null,
+            "Col12": null,
+            "Col13": "Lintang (LU/LS)",
+            "Col14": "Bujur (BT)"
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Jayapura",
+            "Col4": "Mekar Harapan",
+            "Col5": "Rendi Taufik Ismail",
+            "Col6": "3203231311910004",
+            "Col7": "0857-1115-6222",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.2904956,107.16110240",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Jayapura",
+            "Col4": "Cipandak",
+            "Col5": "Padli",
+            "Col6": "3203231906620005",
+            "Col7": "0812-1389-3029",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.486054, 107.292533",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Jayapura",
+            "Col4": "Sadar Alam",
+            "Col5": "Abdul Rohman",
+            "Col6": "3203230711510005",
+            "Col7": "0853-2058-1300",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.2904956,107.16110347",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Cimaragang",
+            "Col4": "Sumber Rejeki",
+            "Col5": "Sabidin",
+            "Col6": "3203231202510004",
+            "Col7": "0853-5390-9218",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7°24'56.8\"S 107°25'48.\"E",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Cimaragang",
+            "Col4": "Mandiri",
+            "Col5": "Suryaman",
+            "Col6": "3203230101790037",
+            "Col7": "0853-1441-5736",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.430937, 107429286",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Cimaragang",
+            "Col4": "Kencana Sari",
+            "Col5": "Ujang Mulyana",
+            "Col6": "3203231505750005",
+            "Col7": "0823-1624-0506",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.408984, 107.424532",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Gelarpawitan",
+            "Col4": "Cisarakan I",
+            "Col5": "Sunardi",
+            "Col6": "3203230303860002",
+            "Col7": "0813-1278-0386",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7383949107440142",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Gelarpawitan",
+            "Col4": "Cisarakan Ii",
+            "Col5": "Dani",
+            "Col6": "'3203230802730006",
+            "Col7": "0813-9462-4640",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7391620, 107435625",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Gelarpawitan",
+            "Col4": "Cisarakan Iii",
+            "Col5": "Koswara",
+            "Col6": "3203231409620001",
+            "Col7": "0852 9523 8894",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7393478, 107430254",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Gelarpawitan",
+            "Col4": "Gelar Mukti",
+            "Col5": "Ayep Jenawan",
+            "Col6": "3203230802710002",
+            "Col7": "0813-2489-8371",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.387842, 107.432410",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Gelarpawitan",
+            "Col4": "Cikalapa",
+            "Col5": "Habib Hadiana",
+            "Col6": "3203232911750002",
+            "Col7": "853-1586-0225",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.241.41,107.2415.94",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Mekarjaya",
+            "Col4": "Karya Mukti",
+            "Col5": "Wahyu",
+            "Col6": "3203232002790001",
+            "Col7": "0813-2481-1894",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.180.78,107.2652.63",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Mekarjaya",
+            "Col4": "Jaya Mukti",
+            "Col5": "Kaid Hermawan",
+            "Col6": "3203231408680004",
+            "Col7": "0852-1014-7207",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.187.122.79,107.267.132.16",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Nelasari",
+            "Col4": "Sirnagalih",
+            "Col5": "Misda",
+            "Col6": "3203232709700004",
+            "Col7": "0813-1264-2442",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.410093, 107.436279",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Nelasari",
+            "Col4": "Harapan Jaya",
+            "Col5": "Tardin",
+            "Col6": "3203231708700009",
+            "Col7": "0853-1553-9205",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.400444,107.436403",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Nelasari",
+            "Col4": "Sumber Rejeki",
+            "Col5": "Agus Hadiat",
+            "Col6": "3203231909630001",
+            "Col7": "0852-8192-7596",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.244049,107.261011",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Nelasari",
+            "Col4": "Harapan Mulya",
+            "Col5": "Solihadiat Permana",
+            "Col6": "3203230805610003",
+            "Col7": "0853 0263 0068",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7°24'14.5\"S 107°27'17.1\"E",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Nelasari",
+            "Col4": "Harapan Mulya I",
+            "Col5": "Sukara",
+            "Col6": "3203232104660002",
+            "Col7": "0851-8267-3750",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.241256,107.272150",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Nelasari",
+            "Col4": "Cisiluman",
+            "Col5": "Darjat",
+            "Col6": "3203230811540001",
+            "Col7": "0821 1760-3459",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "-7.231534,107.263941",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": "",
+            "Col2": "",
+            "Col3": "Karya Bakti",
+            "Col4": "Karyabakti Makmur",
+            "Col5": "Raiman",
+            "Col6": "3203230107910046",
+            "Col7": "0857-9361-4006",
+            "Col8": "Non Kehutananan",
+            "Col9": "( 25)",
+            "Col10": "25",
+            "Col11": "Insektisida",
+            "Col12": "-",
+            "Col13": "7.439334, 107.258762",
+            "Col14": null
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "Jumlah",
+            "Col1": null,
+            "Col2": null,
+            "Col3": null,
+            "Col4": null,
+            "Col5": "Kabupaten Cianjur",
+            "Col6": null,
+            "Col7": null,
+            "Col8": "",
+            "Col9": "1.890",
+            "Col10": "1.890",
+            "Col11": "",
+            "Col12": "",
+            "Col13": "",
+            "Col14": ""
+          },
+          {
+            "LAMPIRAN\nKEPUTUSAN PEJABAT PEMBUAT KOMITMEN KEGIATAN PRASARANA DAN SARANA PERTANIAN\nNOMOR 737/KPTS/KU.010/B.5/11/2025\nTANGGAL 19 NOVEMBER 2025\nTENTANG\nPENETAPAN PENERIMA MANFAAT BANTUAN PEMERINTAH KEGIATAN PENYEDIAAN PESTISIDA\nMENDUKUNG PENINGKATAN PRODUKSI PERTANIAN MELALUI KEGIATAN PADI GOGO\nDIREKTORAT PESTISIDA, DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN\nKABUPATEN CIANJUR PROVINSI JAWA BARAT\nTAHUN ANGGARAN 2025": "",
+            "Col1": null,
+            "Col2": null,
+            "Col3": null,
+            "Col4": null,
+            "Col5": "",
+            "Col6": null,
+            "Col7": null,
+            "Col8": "PEJABAT PEMBUAT KOMITMEN\nDIREKTORAT PESTISIDA\nHANDI ARIEF, S.T., M.A.P.\nNIP. 197208062003121001",
+            "Col9": null,
+            "Col10": null,
+            "Col11": null,
+            "Col12": null,
+            "Col13": null,
+            "Col14": null
+          }
+        ],
+        "method": "find_tables"
+      }
+    ],
+    "total_pages": 6
+  },
+  "738 Gabungan.pdf": {
+    "metadata": {
+      "nomor_kontrak": "738/KPTS/KU",
+      "tanggal_kontrak": "20 Februari 2025",
+      "nama_penyedia": "an Pestisida \nMendukung Peningkatan Produksi Pertanian Melalui \nKegiatan Padi Lahan Kering"
+    },
+    "tables": [
+      {
+        "page": 4,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "1\nCiamis\nBanjaranyar\nPasawahan \nMekarjaya\nKundang\n3207180612580001\n082319754265\nNon Kehutananan\n5\n5\nInsektisida\n -\n-7.54569, 108.59119",
+            "fields": [
+              "1",
+              "Ciamis",
+              "Banjaranyar",
+              "Pasawahan",
+              "Mekarjaya",
+              "Kundang",
+              "3207180612580001",
+              "082319754265",
+              "Non Kehutananan",
+              "5",
+              "5",
+              "Insektisida",
+              "-",
+              "-7.54569, 108.59119"
+            ]
+          },
+          {
+            "raw_block": "Pamarican\nNeglasari\nTirtayuda 2\nAnan Permana \n3207191506730007\n083116741210\nNon Kehutananan\n5\n5\nInsektisida\n -\n-7.434841, 108.530541",
+            "fields": [
+              "Pamarican",
+              "Neglasari",
+              "Tirtayuda 2",
+              "Anan Permana",
+              "3207191506730007",
+              "083116741210",
+              "Non Kehutananan",
+              "5",
+              "5",
+              "Insektisida",
+              "-",
+              "-7.434841, 108.530541"
+            ]
+          },
+          {
+            "raw_block": "Cisaga\n Bangunharja\n LMDH Rimba Harja\n Ohim\n 3207302510450002\n 081313677142\nNon Kehutananan\n5\n5\nInsektisida\n -\n-7.1813632, 108.3232724",
+            "fields": [
+              "Cisaga",
+              "Bangunharja",
+              "LMDH Rimba Harja",
+              "Ohim",
+              "3207302510450002",
+              "081313677142",
+              "Non Kehutananan",
+              "5",
+              "5",
+              "Insektisida",
+              "-",
+              "-7.1813632, 108.3232724"
+            ]
+          },
+          {
+            "raw_block": "Lumbung\nDarmaraja\nHarapan Mekar 2\nLuki Lukmanulhakim\n3207340106970001 \n081318692293\nNon Kehutananan\n5\n5\nInsektisida\n -\n-7.1542719, 108.337219",
+            "fields": [
+              "Lumbung",
+              "Darmaraja",
+              "Harapan Mekar 2",
+              "Luki Lukmanulhakim",
+              "3207340106970001",
+              "081318692293",
+              "Non Kehutananan",
+              "5",
+              "5",
+              "Insektisida",
+              "-",
+              "-7.1542719, 108.337219"
+            ]
+          },
+          {
+            "raw_block": "Awiluar\nGunamangsa 3\nEmo Juana\n3207342207720001\n085322395503\nNon Kehutananan\n5\n5\nInsektisida\n -\n-7.160641, 108.336965",
+            "fields": [
+              "Awiluar",
+              "Gunamangsa 3",
+              "Emo Juana",
+              "3207342207720001",
+              "085322395503",
+              "Non Kehutananan",
+              "5",
+              "5",
+              "Insektisida",
+              "-",
+              "-7.160641, 108.336965"
+            ]
+          },
+          {
+            "raw_block": "Sadewata\nSinar Harapan 2\nAsep Sutisna\n3205012307650002\n082219558735\nNon Kehutananan\n5\n5\nInsektisida\n -\n-7.122139, 108.333871",
+            "fields": [
+              "Sadewata",
+              "Sinar Harapan 2",
+              "Asep Sutisna",
+              "3205012307650002",
+              "082219558735",
+              "Non Kehutananan",
+              "5",
+              "5",
+              "Insektisida",
+              "-",
+              "-7.122139, 108.333871"
+            ]
+          },
+          {
+            "raw_block": "Ciamis\nImbanagara Raya\nBerkah Bukti Asih\nAde Mamat Kustiana\n3207331503550001 \n085222555081\nNon Kehutananan\n10\n10\nInsektisida\n -\n-7,31464271933218, 108.307398882274",
+            "fields": [
+              "Ciamis",
+              "Imbanagara Raya",
+              "Berkah Bukti Asih",
+              "Ade Mamat Kustiana",
+              "3207331503550001",
+              "085222555081",
+              "Non Kehutananan",
+              "10",
+              "10",
+              "Insektisida",
+              "-",
+              "-7,31464271933218, 108.307398882274"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      }
+    ],
+    "total_pages": 4
+  },
+  "739 Gabungan.pdf": {
+    "metadata": {
+      "nomor_kontrak": "739/KPTS/KU",
+      "tanggal_kontrak": "20 Februari 2025",
+      "nama_penyedia": "AN PESTISIDA MENDUKUNG PENINGKATAN PRODUKSI \nPERTANIAN \nMELALUI KEGIATAN PADI LAHAN KERING"
+    },
+    "tables": [
+      {
+        "page": 4,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "1\nGarut\n Cihurip \nCisangkal\nSindangsari\nOhim \n3205251206480001\n082316342509\nNon Kehutananan\n20\n20\nInsektisida\n -\n-7.541426, 107.874644",
+            "fields": [
+              "1",
+              "Garut",
+              "Cihurip",
+              "Cisangkal",
+              "Sindangsari",
+              "Ohim",
+              "3205251206480001",
+              "082316342509",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.541426, 107.874644"
+            ]
+          },
+          {
+            "raw_block": "Mekarmukti Karangwangi\nMawar Tani\nAsep Abdaloh\n3205322104830001\n081223032108\nNon Kehutananan\n30\n30\nInsektisida\n -\n-7.3239, 107.32234",
+            "fields": [
+              "Mekarmukti Karangwangi",
+              "Mawar Tani",
+              "Asep Abdaloh",
+              "3205322104830001",
+              "081223032108",
+              "Non Kehutananan",
+              "30",
+              "30",
+              "Insektisida",
+              "-",
+              "-7.3239, 107.32234"
+            ]
+          },
+          {
+            "raw_block": "Karangwangi\nSunar Muda\nTatang\n3205320806840001\n081223032108\nNon Kehutananan\n20\n20\nInsektisida\n -\n-7.3255, 107.322758",
+            "fields": [
+              "Karangwangi",
+              "Sunar Muda",
+              "Tatang",
+              "3205320806840001",
+              "081223032108",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.3255, 107.322758"
+            ]
+          },
+          {
+            "raw_block": "Mekarmukti\nSumber Tani\nRapik\n3205321212820002\n082219072263\nNon Kehutananan\n20\n20\nInsektisida\n -\n-7.3010, 107.3451",
+            "fields": [
+              "Mekarmukti",
+              "Sumber Tani",
+              "Rapik",
+              "3205321212820002",
+              "082219072263",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.3010, 107.3451"
+            ]
+          },
+          {
+            "raw_block": "Mekarsari\nSinar Rejeki\nDudi Ilyas Sapaat\n3205321007880001\n081223032108\nNon Kehutananan\n20\n20\nInsektisida\n -\n-7.3239, 107.322180",
+            "fields": [
+              "Mekarsari",
+              "Sinar Rejeki",
+              "Dudi Ilyas Sapaat",
+              "3205321007880001",
+              "081223032108",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.3239, 107.322180"
+            ]
+          },
+          {
+            "raw_block": "Mekarsari\nMaslahataul Umah\nRusmana\n3205320202870001\n081221900040\nNon Kehutananan\n20\n20\nInsektisida\n -\n-7.50121, 107.56673321",
+            "fields": [
+              "Mekarsari",
+              "Maslahataul Umah",
+              "Rusmana",
+              "3205320202870001",
+              "081221900040",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.50121, 107.56673321"
+            ]
+          },
+          {
+            "raw_block": "Caringin \nSamudera Jaya\nTani Jaya\nDarso Frank Sinatra\n3205360506690003\n085295323591\nNon Kehutananan\n20\n20\nInsektisida\n -\n-7.50282, 107.448477",
+            "fields": [
+              "Caringin",
+              "Samudera Jaya",
+              "Tani Jaya",
+              "Darso Frank Sinatra",
+              "3205360506690003",
+              "085295323591",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.50282, 107.448477"
+            ]
+          },
+          {
+            "raw_block": "Samudera Jaya\nAngsana Jaya\nMomon\n3205360307750008\n085295323591\nNon Kehutananan\n20\n20\nInsektisida\n -\n-7.50793, 107.451562",
+            "fields": [
+              "Samudera Jaya",
+              "Angsana Jaya",
+              "Momon",
+              "3205360307750008",
+              "085295323591",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-7.50793, 107.451562"
+            ]
+          },
+          {
+            "raw_block": "Bungbulang Tegallega\nAsih Jaya\nDadang \n3205311906770001\n082320136053\nNon Kehutananan\n25\n25\nInsektisida\n -\n-7. 30037, 107.3330",
+            "fields": [
+              "Bungbulang Tegallega",
+              "Asih Jaya",
+              "Dadang",
+              "3205311906770001",
+              "082320136053",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-7. 30037, 107.3330"
+            ]
+          },
+          {
+            "raw_block": "Tegallega\nRancakole\nSukmadin\n3205312002780003\n082317488898\nNon Kehutananan\n25\n25\nInsektisida\n -\n-7. 521470, 107.54973",
+            "fields": [
+              "Tegallega",
+              "Rancakole",
+              "Sukmadin",
+              "3205312002780003",
+              "082317488898",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-7. 521470, 107.54973"
+            ]
+          },
+          {
+            "raw_block": "Mekarbakti\nTani Hujau\nAbdul Hadi\n3205310101620004\n082214816912\nNon Kehutananan\n15\n15\nInsektisida\n -\n-7. 395254, 107.615816",
+            "fields": [
+              "Mekarbakti",
+              "Tani Hujau",
+              "Abdul Hadi",
+              "3205310101620004",
+              "082214816912",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-7. 395254, 107.615816"
+            ]
+          },
+          {
+            "raw_block": "Mekarbakti\nPuncak Mala\nSaripudin\n3205312807708001\n085317904660\nNon Kehutananan\n15\n15\nInsektisida\n -\n-7. 417480, 107.600087",
+            "fields": [
+              "Mekarbakti",
+              "Puncak Mala",
+              "Saripudin",
+              "3205312807708001",
+              "085317904660",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-7. 417480, 107.600087"
+            ]
+          },
+          {
+            "raw_block": "Bojong\nPutra Bojong Raya\nHendra Gunawan\n3205312212910001\n085860096594\nNon Kehutananan\n25\n25\nInsektisida\n -\n-7. 429307, 107.625747",
+            "fields": [
+              "Bojong",
+              "Putra Bojong Raya",
+              "Hendra Gunawan",
+              "3205312212910001",
+              "085860096594",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-7. 429307, 107.625747"
+            ]
+          },
+          {
+            "raw_block": "Wangunjaya\nMekar laksana\nkomirin\n3205311512580001\n082240611606\nNon Kehutananan\n15\n15\nInsektisida\n -\n-7.2713, 10732415745",
+            "fields": [
+              "Wangunjaya",
+              "Mekar laksana",
+              "komirin",
+              "3205311512580001",
+              "082240611606",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-7.2713, 10732415745"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      }
+    ],
+    "total_pages": 4
+  },
+  "740 Gabungan.pdf": {
+    "metadata": {
+      "nomor_kontrak": "740/KPTS/KU",
+      "tanggal_kontrak": "20 Februari 2025",
+      "nama_penyedia": "AN PESTISIDA MENDUKUNG PENINGKATAN PRODUKSI \nPERTANIAN \nMELALUI KEGIATAN PADI LAHAN KERING"
+    },
+    "tables": [
+      {
+        "page": 4,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "1\nLampung Selatan\nTANJUNG SARI\nSIDOMUKTI\nKARYA TANI I\nSUGITO\n1801221612710001\n083822330758\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.2150\n105.28431373",
+            "fields": [
+              "1",
+              "Lampung Selatan",
+              "TANJUNG SARI",
+              "SIDOMUKTI",
+              "KARYA TANI I",
+              "SUGITO",
+              "1801221612710001",
+              "083822330758",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.2150",
+              "105.28431373"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nSIDOMUKTI\nSUDIMAKMUR\nSUMARJONO\n1801220108590000\n082373725113\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.2330\n105.29441106111",
+            "fields": [
+              "TANJUNG SARI",
+              "SIDOMUKTI",
+              "SUDIMAKMUR",
+              "SUMARJONO",
+              "1801220108590000",
+              "082373725113",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.2330",
+              "105.29441106111"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nWAWASAN\nMARGA JAYA I\nMARJONO\n1801050201530007\n083142864089\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.2259\n105.306599",
+            "fields": [
+              "TANJUNG SARI",
+              "WAWASAN",
+              "MARGA JAYA I",
+              "MARJONO",
+              "1801050201530007",
+              "083142864089",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.2259",
+              "105.306599"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nKERTOSARI\nBAROKAH\nZAINAL ARIFIN\n1801223012740003\n083843811352\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.3371\n105.4917159110",
+            "fields": [
+              "TANJUNG SARI",
+              "KERTOSARI",
+              "BAROKAH",
+              "ZAINAL ARIFIN",
+              "1801223012740003",
+              "083843811352",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.3371",
+              "105.4917159110"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nKERTOSARI\nTANI MAJU\nSAIMAN\n1801221406650001\n081272639712\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.35152\n105.47866142390",
+            "fields": [
+              "TANJUNG SARI",
+              "KERTOSARI",
+              "TANI MAJU",
+              "SAIMAN",
+              "1801221406650001",
+              "081272639712",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.35152",
+              "105.47866142390"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nKERTOSARI\nSINAR MULYA\nSUPARDI\n1801221505690001\n085840717964\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.1853\n105.28777",
+            "fields": [
+              "TANJUNG SARI",
+              "KERTOSARI",
+              "SINAR MULYA",
+              "SUPARDI",
+              "1801221505690001",
+              "085840717964",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.1853",
+              "105.28777"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nKERTOSARI\nMUGI MAKMUR\nEFAN BUDIYANTO\n1801221410940002\n085789771756\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.36382\n105.49399601341",
+            "fields": [
+              "TANJUNG SARI",
+              "KERTOSARI",
+              "MUGI MAKMUR",
+              "EFAN BUDIYANTO",
+              "1801221410940002",
+              "085789771756",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.36382",
+              "105.49399601341"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nKERTOSARI\nMANDIRI\nANDI BAMBANG S.\n1801221307880007\n085381124419\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.43178\n105.38869",
+            "fields": [
+              "TANJUNG SARI",
+              "KERTOSARI",
+              "MANDIRI",
+              "ANDI BAMBANG S.",
+              "1801221307880007",
+              "085381124419",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.43178",
+              "105.38869"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG SARI\nKERTOSARI\nKERTO RAHAYU\nSUGITO\n1801222106750003\n081274561323\nNon Kehutananan\n10 -\n                 10-\nInsektisida\n -\n-5.32621\n105.46777",
+            "fields": [
+              "TANJUNG SARI",
+              "KERTOSARI",
+              "KERTO RAHAYU",
+              "SUGITO",
+              "1801222106750003",
+              "081274561323",
+              "Non Kehutananan",
+              "10 -",
+              "10-",
+              "Insektisida",
+              "-",
+              "-5.32621",
+              "105.46777"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG BINTANG\nSINDANG  SARI\nJAYA MAKMUR\nSUDARIYATNO\n1801050306770012\n085279855341\nNon Kehutananan\n25 -\n                 25-\nInsektisida\n -\n-5.36766\n105.38743",
+            "fields": [
+              "TANJUNG BINTANG",
+              "SINDANG  SARI",
+              "JAYA MAKMUR",
+              "SUDARIYATNO",
+              "1801050306770012",
+              "085279855341",
+              "Non Kehutananan",
+              "25 -",
+              "25-",
+              "Insektisida",
+              "-",
+              "-5.36766",
+              "105.38743"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG BINTANG\nSINDANG  SARI\nHARUM JADI 1\nSUWONDO\n1801051707480002\n081279015051\nNon Kehutananan\n30 -\n                 30-\nInsektisida\n -\n-5.3628\n105.3825",
+            "fields": [
+              "TANJUNG BINTANG",
+              "SINDANG  SARI",
+              "HARUM JADI 1",
+              "SUWONDO",
+              "1801051707480002",
+              "081279015051",
+              "Non Kehutananan",
+              "30 -",
+              "30-",
+              "Insektisida",
+              "-",
+              "-5.3628",
+              "105.3825"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG BINTANG\nSINDANG  SARI\nHARUM JADI 2\nMARJONO S.\n1801052212550001\n083863502391\nNon Kehutananan\n15 -\n                 15-\nInsektisida\n -\n-5.35929\n105.39404",
+            "fields": [
+              "TANJUNG BINTANG",
+              "SINDANG  SARI",
+              "HARUM JADI 2",
+              "MARJONO S.",
+              "1801052212550001",
+              "083863502391",
+              "Non Kehutananan",
+              "15 -",
+              "15-",
+              "Insektisida",
+              "-",
+              "-5.35929",
+              "105.39404"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG BINTANG\nSINDANG  SARI\nEXPO JAYA\nSUNARDI\n1801050804620002\n082182803364\nNon Kehutananan\n20 -\n                 20-\nInsektisida\n -\n-5.3646\n105.39161",
+            "fields": [
+              "TANJUNG BINTANG",
+              "SINDANG  SARI",
+              "EXPO JAYA",
+              "SUNARDI",
+              "1801050804620002",
+              "082182803364",
+              "Non Kehutananan",
+              "20 -",
+              "20-",
+              "Insektisida",
+              "-",
+              "-5.3646",
+              "105.39161"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG BINTANG\nPURWODADI SIMPANG\nKARYA MUNCUL\nSUMARNO\n1801050312730003\n082184990513\nNon Kehutananan\n20 -\n                 20-\nInsektisida\n -\n-5.37043\n105.39966",
+            "fields": [
+              "TANJUNG BINTANG",
+              "PURWODADI SIMPANG",
+              "KARYA MUNCUL",
+              "SUMARNO",
+              "1801050312730003",
+              "082184990513",
+              "Non Kehutananan",
+              "20 -",
+              "20-",
+              "Insektisida",
+              "-",
+              "-5.37043",
+              "105.39966"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG BINTANG\nBUDI LESTARI\nSEJAHTERA\nMAKMUN\n1801051708750006\n085769367726\nNon Kehutananan\n20 -\n                 20-\nInsektisida\n -\n-5.40706\n105.48834",
+            "fields": [
+              "TANJUNG BINTANG",
+              "BUDI LESTARI",
+              "SEJAHTERA",
+              "MAKMUN",
+              "1801051708750006",
+              "085769367726",
+              "Non Kehutananan",
+              "20 -",
+              "20-",
+              "Insektisida",
+              "-",
+              "-5.40706",
+              "105.48834"
+            ]
+          },
+          {
+            "raw_block": "TANJUNG BINTANG\nBUDI LESTARI\nBERKAH JAYA\nSUROTO\n1801050105730005\n085841135830\nNon Kehutananan\n15 -\n                 15-\nInsektisida\n -\n-5.41293\n105.49986",
+            "fields": [
+              "TANJUNG BINTANG",
+              "BUDI LESTARI",
+              "BERKAH JAYA",
+              "SUROTO",
+              "1801050105730005",
+              "085841135830",
+              "Non Kehutananan",
+              "15 -",
+              "15-",
+              "Insektisida",
+              "-",
+              "-5.41293",
+              "105.49986"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      }
+    ],
+    "total_pages": 4
+  },
+  "741 Gabungan.pdf": {
+    "metadata": {
+      "nomor_kontrak": "741/KPTS/KU",
+      "tanggal_kontrak": "20 Februari 2025",
+      "nama_penyedia": "AN PESTISIDA MENDUKUNG PENINGKATAN PRODUKSI \nPERTANIAN \nMELALUI KEGIATAN PADI LAHAN KERING"
+    },
+    "tables": [
+      {
+        "page": 4,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "1\nPesawaran\nPUNDUH PEDADA\nSUKAMAJU\nPENDAWA\nJONI ISKANDAR\n1809062404780002\n082178417622\nNon Kehutananan\n30\n30\n Insektisida\n -\n-5.768023, 105.145031",
+            "fields": [
+              "1",
+              "Pesawaran",
+              "PUNDUH PEDADA",
+              "SUKAMAJU",
+              "PENDAWA",
+              "JONI ISKANDAR",
+              "1809062404780002",
+              "082178417622",
+              "Non Kehutananan",
+              "30",
+              "30",
+              "Insektisida",
+              "-",
+              "-5.768023, 105.145031"
+            ]
+          },
+          {
+            "raw_block": "PUNDUH PEDADA\nBAWANG\nTUNAS BARU\nSAHRONI\n1801060806850011\n082372376367\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.758276, 105.129626",
+            "fields": [
+              "PUNDUH PEDADA",
+              "BAWANG",
+              "TUNAS BARU",
+              "SAHRONI",
+              "1801060806850011",
+              "082372376367",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.758276, 105.129626"
+            ]
+          },
+          {
+            "raw_block": "PUNDUH PEDADA\nSUKARAME\nANUGRAH ALAM\nFAURISKA OKTA\n1809060410870002\n0811377852980\nNon Kehutananan\n20\n20\n Insektisida\n -\n5.713928, 105.209510",
+            "fields": [
+              "PUNDUH PEDADA",
+              "SUKARAME",
+              "ANUGRAH ALAM",
+              "FAURISKA OKTA",
+              "1809060410870002",
+              "0811377852980",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "5.713928, 105.209510"
+            ]
+          },
+          {
+            "raw_block": "PUNDUH PEDADA\nBANGUNREJO\nMAWAR MANDIRI\nMIMWAHUDIN\n1809060108760002\n082258072927\nNon Kehutananan\n30\n30\n Insektisida\n -\n-5.740535, 105.138587",
+            "fields": [
+              "PUNDUH PEDADA",
+              "BANGUNREJO",
+              "MAWAR MANDIRI",
+              "MIMWAHUDIN",
+              "1809060108760002",
+              "082258072927",
+              "Non Kehutananan",
+              "30",
+              "30",
+              "Insektisida",
+              "-",
+              "-5.740535, 105.138587"
+            ]
+          },
+          {
+            "raw_block": "PUNDUH PEDADA\nBANGUNREJO\nSETIA MAJU\nTEGO S\n1809061005750003\n082177551575\nNon Kehutananan\n30\n30\n Insektisida\n -\n-5.754110, 105.132457",
+            "fields": [
+              "PUNDUH PEDADA",
+              "BANGUNREJO",
+              "SETIA MAJU",
+              "TEGO S",
+              "1809061005750003",
+              "082177551575",
+              "Non Kehutananan",
+              "30",
+              "30",
+              "Insektisida",
+              "-",
+              "-5.754110, 105.132457"
+            ]
+          },
+          {
+            "raw_block": "PUNDUH PEDADA\nBANGUNREJO\nARISKA 2\nHERI WIDODO\n1809062009850003\n081278452310\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.745521,105.128827",
+            "fields": [
+              "PUNDUH PEDADA",
+              "BANGUNREJO",
+              "ARISKA 2",
+              "HERI WIDODO",
+              "1809062009850003",
+              "081278452310",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.745521,105.128827"
+            ]
+          },
+          {
+            "raw_block": "PUNDUH PEDADA\nKOTA JAWA\nJAYA MANDIRI I\nWARTO\n1809060701740005\n085380103975\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.726172, 105.166850",
+            "fields": [
+              "PUNDUH PEDADA",
+              "KOTA JAWA",
+              "JAYA MANDIRI I",
+              "WARTO",
+              "1809060701740005",
+              "085380103975",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.726172, 105.166850"
+            ]
+          },
+          {
+            "raw_block": "PUNDUH PEDADA\nPAGAR JAYA\nLESTARI JAYA\nJAMIAN\n1809060709740001\n082180014641\nNon Kehutananan\n30\n30\n Insektisida\n -\n-5.7681719, 105.1447378",
+            "fields": [
+              "PUNDUH PEDADA",
+              "PAGAR JAYA",
+              "LESTARI JAYA",
+              "JAMIAN",
+              "1809060709740001",
+              "082180014641",
+              "Non Kehutananan",
+              "30",
+              "30",
+              "Insektisida",
+              "-",
+              "-5.7681719, 105.1447378"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nBUNUT\nCANGKUANG\nSARYUDI\n1809050211930009\n081293763108\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.592130, 105.097276",
+            "fields": [
+              "WAY RATAI",
+              "BUNUT",
+              "CANGKUANG",
+              "SARYUDI",
+              "1809050211930009",
+              "081293763108",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.592130, 105.097276"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nBUNUT\nTUNAS HARAPAN\nMUSTIKA FAHIROL\n1809051310620001\n085268756571\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.597009, 105.096678",
+            "fields": [
+              "WAY RATAI",
+              "BUNUT",
+              "TUNAS HARAPAN",
+              "MUSTIKA FAHIROL",
+              "1809051310620001",
+              "085268756571",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.597009, 105.096678"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nWATES WAY RATAI\nKARYA JAYA\nPUJO SETIO\n1809050605780002\n082378684742\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.585493, 105.060763",
+            "fields": [
+              "WAY RATAI",
+              "WATES WAY RATAI",
+              "KARYA JAYA",
+              "PUJO SETIO",
+              "1809050605780002",
+              "082378684742",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.585493, 105.060763"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nWATES WAY RATAI\nSIDO MAKMUR\nINDARTO\n1809052004730004\n081272440330\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.620872, 105.063740",
+            "fields": [
+              "WAY RATAI",
+              "WATES WAY RATAI",
+              "SIDO MAKMUR",
+              "INDARTO",
+              "1809052004730004",
+              "081272440330",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.620872, 105.063740"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nWATES WAY RATAI\nDWI AGUNG\nKARTO WIYONO\n1809050606720004\n085243480870\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.602378, 105.059282",
+            "fields": [
+              "WAY RATAI",
+              "WATES WAY RATAI",
+              "DWI AGUNG",
+              "KARTO WIYONO",
+              "1809050606720004",
+              "085243480870",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.602378, 105.059282"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nKALI REJO\nKARYA SEJAHTERA\nSARWOKO\n1809051407840004\n085769926741\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.609841, 105.077216",
+            "fields": [
+              "WAY RATAI",
+              "KALI REJO",
+              "KARYA SEJAHTERA",
+              "SARWOKO",
+              "1809051407840004",
+              "085769926741",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.609841, 105.077216"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nCERINGIN ASRI\nKARYA BAKTI\nSUTRISNO\n1809051408660002\n085279701407\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.591805, 105.068268",
+            "fields": [
+              "WAY RATAI",
+              "CERINGIN ASRI",
+              "KARYA BAKTI",
+              "SUTRISNO",
+              "1809051408660002",
+              "085279701407",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.591805, 105.068268"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nMULYO SARI\nKARYA TANI\nAHMAD JOKO \nPURNOMO\n1809052306940004\n085279887391\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.568453, 105.067299",
+            "fields": [
+              "WAY RATAI",
+              "MULYO SARI",
+              "KARYA TANI",
+              "AHMAD JOKO",
+              "PURNOMO",
+              "1809052306940004",
+              "085279887391",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.568453, 105.067299"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nGUNUNG REJO\nSIDO MAKMUR\nSURAHNO\n1809051508670001\n085279701407\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.553332, 105.058285",
+            "fields": [
+              "WAY RATAI",
+              "GUNUNG REJO",
+              "SIDO MAKMUR",
+              "SURAHNO",
+              "1809051508670001",
+              "085279701407",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.553332, 105.058285"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nGUNUNG REJO\nALTAR \nSURATNO\n3603010506750001\n085210344341\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.547039, 105.060018",
+            "fields": [
+              "WAY RATAI",
+              "GUNUNG REJO",
+              "ALTAR",
+              "SURATNO",
+              "3603010506750001",
+              "085210344341",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.547039, 105.060018"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nGUNUNG REJO\nTEGAL MAKMUR\nADE SUYONO\n1809052308780003\n082278640616\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.534808, 105.081952",
+            "fields": [
+              "WAY RATAI",
+              "GUNUNG REJO",
+              "TEGAL MAKMUR",
+              "ADE SUYONO",
+              "1809052308780003",
+              "082278640616",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.534808, 105.081952"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nGUNUNG REJO\nTUNAS HARAPAN\nWAGIRIN\n1809051507690003\n085268303808\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.534808, 105.081953",
+            "fields": [
+              "WAY RATAI",
+              "GUNUNG REJO",
+              "TUNAS HARAPAN",
+              "WAGIRIN",
+              "1809051507690003",
+              "085268303808",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.534808, 105.081953"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nPESAWARAN INDAH\nBINA KARYA\nMUSLIM\n1809050810900008\n082260137522\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.545258, 105.090942",
+            "fields": [
+              "WAY RATAI",
+              "PESAWARAN INDAH",
+              "BINA KARYA",
+              "MUSLIM",
+              "1809050810900008",
+              "082260137522",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.545258, 105.090942"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nPESAWARAN INDAH\nUSAHA MAKMUR\nSUGIYANTO\n1809050909850004\n085269740203\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.552578, 105.078187",
+            "fields": [
+              "WAY RATAI",
+              "PESAWARAN INDAH",
+              "USAHA MAKMUR",
+              "SUGIYANTO",
+              "1809050909850004",
+              "085269740203",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.552578, 105.078187"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nPESAWARAN INDAH\nSUKA MAKMUR\nSURATMO\n1809052002790003\n082179382411\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.546776, 105.079848",
+            "fields": [
+              "WAY RATAI",
+              "PESAWARAN INDAH",
+              "SUKA MAKMUR",
+              "SURATMO",
+              "1809052002790003",
+              "082179382411",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.546776, 105.079848"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nPESAWARAN INDAH\nMARGO TANI\nSRIYONO\n1809050806660001\n085664718038\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.564324, 105.094013",
+            "fields": [
+              "WAY RATAI",
+              "PESAWARAN INDAH",
+              "MARGO TANI",
+              "SRIYONO",
+              "1809050806660001",
+              "085664718038",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.564324, 105.094013"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nPONCO REJO\nHARAPAN TANI\nPARSIN\n18090501115900004\n085185551790\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.572200, 105.047786",
+            "fields": [
+              "WAY RATAI",
+              "PONCO REJO",
+              "HARAPAN TANI",
+              "PARSIN",
+              "18090501115900004",
+              "085185551790",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.572200, 105.047786"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nPONCO REJO\nSIDOTOTO\nKUSNO\n1809051303690002\n085242748352\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.570013, 105.046787",
+            "fields": [
+              "WAY RATAI",
+              "PONCO REJO",
+              "SIDOTOTO",
+              "KUSNO",
+              "1809051303690002",
+              "085242748352",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.570013, 105.046787"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nHARAPAN JAYA\nNUSANTARA \nAGRIKULTURAL\nWAHYU HIKMAWAN\n1809051808850007\n081351285681\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.558099, 105.098947",
+            "fields": [
+              "WAY RATAI",
+              "HARAPAN JAYA",
+              "NUSANTARA",
+              "AGRIKULTURAL",
+              "WAHYU HIKMAWAN",
+              "1809051808850007",
+              "081351285681",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.558099, 105.098947"
+            ]
+          },
+          {
+            "raw_block": "WAY RATAI\nHARAPAN JAYA\nJAYA MAKMUR\nBASIRON\n1809110301820001\n081283580041\nNon Kehutananan\n15\n15\n Insektisida\n -\n-5.553340, 105.110182",
+            "fields": [
+              "WAY RATAI",
+              "HARAPAN JAYA",
+              "JAYA MAKMUR",
+              "BASIRON",
+              "1809110301820001",
+              "081283580041",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-5.553340, 105.110182"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nSINAR BANDUNG\nJAYA TANI\nSUPRIYADI\n1809021002850008\n082371205584\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.208313, 105.117880",
+            "fields": [
+              "NEGERI KATON",
+              "SINAR BANDUNG",
+              "JAYA TANI",
+              "SUPRIYADI",
+              "1809021002850008",
+              "082371205584",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.208313, 105.117880"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nSINAR BANDUNG\nKARYA TANI\nSURYANTO\n1809022607720003\n085279022186\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5206860, 105.112576",
+            "fields": [
+              "NEGERI KATON",
+              "SINAR BANDUNG",
+              "KARYA TANI",
+              "SURYANTO",
+              "1809022607720003",
+              "085279022186",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5206860, 105.112576"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nSINAR BANDUNG\nHARAPAN TANI\nSUBARNA\n1809022006810008\n083844793323\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.206432, 105.106718",
+            "fields": [
+              "NEGERI KATON",
+              "SINAR BANDUNG",
+              "HARAPAN TANI",
+              "SUBARNA",
+              "1809022006810008",
+              "083844793323",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.206432, 105.106718"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nSINAR BANDUNG\nHARAPAN JAYA\nUDIN BORDIN\n1809021604520003\n088245565072\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.207528, 105.103589",
+            "fields": [
+              "NEGERI KATON",
+              "SINAR BANDUNG",
+              "HARAPAN JAYA",
+              "UDIN BORDIN",
+              "1809021604520003",
+              "088245565072",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.207528, 105.103589"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nSINAR BANDUNG\nTUNAS HARAPAN II\nSOLIHIN TOHIR\n1809020606770005\n085279022186\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.203905, 105.101735",
+            "fields": [
+              "NEGERI KATON",
+              "SINAR BANDUNG",
+              "TUNAS HARAPAN II",
+              "SOLIHIN TOHIR",
+              "1809020606770005",
+              "085279022186",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.203905, 105.101735"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nSINAR BANDUNG\nSINAR JAYA\nSARIPUDIN\n1809021107680004\n085279022186\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.184330, 105.117328",
+            "fields": [
+              "NEGERI KATON",
+              "SINAR BANDUNG",
+              "SINAR JAYA",
+              "SARIPUDIN",
+              "1809021107680004",
+              "085279022186",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.184330, 105.117328"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nPEJAMBON\nPURWA JAYA\nKUSNI\n1809020306590005\n085269002751\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.244703, 105.128752",
+            "fields": [
+              "NEGERI KATON",
+              "PEJAMBON",
+              "PURWA JAYA",
+              "KUSNI",
+              "1809020306590005",
+              "085269002751",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.244703, 105.128752"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nPEJAMBON\nSIDO MAKMUR\nSUPRIYADI\n1809020308910002\n085211945620\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.250736, 105.131558",
+            "fields": [
+              "NEGERI KATON",
+              "PEJAMBON",
+              "SIDO MAKMUR",
+              "SUPRIYADI",
+              "1809020308910002",
+              "085211945620",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.250736, 105.131558"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nPEJAMBON\nTANI MAKMUR III\nTRIYADI\n1809020808720002\n085268678570\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.256752, 105.141578",
+            "fields": [
+              "NEGERI KATON",
+              "PEJAMBON",
+              "TANI MAKMUR III",
+              "TRIYADI",
+              "1809020808720002",
+              "085268678570",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.256752, 105.141578"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nPEJAMBON\nTANI SENTOSA\nIMRON HASANI\n1809020604690005\n085268262548\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.283520, 105.102619",
+            "fields": [
+              "NEGERI KATON",
+              "PEJAMBON",
+              "TANI SENTOSA",
+              "IMRON HASANI",
+              "1809020604690005",
+              "085268262548",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.283520, 105.102619"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nPEJAMBON\nJAYA SEJAHTERA\nHELI KAUNA\n1809021010710003\n085268716818\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.281377, 105.101653",
+            "fields": [
+              "NEGERI KATON",
+              "PEJAMBON",
+              "JAYA SEJAHTERA",
+              "HELI KAUNA",
+              "1809021010710003",
+              "085268716818",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.281377, 105.101653"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nPEJAMBON\nSARI PATI\nMUHAMAD JASULI\n1809021507790011\n085279191361\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.278983, 105.099927",
+            "fields": [
+              "NEGERI KATON",
+              "PEJAMBON",
+              "SARI PATI",
+              "MUHAMAD JASULI",
+              "1809021507790011",
+              "085279191361",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.278983, 105.099927"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nTRI MAKMUR III\nAMAN SUPARDIONO\n1809020604670004\n082210807909\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.211666, 105.099945",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "TRI MAKMUR III",
+              "AMAN SUPARDIONO",
+              "1809020604670004",
+              "082210807909",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.211666, 105.099945"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nMULYO TANI\nSRIYONO\n1809021307730001\n081933532970\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.215166, 105.093472",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "MULYO TANI",
+              "SRIYONO",
+              "1809021307730001",
+              "081933532970",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.215166, 105.093472"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nTUNAS SEJAHTERA\nRUSDI\n1809021307770002\n085279128400\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.218336, 105.096113",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "TUNAS SEJAHTERA",
+              "RUSDI",
+              "1809021307770002",
+              "085279128400",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.218336, 105.096113"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      },
+      {
+        "page": 5,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nBUMI MAJU\nEDI SUTRIMO\n1809021108800004\n085609180581\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.216376, 105.102377",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "BUMI MAJU",
+              "EDI SUTRIMO",
+              "1809021108800004",
+              "085609180581",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.216376, 105.102377"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nSETIA BUDI I\nSUJADI\n1809021012710005\n085381177032\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.219475, 105.099356",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "SETIA BUDI I",
+              "SUJADI",
+              "1809021012710005",
+              "085381177032",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.219475, 105.099356"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nLEMBU JAYA I\nTHUSFANTO\n1809021805850001\n082371093447\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.213940, 105.102743",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "LEMBU JAYA I",
+              "THUSFANTO",
+              "1809021805850001",
+              "082371093447",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.213940, 105.102743"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nTUNAS KARYA I\nSURADI\n1809020809690001\n085383728890\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.207563, 105.085282",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "TUNAS KARYA I",
+              "SURADI",
+              "1809020809690001",
+              "085383728890",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.207563, 105.085282"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRI RAHAYU\nLEMBU JAYA II\nTUGINO\n1809021504690001\n083137383077\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.203283, 105.086953",
+            "fields": [
+              "NEGERI KATON",
+              "TRI RAHAYU",
+              "LEMBU JAYA II",
+              "TUGINO",
+              "1809021504690001",
+              "083137383077",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.203283, 105.086953"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGARASAKA\nSUBUR MAKMUR\nMUSTOFIK\n1809021509800004\n082375364632\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.249298, 105.147153",
+            "fields": [
+              "NEGERI KATON",
+              "NEGARASAKA",
+              "SUBUR MAKMUR",
+              "MUSTOFIK",
+              "1809021509800004",
+              "082375364632",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.249298, 105.147153"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGARASAKA\nKONCO TANI\nMAERI\n1809020805850003\n085269718452\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.247806, 105.149849",
+            "fields": [
+              "NEGERI KATON",
+              "NEGARASAKA",
+              "KONCO TANI",
+              "MAERI",
+              "1809020805850003",
+              "085269718452",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.247806, 105.149849"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGARASAKA\nSIDO MUKTI 2\nSATOTO\n1809020708690005\n081279785069\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.239851, 105.151525",
+            "fields": [
+              "NEGERI KATON",
+              "NEGARASAKA",
+              "SIDO MUKTI 2",
+              "SATOTO",
+              "1809020708690005",
+              "081279785069",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.239851, 105.151525"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGARASAKA\nKARYA TANI\nKASMADI\n1809022106700002\n085279022186\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.237866,105. 154576",
+            "fields": [
+              "NEGERI KATON",
+              "NEGARASAKA",
+              "KARYA TANI",
+              "KASMADI",
+              "1809022106700002",
+              "085279022186",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.237866,105. 154576"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI ULANGAN JAYATANI BARU\nMUHIBUN\n1809021506560006\n081632280669\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.236792, 105.161667",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI ULANGAN JAYATANI BARU",
+              "MUHIBUN",
+              "1809021506560006",
+              "081632280669",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.236792, 105.161667"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI ULANGAN \nJAYA\nSETIA BERSAMA\nARIFIN\n1809021703870002\n081271420371\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.235072, 105.161051",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI ULANGAN",
+              "JAYA",
+              "SETIA BERSAMA",
+              "ARIFIN",
+              "1809021703870002",
+              "081271420371",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.235072, 105.161051"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI ULANGAN JAYAMULYA BERSAMA\nWARJU\n1809021112650005\n08576878752\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5236211, 105.158807",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI ULANGAN JAYAMULYA BERSAMA",
+              "WARJU",
+              "1809021112650005",
+              "08576878752",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5236211, 105.158807"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI ULANGAN JAYAMANDIRI BERSAMA\nSUHADI\n1809020607820006\n085279063136\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.238704, 105.157426",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI ULANGAN JAYAMANDIRI BERSAMA",
+              "SUHADI",
+              "1809020607820006",
+              "085279063136",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.238704, 105.157426"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nSIDO MUKTI\nEKO WIDIANTO\n1809022503850004\n082372551666\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.282825, 105.093505",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "SIDO MUKTI",
+              "EKO WIDIANTO",
+              "1809022503850004",
+              "082372551666",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.282825, 105.093505"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nSIDO RUKUN\nHEDI YOTO\n1809021609780003\n088269728214\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.277863, 105.091766",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "SIDO RUKUN",
+              "HEDI YOTO",
+              "1809021609780003",
+              "088269728214",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.277863, 105.091766"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nSIDO MAKMUR \nMIK ROJOL\n1809020107840067\n088287742645\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.285243, 105.088237",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "SIDO MAKMUR",
+              "MIK ROJOL",
+              "1809020107840067",
+              "088287742645",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.285243, 105.088237"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nSIDO DADI\nGATOT SUWITNYO\n1809021207750002\n081272698745\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.278099, 105.083105",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "SIDO DADI",
+              "GATOT SUWITNYO",
+              "1809021207750002",
+              "081272698745",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.278099, 105.083105"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nMAJU JAYA\nSYAHRUDIN AHMAD\n1809022504810007\n085269353485\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.250038, 105.106818",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "MAJU JAYA",
+              "SYAHRUDIN AHMAD",
+              "1809022504810007",
+              "085269353485",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.250038, 105.106818"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nHARAPAN MAKMUR\nSUGI PURWANTO\n1809021803780004\n085279022186\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.248090, 105.104638",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "HARAPAN MAKMUR",
+              "SUGI PURWANTO",
+              "1809021803780004",
+              "085279022186",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.248090, 105.104638"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nHARAPAN TANI\nWAHRUDIN\n1809021506670003\n085279022186\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.244787, 105.099007",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "HARAPAN TANI",
+              "WAHRUDIN",
+              "1809021506670003",
+              "085279022186",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.244787, 105.099007"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nTRISNO MAJU\nINDO TANI\nPAIDI\n1809020102750001\n085279473162\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.243561, 105.104878",
+            "fields": [
+              "NEGERI KATON",
+              "TRISNO MAJU",
+              "INDO TANI",
+              "PAIDI",
+              "1809020102750001",
+              "085279473162",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.243561, 105.104878"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nBANGUN SARI\nTUNAS HARAPAN I\nDARSIANTO\n1809023005800002\n085357533437\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.211627, 105.068283",
+            "fields": [
+              "NEGERI KATON",
+              "BANGUN SARI",
+              "TUNAS HARAPAN I",
+              "DARSIANTO",
+              "1809023005800002",
+              "085357533437",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.211627, 105.068283"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nBANGUN SARI\nTUNAS HARAPAN II\nMASRON \n1809022310700001\n082373252003\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.210018, 105.070616",
+            "fields": [
+              "NEGERI KATON",
+              "BANGUN SARI",
+              "TUNAS HARAPAN II",
+              "MASRON",
+              "1809022310700001",
+              "082373252003",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.210018, 105.070616"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nBANGUN SARI\nSIDO MULYO I\nSUSWANTO\n1809022308860003\n082269404579\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.212800, 105.076650",
+            "fields": [
+              "NEGERI KATON",
+              "BANGUN SARI",
+              "SIDO MULYO I",
+              "SUSWANTO",
+              "1809022308860003",
+              "082269404579",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.212800, 105.076650"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nBANGUN SARI\nSIDO MULYO II\nROHMAN\n1809020912690005\n082269404579\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.213241, 105.078052",
+            "fields": [
+              "NEGERI KATON",
+              "BANGUN SARI",
+              "SIDO MULYO II",
+              "ROHMAN",
+              "1809020912690005",
+              "082269404579",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.213241, 105.078052"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nBANGUN SARI\nMEKAR SARI II\nY. PURWANTO\n1809022205770003\n085381548256\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.223907, 105.067419",
+            "fields": [
+              "NEGERI KATON",
+              "BANGUN SARI",
+              "MEKAR SARI II",
+              "Y. PURWANTO",
+              "1809022205770003",
+              "085381548256",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.223907, 105.067419"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nHALANGAN RATU\nMANDIRI\nY. SUPARNO\n1809020711740002\n085369739070\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.269126, 105.124224",
+            "fields": [
+              "NEGERI KATON",
+              "HALANGAN RATU",
+              "MANDIRI",
+              "Y. SUPARNO",
+              "1809020711740002",
+              "085369739070",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.269126, 105.124224"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nHALANGAN RATU\nTANI SEJATI\nTRIONO\n1809021312830005\n085369739070\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.269126, 105.124225",
+            "fields": [
+              "NEGERI KATON",
+              "HALANGAN RATU",
+              "TANI SEJATI",
+              "TRIONO",
+              "1809021312830005",
+              "085369739070",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.269126, 105.124225"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nHALANGAN RATU\nLARASARI I\nSUKIMAN\n1809020107580165\n085369739070\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.269126, 105.124226",
+            "fields": [
+              "NEGERI KATON",
+              "HALANGAN RATU",
+              "LARASARI I",
+              "SUKIMAN",
+              "1809020107580165",
+              "085369739070",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.269126, 105.124226"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nHALANGAN RATU\nTANI SARI\nSUYITNO\n1809020608680007\n085369739070\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.269126, 105.124227",
+            "fields": [
+              "NEGERI KATON",
+              "HALANGAN RATU",
+              "TANI SARI",
+              "SUYITNO",
+              "1809020608680007",
+              "085369739070",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.269126, 105.124227"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nHALANGAN RATU\nJAYA SARI\nSUYONO\n1809020308670002\n085369739070\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.269126, 105.124228",
+            "fields": [
+              "NEGERI KATON",
+              "HALANGAN RATU",
+              "JAYA SARI",
+              "SUYONO",
+              "1809020308670002",
+              "085369739070",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.269126, 105.124228"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI KATON\nJAYA SANTOSA\nISMANTO\n1809020706750003\n085249942815\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.320144, 105.114702",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI KATON",
+              "JAYA SANTOSA",
+              "ISMANTO",
+              "1809020706750003",
+              "085249942815",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.320144, 105.114702"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI KATON\nTANI MAKMUR\nHAIRONI\n1809020508690002\n085379515475\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.318166, 105.112140",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI KATON",
+              "TANI MAKMUR",
+              "HAIRONI",
+              "1809020508690002",
+              "085379515475",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.318166, 105.112140"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI KATON\nJAYA ILHAM\nNORIZAL\n1809020202720006\n083861032961\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.320441, 105.107231",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI KATON",
+              "JAYA ILHAM",
+              "NORIZAL",
+              "1809020202720006",
+              "083861032961",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.320441, 105.107231"
+            ]
+          },
+          {
+            "raw_block": "NEGERI KATON\nNEGERI KATON\nSUBUR MAKMUR\nNUR HAMID\n1809041802870003\n085380656345\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.320441, 105.107232",
+            "fields": [
+              "NEGERI KATON",
+              "NEGERI KATON",
+              "SUBUR MAKMUR",
+              "NUR HAMID",
+              "1809041802870003",
+              "085380656345",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.320441, 105.107232"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nTEMPEL REJO\nBAKTI JAYA\nWASIS SUGIANTO\n1809071508650004\n085745854890\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.478557, 105.026672",
+            "fields": [
+              "KEDONDONG",
+              "TEMPEL REJO",
+              "BAKTI JAYA",
+              "WASIS SUGIANTO",
+              "1809071508650004",
+              "085745854890",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.478557, 105.026672"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nTEMPEL REJO\nHIJAU SUBUR\nALFIROH\n1809071612750004\n085745854890\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.478557, 105.026673",
+            "fields": [
+              "KEDONDONG",
+              "TEMPEL REJO",
+              "HIJAU SUBUR",
+              "ALFIROH",
+              "1809071612750004",
+              "085745854890",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.478557, 105.026673"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nKERTASANA\nTIRTA SARI\nM. IRFAN\n1809073006830003\n083191660991\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.457383, 104.994334",
+            "fields": [
+              "KEDONDONG",
+              "KERTASANA",
+              "TIRTA SARI",
+              "M. IRFAN",
+              "1809073006830003",
+              "083191660991",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.457383, 104.994334"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nKERTASANA\nTUNAS MUDA\nMUSAD WIBISONO\n1809071506840011\n088276549172\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.455973, 104.995128",
+            "fields": [
+              "KEDONDONG",
+              "KERTASANA",
+              "TUNAS MUDA",
+              "MUSAD WIBISONO",
+              "1809071506840011",
+              "088276549172",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.455973, 104.995128"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nKERTASANA\nTUNAS MUDA MANDIRI\nAHMAD YANI\n1809072708820005\n088286474838\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.457276, 104.993004",
+            "fields": [
+              "KEDONDONG",
+              "KERTASANA",
+              "TUNAS MUDA MANDIRI",
+              "AHMAD YANI",
+              "1809072708820005",
+              "088286474838",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.457276, 104.993004"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nKERTASANA\nWELAS ASIH\nNAHROWI\n1809071106650004\n088287627530\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.457276, 104.993005",
+            "fields": [
+              "KEDONDONG",
+              "KERTASANA",
+              "WELAS ASIH",
+              "NAHROWI",
+              "1809071106650004",
+              "088287627530",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.457276, 104.993005"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nWAY KEPAYANG\nKARYA BAKTI\nHOLIL\n1809071603780005\n085217036439\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.519008, 105.013273",
+            "fields": [
+              "KEDONDONG",
+              "WAY KEPAYANG",
+              "KARYA BAKTI",
+              "HOLIL",
+              "1809071603780005",
+              "085217036439",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.519008, 105.013273"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      },
+      {
+        "page": 6,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "KEDONDONG\nPESAWARAN\nTANI MAJU\nSUMONO\n1809070311630002\n085809511730\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.523395, 105.024918",
+            "fields": [
+              "KEDONDONG",
+              "PESAWARAN",
+              "TANI MAJU",
+              "SUMONO",
+              "1809070311630002",
+              "085809511730",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.523395, 105.024918"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nPESAWARAN\nHARAPAN JAYA\nSARJONO\n1809070307570003\n081379798024\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.523395, 105.024917",
+            "fields": [
+              "KEDONDONG",
+              "PESAWARAN",
+              "HARAPAN JAYA",
+              "SARJONO",
+              "1809070307570003",
+              "081379798024",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.523395, 105.024917"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nSUKAMAJU\nWONO ASRI\nMULYADI\n1809071408900002\n085783202665\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.494163, 104.993091",
+            "fields": [
+              "KEDONDONG",
+              "SUKAMAJU",
+              "WONO ASRI",
+              "MULYADI",
+              "1809071408900002",
+              "085783202665",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.494163, 104.993091"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nSUKAMAJU\nSUKA MAKMUR\nABDUL MUIS\n1809070112700004\n081269097207\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.497140, 105.013217",
+            "fields": [
+              "KEDONDONG",
+              "SUKAMAJU",
+              "SUKA MAKMUR",
+              "ABDUL MUIS",
+              "1809070112700004",
+              "081269097207",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.497140, 105.013217"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nSUKAMAJU\nSARI WANGI\nSUNGKONO\n1809071705780005\n082185316131\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.503804, 105.006436",
+            "fields": [
+              "KEDONDONG",
+              "SUKAMAJU",
+              "SARI WANGI",
+              "SUNGKONO",
+              "1809071705780005",
+              "082185316131",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.503804, 105.006436"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nSINAR HARAPAN\nTANI MAKMUR\nYULIONO\n1809072107820002\n082179933123\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.528418, 105.010285",
+            "fields": [
+              "KEDONDONG",
+              "SINAR HARAPAN",
+              "TANI MAKMUR",
+              "YULIONO",
+              "1809072107820002",
+              "082179933123",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.528418, 105.010285"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nSINAR HARAPAN\nTANI BERKAH\nM. NURDIN\n1809072603620001\n081373810269\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.528418, 105.010286",
+            "fields": [
+              "KEDONDONG",
+              "SINAR HARAPAN",
+              "TANI BERKAH",
+              "M. NURDIN",
+              "1809072603620001",
+              "081373810269",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.528418, 105.010286"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nWAY KEPAYANG\nKARYA BAKTI\nRISNA WAHYUDI\n1809072208860001\n081279626598\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.519008, 105.013274",
+            "fields": [
+              "KEDONDONG",
+              "WAY KEPAYANG",
+              "KARYA BAKTI",
+              "RISNA WAHYUDI",
+              "1809072208860001",
+              "081279626598",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.519008, 105.013274"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nSINAR HARAPAN\nKARYA MUDA\nKHOZAIRI\n3603120201790003\n085664270131\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.528418, 105.010287",
+            "fields": [
+              "KEDONDONG",
+              "SINAR HARAPAN",
+              "KARYA MUDA",
+              "KHOZAIRI",
+              "3603120201790003",
+              "085664270131",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.528418, 105.010287"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nPASAR BARU\nTUNAS HARAPAN 2\nSUPRI HADI\n1809071010830004\n082269550295\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.472062, 105.007988",
+            "fields": [
+              "KEDONDONG",
+              "PASAR BARU",
+              "TUNAS HARAPAN 2",
+              "SUPRI HADI",
+              "1809071010830004",
+              "082269550295",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.472062, 105.007988"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nBABAKAN LOA\nGUNUNG TANJUNG 2\nHASYIM MUSTOFA\n1809071008750007\n085279427619\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.549910, 105.014620",
+            "fields": [
+              "KEDONDONG",
+              "BABAKAN LOA",
+              "GUNUNG TANJUNG 2",
+              "HASYIM MUSTOFA",
+              "1809071008750007",
+              "085279427619",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.549910, 105.014620"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nBABAKAN LOA\nGUNUNG TANJUNG 1\nKUSNADI\n1809070206750004\n081279658119\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.549910, 105.014621",
+            "fields": [
+              "KEDONDONG",
+              "BABAKAN LOA",
+              "GUNUNG TANJUNG 1",
+              "KUSNADI",
+              "1809070206750004",
+              "081279658119",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.549910, 105.014621"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nHARAPAN JAYA\nSRI MELATI\nLATIF\n1809073005790005\n082279487350\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.529471, 105.016634",
+            "fields": [
+              "KEDONDONG",
+              "HARAPAN JAYA",
+              "SRI MELATI",
+              "LATIF",
+              "1809073005790005",
+              "082279487350",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.529471, 105.016634"
+            ]
+          },
+          {
+            "raw_block": "KEDONDONG\nHARAPAN JAYA\nCAHAYA MAKMUR\nAHENDI SOLIHIN\n1809072010740004\n081379353178\nNon Kehutananan\n20\n20\n Insektisida\n -\n-5.529471, 105.016635",
+            "fields": [
+              "KEDONDONG",
+              "HARAPAN JAYA",
+              "CAHAYA MAKMUR",
+              "AHENDI SOLIHIN",
+              "1809072010740004",
+              "081379353178",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-5.529471, 105.016635"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nBATURAJA\nJEJAMA\nNURUL\n1809041012810003\n0813694059\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.410373, 105.016309",
+            "fields": [
+              "WAY LIMA",
+              "BATURAJA",
+              "JEJAMA",
+              "NURUL",
+              "1809041012810003",
+              "0813694059",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.410373, 105.016309"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nSINDANG GARUT\nSUMBER REZEKI 5\nDWI PRASETYO\n1809042911760002\n085758040436\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.407892, 105.015529",
+            "fields": [
+              "WAY LIMA",
+              "SINDANG GARUT",
+              "SUMBER REZEKI 5",
+              "DWI PRASETYO",
+              "1809042911760002",
+              "085758040436",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.407892, 105.015529"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nSINDANG GARUT\nSUMBER REZEKI 3\nAMIN\n1809041011740003\n085768559800\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.408120, 105.011917",
+            "fields": [
+              "WAY LIMA",
+              "SINDANG GARUT",
+              "SUMBER REZEKI 3",
+              "AMIN",
+              "1809041011740003",
+              "085768559800",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.408120, 105.011917"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nPAGUYUBAN\nMARGO GUYUB\nSUHARYANTO\n1809040508630006\n082181318787\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.393016, 105.028003",
+            "fields": [
+              "WAY LIMA",
+              "PAGUYUBAN",
+              "MARGO GUYUB",
+              "SUHARYANTO",
+              "1809040508630006",
+              "082181318787",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.393016, 105.028003"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nPAGUYUBAN\nSIDO MULYO\nTURIMAN\n1809040612720003\n085900422864\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.393016, 105.028004",
+            "fields": [
+              "WAY LIMA",
+              "PAGUYUBAN",
+              "SIDO MULYO",
+              "TURIMAN",
+              "1809040612720003",
+              "085900422864",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.393016, 105.028004"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nWAY HARONG\nKARYA MUDA\nHENDRA\n1809041207740003\n082380594211\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.438780, 105.027496",
+            "fields": [
+              "WAY LIMA",
+              "WAY HARONG",
+              "KARYA MUDA",
+              "HENDRA",
+              "1809041207740003",
+              "082380594211",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.438780, 105.027496"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nSUKAMANDI\nGUNUNG WAJA\nSUHERMAN\n1809040808710008\n085609332598\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.455868, 105.017567",
+            "fields": [
+              "WAY LIMA",
+              "SUKAMANDI",
+              "GUNUNG WAJA",
+              "SUHERMAN",
+              "1809040808710008",
+              "085609332598",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.455868, 105.017567"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nSUKAMANDI\nSUKAMANDI GUNUNG\nMAHFUDDIN\n1809041201800001\n085274384933\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.460878, 105.021410",
+            "fields": [
+              "WAY LIMA",
+              "SUKAMANDI",
+              "SUKAMANDI GUNUNG",
+              "MAHFUDDIN",
+              "1809041201800001",
+              "085274384933",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.460878, 105.021410"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nTANJUNG AGUNG\nSINAR TANJUNG 7\nMUKHLISIN\n1809041212680001\n081379027195\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.437657, 105.039340",
+            "fields": [
+              "WAY LIMA",
+              "TANJUNG AGUNG",
+              "SINAR TANJUNG 7",
+              "MUKHLISIN",
+              "1809041212680001",
+              "081379027195",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.437657, 105.039340"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nPEKONDOH GEDUNG\nSUKA MAKMUR 2\nROSADI\n1809042001620002\n088706481458\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.419051, 105.039115",
+            "fields": [
+              "WAY LIMA",
+              "PEKONDOH GEDUNG",
+              "SUKA MAKMUR 2",
+              "ROSADI",
+              "1809042001620002",
+              "088706481458",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.419051, 105.039115"
+            ]
+          },
+          {
+            "raw_block": "WAY LIMA\nPEKONDOH\nRUKUN MAKMUR 2\nKHAIRUDDIN\n1809041102740002\n085378712633\nNon Kehutananan\n25\n25\n Insektisida\n -\n-5.409317, 105.033125",
+            "fields": [
+              "WAY LIMA",
+              "PEKONDOH",
+              "RUKUN MAKMUR 2",
+              "KHAIRUDDIN",
+              "1809041102740002",
+              "085378712633",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-5.409317, 105.033125"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      }
+    ],
+    "total_pages": 6
+  },
+  "743 Gabungan.pdf": {
+    "metadata": {
+      "nomor_kontrak": "743/KPTS/KU",
+      "tanggal_kontrak": "20 Februari 2025",
+      "nama_penyedia": "an Pestisida \nMendukung Peningkatan Produksi Pertanian Melalui \nKegiatan Padi Lahan Kering"
+    },
+    "tables": [
+      {
+        "page": 4,
+        "headers": [
+          "block_data"
+        ],
+        "rows": [
+          {
+            "raw_block": "1\nTulang Bawang\nDENTE TELADAS Dente Makmur\nMulya Makmur\nRiswanto\n1805272512750009\n0852 8161 0991\nNon Kehutananan\n40\n40\n Insektisida\n -\n-4.431607, 105.74362",
+            "fields": [
+              "1",
+              "Tulang Bawang",
+              "DENTE TELADAS Dente Makmur",
+              "Mulya Makmur",
+              "Riswanto",
+              "1805272512750009",
+              "0852 8161 0991",
+              "Non Kehutananan",
+              "40",
+              "40",
+              "Insektisida",
+              "-",
+              "-4.431607, 105.74362"
+            ]
+          },
+          {
+            "raw_block": "Dente Makmur\nDente Makmur\nKatijan\n1805270607620001\n0852 7387 8702\nNon Kehutananan\n40\n40\n Insektisida\n -\n-4.432175, 105.73652",
+            "fields": [
+              "Dente Makmur",
+              "Dente Makmur",
+              "Katijan",
+              "1805270607620001",
+              "0852 7387 8702",
+              "Non Kehutananan",
+              "40",
+              "40",
+              "Insektisida",
+              "-",
+              "-4.432175, 105.73652"
+            ]
+          },
+          {
+            "raw_block": "Dente Makmur\nMargo Tani\nTasdik Fajariyanto\n1805272302810001\n0821 7568 2081\nNon Kehutananan\n40\n40\n Insektisida\n -\n-4.432295, 105.762734",
+            "fields": [
+              "Dente Makmur",
+              "Margo Tani",
+              "Tasdik Fajariyanto",
+              "1805272302810001",
+              "0821 7568 2081",
+              "Non Kehutananan",
+              "40",
+              "40",
+              "Insektisida",
+              "-",
+              "-4.432295, 105.762734"
+            ]
+          },
+          {
+            "raw_block": "Kekatung\nSugih Waras II\nAhmad Fatah\n1805271007880001\n0853 8460 4281\nNon Kehutananan\n20\n20\n Insektisida\n -\n-4.445366, 105.839624",
+            "fields": [
+              "Kekatung",
+              "Sugih Waras II",
+              "Ahmad Fatah",
+              "1805271007880001",
+              "0853 8460 4281",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-4.445366, 105.839624"
+            ]
+          },
+          {
+            "raw_block": "Kekatung\nSugih Waras III\nSusanto\n1805271211820006\n0812 7843 5246\nNon Kehutananan\n21\n21\n Insektisida\n -\n-4.45552, 105.834977",
+            "fields": [
+              "Kekatung",
+              "Sugih Waras III",
+              "Susanto",
+              "1805271211820006",
+              "0812 7843 5246",
+              "Non Kehutananan",
+              "21",
+              "21",
+              "Insektisida",
+              "-",
+              "-4.45552, 105.834977"
+            ]
+          },
+          {
+            "raw_block": "Simpang Lima\nMekar Tani\nM.Abdul Azis\n1805251901760001\n0822 4488 7629\nNon Kehutananan\n25\n25\n Insektisida\n -\n-4.494842, 105.842729",
+            "fields": [
+              "Simpang Lima",
+              "Mekar Tani",
+              "M.Abdul Azis",
+              "1805251901760001",
+              "0822 4488 7629",
+              "Non Kehutananan",
+              "25",
+              "25",
+              "Insektisida",
+              "-",
+              "-4.494842, 105.842729"
+            ]
+          },
+          {
+            "raw_block": "Simpang Lima\nMaju Jaya\nSugiyoto\n1805272506620002\n0853 1198 7978\nNon Kehutananan\n20\n20\n Insektisida\n -\n-4.494332, 105.842738",
+            "fields": [
+              "Simpang Lima",
+              "Maju Jaya",
+              "Sugiyoto",
+              "1805272506620002",
+              "0853 1198 7978",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-4.494332, 105.842738"
+            ]
+          },
+          {
+            "raw_block": "Simpang Lima\nSido Dadi\nSunardi\n1805270604640002\n0853 5704 3465\nNon Kehutananan\n20\n20\n Insektisida\n -\n-4.494274, 105.843055",
+            "fields": [
+              "Simpang Lima",
+              "Sido Dadi",
+              "Sunardi",
+              "1805270604640002",
+              "0853 5704 3465",
+              "Non Kehutananan",
+              "20",
+              "20",
+              "Insektisida",
+              "-",
+              "-4.494274, 105.843055"
+            ]
+          },
+          {
+            "raw_block": "Simpang Lima\nSri Rejeki\nKadek Sumertha\n1807120504880004\n0822 7828 4982\nNon Kehutananan\n15\n15\n Insektisida\n -\n-4.495114, 105. 842634",
+            "fields": [
+              "Simpang Lima",
+              "Sri Rejeki",
+              "Kadek Sumertha",
+              "1807120504880004",
+              "0822 7828 4982",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-4.495114, 105. 842634"
+            ]
+          },
+          {
+            "raw_block": "BANJAR AGUNG\nMoris Jaya\nTunas Harapan 5\nMustari\n1805081603790004\n081369914403\nNon Kehutananan\n15\n15\n Insektisida\n -\n-4'28713, 105.27464",
+            "fields": [
+              "BANJAR AGUNG",
+              "Moris Jaya",
+              "Tunas Harapan 5",
+              "Mustari",
+              "1805081603790004",
+              "081369914403",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-4'28713, 105.27464"
+            ]
+          },
+          {
+            "raw_block": "Moris Jaya\nSekar Arum\nI Made Kantun\n1805084312700004\n082214204469\nNon Kehutananan\n15\n15\n Insektisida\n -\n-4'29562, 105.28805",
+            "fields": [
+              "Moris Jaya",
+              "Sekar Arum",
+              "I Made Kantun",
+              "1805084312700004",
+              "082214204469",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-4'29562, 105.28805"
+            ]
+          },
+          {
+            "raw_block": "Tri Dharma Wirajaya\nKarya Baru\nMulyono\n1805081111570001\n081293399841\nNon Kehutananan\n10\n10\n Insektisida\n -\n-4'27877, 105.30616",
+            "fields": [
+              "Tri Dharma Wirajaya",
+              "Karya Baru",
+              "Mulyono",
+              "1805081111570001",
+              "081293399841",
+              "Non Kehutananan",
+              "10",
+              "10",
+              "Insektisida",
+              "-",
+              "-4'27877, 105.30616"
+            ]
+          },
+          {
+            "raw_block": "Tri Mukti Jaya\nUsaha Makmur III\nMisto. H\n1805080802810003\n082371133678\nNon Kehutananan\n13\n13\n Insektisida\n -\n-4'28618, 105.27872",
+            "fields": [
+              "Tri Mukti Jaya",
+              "Usaha Makmur III",
+              "Misto. H",
+              "1805080802810003",
+              "082371133678",
+              "Non Kehutananan",
+              "13",
+              "13",
+              "Insektisida",
+              "-",
+              "-4'28618, 105.27872"
+            ]
+          },
+          {
+            "raw_block": "Banjar Dewa\nBeringin Jaya\nWayan Ardana\n1805080404810001\n0812 7154 0263\nNon Kehutananan\n12\n12\n Insektisida\n -\n4.327222, 105.210000",
+            "fields": [
+              "Banjar Dewa",
+              "Beringin Jaya",
+              "Wayan Ardana",
+              "1805080404810001",
+              "0812 7154 0263",
+              "Non Kehutananan",
+              "12",
+              "12",
+              "Insektisida",
+              "-",
+              "4.327222, 105.210000"
+            ]
+          },
+          {
+            "raw_block": "BANJAR MARGO\nRingin Sari\nWono Rejo\nMuhammad Fauzi\n1801101212900002\n0822 8070 2337\nNon Kehutananan\n17\n17\n Insektisida\n -\n-4.1358, 105.2050",
+            "fields": [
+              "BANJAR MARGO",
+              "Ringin Sari",
+              "Wono Rejo",
+              "Muhammad Fauzi",
+              "1801101212900002",
+              "0822 8070 2337",
+              "Non Kehutananan",
+              "17",
+              "17",
+              "Insektisida",
+              "-",
+              "-4.1358, 105.2050"
+            ]
+          },
+          {
+            "raw_block": "Ringin Sari\nIndah Makmur\nDadang Sujatno\n1805201011800000)\n0852 6723 9309\nNon Kehutananan\n2\n2\n Insektisida\n -\n-4.1411, 105.2110",
+            "fields": [
+              "Ringin Sari",
+              "Indah Makmur",
+              "Dadang Sujatno",
+              "1805201011800000)",
+              "0852 6723 9309",
+              "Non Kehutananan",
+              "2",
+              "2",
+              "Insektisida",
+              "-",
+              "-4.1411, 105.2110"
+            ]
+          },
+          {
+            "raw_block": "Ringin Sari\nBina Karya\nSugita\n1805201510630001\n0852 3560 2661\nNon Kehutananan\n2\n2\n Insektisida\n -\n-4.25302, 105.333591864276",
+            "fields": [
+              "Ringin Sari",
+              "Bina Karya",
+              "Sugita",
+              "1805201510630001",
+              "0852 3560 2661",
+              "Non Kehutananan",
+              "2",
+              "2",
+              "Insektisida",
+              "-",
+              "-4.25302, 105.333591864276"
+            ]
+          },
+          {
+            "raw_block": "Ringin Sari\nBina Warga Pratama\nSuripman\n1805200404770000)\n0852 6779 9578\nNon Kehutananan\n3\n3\n Insektisida\n -\n-4.26206, 105.33731133",
+            "fields": [
+              "Ringin Sari",
+              "Bina Warga Pratama",
+              "Suripman",
+              "1805200404770000)",
+              "0852 6779 9578",
+              "Non Kehutananan",
+              "3",
+              "3",
+              "Insektisida",
+              "-",
+              "-4.26206, 105.33731133"
+            ]
+          },
+          {
+            "raw_block": "Ringin Sari\nNusa Indah\nPoniman\n1805200107770010)\n0823 4969 2771\nNon Kehutananan\n15\n15\n Insektisida\n -\n-4.26267, 105.33003431229",
+            "fields": [
+              "Ringin Sari",
+              "Nusa Indah",
+              "Poniman",
+              "1805200107770010)",
+              "0823 4969 2771",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-4.26267, 105.33003431229"
+            ]
+          },
+          {
+            "raw_block": "Ringin Sari\nHarapan Makmur\nSeni\n1805200909720000)\n0815 3233 5324\nNon Kehutananan\n8\n8\n Insektisida\n -\n-4.231831, 105.352396",
+            "fields": [
+              "Ringin Sari",
+              "Harapan Makmur",
+              "Seni",
+              "1805200909720000)",
+              "0815 3233 5324",
+              "Non Kehutananan",
+              "8",
+              "8",
+              "Insektisida",
+              "-",
+              "-4.231831, 105.352396"
+            ]
+          },
+          {
+            "raw_block": "Catur Karya Buana Jaya\nRukun Makmur\nDarno\n1805200409630001\n0823 7559 699\nNon Kehutananan\n3\n3\n Insektisida\n -\n-4.49402, 105.21858",
+            "fields": [
+              "Catur Karya Buana Jaya",
+              "Rukun Makmur",
+              "Darno",
+              "1805200409630001",
+              "0823 7559 699",
+              "Non Kehutananan",
+              "3",
+              "3",
+              "Insektisida",
+              "-",
+              "-4.49402, 105.21858"
+            ]
+          },
+          {
+            "raw_block": "Sumber Makmur\nObor\nNur Santo\n 1805202002850002\n 0823 5870 525\nNon Kehutananan\n10\n10\n Insektisida\n -\n-4.236831, 105.27477",
+            "fields": [
+              "Sumber Makmur",
+              "Obor",
+              "Nur Santo",
+              "1805202002850002",
+              "0823 5870 525",
+              "Non Kehutananan",
+              "10",
+              "10",
+              "Insektisida",
+              "-",
+              "-4.236831, 105.27477"
+            ]
+          },
+          {
+            "raw_block": "Penawar Rejo\nMargo Utomo\nJumikan\n1805200807730001\n081379470280\nNon Kehutananan\n15\n15\n Insektisida\n -\n-4.2586, 105.2382",
+            "fields": [
+              "Penawar Rejo",
+              "Margo Utomo",
+              "Jumikan",
+              "1805200807730001",
+              "081379470280",
+              "Non Kehutananan",
+              "15",
+              "15",
+              "Insektisida",
+              "-",
+              "-4.2586, 105.2382"
+            ]
+          },
+          {
+            "raw_block": "Penawar Rejo\nMaju Lancar\nSagiyo\n1805200904740002\n085382734224\nNon Kehutananan\n5\n5\n Insektisida\n -\n-4.2644, 105.2587",
+            "fields": [
+              "Penawar Rejo",
+              "Maju Lancar",
+              "Sagiyo",
+              "1805200904740002",
+              "085382734224",
+              "Non Kehutananan",
+              "5",
+              "5",
+              "Insektisida",
+              "-",
+              "-4.2644, 105.2587"
+            ]
+          },
+          {
+            "raw_block": "PENAWAR TAMA\nTri Tunggal Jaya\nMaju Makmur\nDeni Winarno\n1802070712930003\n0822 1647 9181\nNon Kehutananan\n18\n18\n Insektisida\n -\n-4.148875, 105.40406",
+            "fields": [
+              "PENAWAR TAMA",
+              "Tri Tunggal Jaya",
+              "Maju Makmur",
+              "Deni Winarno",
+              "1802070712930003",
+              "0822 1647 9181",
+              "Non Kehutananan",
+              "18",
+              "18",
+              "Insektisida",
+              "-",
+              "-4.148875, 105.40406"
+            ]
+          }
+        ],
+        "method": "block_parsing"
+      }
+    ],
+    "total_pages": 4
+  }
+}

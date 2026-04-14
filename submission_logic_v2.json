@@ -1,0 +1,1673 @@
+{
+  "tabs": [
+    {
+      "name": "DATA KONTRAK",
+      "actions": [
+        {
+          "text": "Profile",
+          "id": "",
+          "class": "btn btn-default btn-flat"
+        },
+        {
+          "text": "Lockscreen",
+          "id": "",
+          "class": "btn btn-default btn-flat"
+        },
+        {
+          "text": "Sign out",
+          "id": "",
+          "class": "btn btn-default btn-flat"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Tidak",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "Ya",
+          "id": "btn-hapus-kontrak",
+          "class": "btn btn-danger"
+        }
+      ],
+      "modals": []
+    },
+    {
+      "name": "RINCIAN PENYALURAN",
+      "actions": [
+        {
+          "text": "Profile",
+          "id": "",
+          "class": "btn btn-default btn-flat"
+        },
+        {
+          "text": "Lockscreen",
+          "id": "",
+          "class": "btn btn-default btn-flat"
+        },
+        {
+          "text": "Sign out",
+          "id": "",
+          "class": "btn btn-default btn-flat"
+        },
+        {
+          "text": "AJUKAN PEMBAYARAN",
+          "id": "btn-ajukan-pembayaran",
+          "class": "btn btn-success btn-block btn-sm dim"
+        },
+        {
+          "text": "KALKULASI MONITORING KONTRAK",
+          "id": "",
+          "class": "btn btn-primary btn-xs btn-block dim"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Tidak",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "Ya",
+          "id": "btn-hapus-kontrak",
+          "class": "btn btn-danger"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Ajukan kontrak",
+          "id": "btn-ajukan-kontrak",
+          "class": "btn btn-primary"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Close",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "Submit",
+          "id": "",
+          "class": "btn btn-primary btn-simpan"
+        },
+        {
+          "text": "TAMBAH RINCIAN PENERIMA BANTUAN",
+          "id": "",
+          "class": "btn btn-success dim"
+        },
+        {
+          "text": "IMPORT PENERIMA DARI FILE EXCEL",
+          "id": "",
+          "class": "btn btn-success pull-right dim"
+        },
+        {
+          "text": "Data Import Excel",
+          "id": "",
+          "class": "btn btn-success hidden dim"
+        },
+        {
+          "text": "Tambah penerima baru",
+          "id": "",
+          "class": "btn btn-warning btn-xs pull-right"
+        },
+        {
+          "text": "Simpan Rincian",
+          "id": "btn-save-tambah-rincian",
+          "class": "btn btn-primary btn-block btn-simpandata"
+        },
+        {
+          "text": "Import Excel",
+          "id": "btn-import-excel",
+          "class": "btn btn-primary btn-sm"
+        },
+        {
+          "text": "Data belum submit",
+          "id": "btn-data-belum-submit",
+          "class": "btn btn-primary"
+        },
+        {
+          "text": "Data Salah",
+          "id": "btn-data-salah",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "Export data salah",
+          "id": "btn-export-data-salah",
+          "class": "btn btn-success pull-right"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Close",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "HAPUS SEMUA RINCIAN KONTRAK",
+          "id": "",
+          "class": "btn btn-danger btn-xs dim"
+        },
+        {
+          "text": "EXPORT EXCEL",
+          "id": "",
+          "class": "btn btn-success btn-xs dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "Sudah Diterima",
+          "id": "",
+          "class": "btn btn-success btn-xs"
+        },
+        {
+          "text": "UPDATE STATUS",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "EDIT TITIK BAGI",
+          "id": "",
+          "class": "btn btn-warning btn-xs pull-right dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "DO & Bukti Terima",
+          "id": "",
+          "class": "btn btn-xs btn-primary dim"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Tutup",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "Simpan",
+          "id": "btn-save-tambah-penerima",
+          "class": "btn btn-primary"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Tutup",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "Simpan",
+          "id": "btn-save-edit-rincian",
+          "class": "btn btn-primary"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Tutup",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Tutup",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Close",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "\u00d7",
+          "id": "",
+          "class": "close"
+        },
+        {
+          "text": "Tidak",
+          "id": "",
+          "class": "btn btn-default"
+        },
+        {
+          "text": "Ya",
+          "id": "btn-hapus-semua-rincian-kontrak",
+          "class": "btn btn-danger"
+        }
+      ],
+      "modals": [
+        {
+          "title": "Tambah Penerima Baru",
+          "fields": [
+            {
+              "label": "dt[p_nik]",
+              "name": "dt[p_nik]",
+              "type": "number",
+              "required": false,
+              "options": []
+            },
+            {
+              "label": "dt[p_nama]",
+              "name": "dt[p_nama]",
+              "type": "text",
+              "required": false,
+              "options": []
+            },
+            {
+              "label": "file",
+              "name": "file",
+              "type": "file",
+              "required": true,
+              "options": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

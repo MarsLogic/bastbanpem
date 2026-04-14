@@ -1,0 +1,2341 @@
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>
+    APLIKASI MANAJEMEN BAST BANTUAN PEMERINTAH     2025  </title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.7 -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <!-- Select 2 -->
+
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/select2/dist/css/select2.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/font-awesome/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <!-- <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/Ionicons/css/ionicons.min.css"> -->
+  <!-- Material Icons -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/fonts/material-icons/css/materialdesignicons.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet"
+    href="https://bastbanpem.pertanian.go.id/assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/dist/css/AdminLTE.css">
+  <!-- <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/dist/css/custom.css"> -->
+  <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin="" /> -->
+  <!-- AdminLTE Skins. Choose a skin from the css/skins
+    folder instead of downloading all of them to reduce the load. -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/dist/css/skins/_all-skins.min.css">
+  <!-- Morris chart -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/morris.js/morris.css">
+  <!-- jvectormap -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/jvectormap/jquery-jvectormap.css">
+  <!-- Date Picker -->
+  <link rel="stylesheet"
+    href="https://bastbanpem.pertanian.go.id/assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
+  <!-- Daterange picker -->
+  <link rel="stylesheet"
+    href="https://bastbanpem.pertanian.go.id/assets/bower_components/bootstrap-daterangepicker/daterangepicker.css">
+  <!-- bootstrap wysihtml5 - text editor -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.css">
+  <link rel="stylesheet" href="https://maxcdn.icons8.com/fonts/line-awesome/1.1/css/line-awesome-font-awesome.min.css">
+  <style type="text/css">@font-face {font-family:Roboto;font-style:normal;font-weight:400;src:url(/cf-fonts/s/roboto/5.0.11/latin-ext/400/normal.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:400;src:url(/cf-fonts/s/roboto/5.0.11/latin/400/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:400;src:url(/cf-fonts/s/roboto/5.0.11/vietnamese/400/normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:400;src:url(/cf-fonts/s/roboto/5.0.11/cyrillic-ext/400/normal.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:400;src:url(/cf-fonts/s/roboto/5.0.11/greek/400/normal.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:400;src:url(/cf-fonts/s/roboto/5.0.11/cyrillic/400/normal.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:400;src:url(/cf-fonts/s/roboto/5.0.11/greek-ext/400/normal.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:700;src:url(/cf-fonts/s/roboto/5.0.11/latin/700/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:700;src:url(/cf-fonts/s/roboto/5.0.11/greek/700/normal.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:700;src:url(/cf-fonts/s/roboto/5.0.11/greek-ext/700/normal.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:700;src:url(/cf-fonts/s/roboto/5.0.11/latin-ext/700/normal.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:700;src:url(/cf-fonts/s/roboto/5.0.11/vietnamese/700/normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:700;src:url(/cf-fonts/s/roboto/5.0.11/cyrillic/700/normal.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Roboto;font-style:normal;font-weight:700;src:url(/cf-fonts/s/roboto/5.0.11/cyrillic-ext/700/normal.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}</style>
+
+  <!-- Custom template bootstrap -->
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/template-bootstrap/inspinia_buttons.css">
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/template-bootstrap/table_v07.css">
+  <link rel="stylesheet" href="https://bastbanpem.pertanian.go.id/assets/bower_components/template-bootstrap/custom_style.css">
+
+  <!-- jQuery 3 -->
+  <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/jquery/dist/jquery.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <!-- jQuery UI 1.11.4 -->
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://formbuilder.online/assets/js/form-builder.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://formbuilder.online/assets/js/form-render.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <!-- DataTables -->
+  <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/datatables.net/js/jquery.dataTables.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.flash.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script type="26052257ddeaec8764b18ec4-text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.min.js"></script>
+  <script type="26052257ddeaec8764b18ec4-text/javascript">
+    $.fn.dataTableExt.oApi.fnPagingInfo = function (oSettings) {
+      return {
+        "iStart": oSettings._iDisplayStart,
+        "iEnd": oSettings.fnDisplayEnd(),
+        "iLength": oSettings._iDisplayLength,
+        "iTotal": oSettings.fnRecordsTotal(),
+        "iFilteredTotal": oSettings.fnRecordsDisplay(),
+        "iPage": Math.ceil(oSettings._iDisplayStart / oSettings._iDisplayLength),
+        "iTotalPages": Math.ceil(oSettings.fnRecordsDisplay() / oSettings._iDisplayLength)
+      };
+    };
+    function idleLogout() {
+      var t;
+      window.onload = resetTimer;
+      window.onmousemove = resetTimer;
+      window.onmousedown = resetTimer; // catches touchscreen presses
+      window.onclick = resetTimer;     // catches touchpad clicks
+      window.onscroll = resetTimer;    // catches scrolling with arrow keys
+      window.onkeypress = resetTimer;
+      function logout() {
+        window.location.href = 'https://bastbanpem.pertanian.go.id/login/lockscreen?user=';
+      }
+      function resetTimer() {
+        clearTimeout(t);
+        t = setTimeout(logout, 21600000);  // time is in milliseconds //60000 = 1 minutes
+      }
+    }
+    idleLogout();
+
+  </script>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-156986114-2" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+  <script type="26052257ddeaec8764b18ec4-text/javascript">
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-156986114-2');
+  </script>
+  <style type="text/css">@font-face {font-family:Poppins;font-style:normal;font-weight:400;src:url(/cf-fonts/s/poppins/5.0.11/latin/400/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Poppins;font-style:normal;font-weight:400;src:url(/cf-fonts/s/poppins/5.0.11/devanagari/400/normal.woff2);unicode-range:U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+25CC,U+A830-A839,U+A8E0-A8FF;font-display:swap;}@font-face {font-family:Poppins;font-style:normal;font-weight:400;src:url(/cf-fonts/s/poppins/5.0.11/latin-ext/400/normal.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}</style>
+  <!-- Google Font -->
+  <style type="text/css">@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/vietnamese/300/normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic/300/normal.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic-ext/300/normal.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek-ext/300/normal.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin/300/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin-ext/300/normal.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek/300/normal.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic-ext/400/normal.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic/400/normal.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek/400/normal.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin-ext/400/normal.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/vietnamese/400/normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin/400/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek-ext/400/normal.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic/600/normal.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek-ext/600/normal.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin-ext/600/normal.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek/600/normal.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/vietnamese/600/normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin/600/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic-ext/600/normal.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:700;src:url(/cf-fonts/s/source-sans-pro/5.0.11/vietnamese/700/normal.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:700;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic/700/normal.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:700;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic-ext/700/normal.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:700;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek-ext/700/normal.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:700;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin-ext/700/normal.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:700;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek/700/normal.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:normal;font-weight:700;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin/700/normal.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek-ext/300/italic.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/vietnamese/300/italic.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin/300/italic.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek/300/italic.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic/300/italic.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic-ext/300/italic.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:300;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin-ext/300/italic.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic-ext/400/italic.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek-ext/400/italic.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin-ext/400/italic.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin/400/italic.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic/400/italic.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/vietnamese/400/italic.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:400;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek/400/italic.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin-ext/600/italic.woff2);unicode-range:U+0100-02AF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic/600/italic.woff2);unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/latin/600/italic.woff2);unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/vietnamese/600/italic.woff2);unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek/600/italic.woff2);unicode-range:U+0370-03FF;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/cyrillic-ext/600/italic.woff2);unicode-range:U+0460-052F,U+1C80-1C88,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F;font-display:swap;}@font-face {font-family:Source Sans Pro;font-style:italic;font-weight:600;src:url(/cf-fonts/s/source-sans-pro/5.0.11/greek-ext/600/italic.woff2);unicode-range:U+1F00-1FFF;font-display:swap;}</style>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .select2 {
+      border-radius: 0px;
+    }
+
+    .ui-autocomplete {
+      z-index: 2147483647;
+    }
+
+    .modal {
+      overflow: auto !important;
+    }
+
+    .content-header {
+      background-color: #ffffff !important;
+      border: solid 2px #908d8d;
+      padding: 10px 20px;
+      margin: 0px 0px 10px 0px;
+      color: black;
+      border-radius: 5px;
+    }
+
+    @media (min-width: 1200px) {
+      .container {
+        width: 1363px;
+      }
+    }
+
+    .fixed .content-wrapper,
+    .fixed .right-side {
+      padding-top: 30px;
+    }
+
+    .content-wrapper>section.content {}
+
+    @media (min-width: 768px) {
+      .navbar-custom {
+        width: 900px;
+        height: 50px;
+        /*overflow-y: hidden;*/
+        /*overflow-x: auto;*/
+        white-space: nowrap;
+        float: none;
+      }
+
+      .navbar-custom::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px transparent;
+        background-color: transparent;
+      }
+
+      .navbar-custom::-webkit-scrollbar {
+        width: 10px;
+        height: 4px;
+        background-color: transparent;
+      }
+
+      .navbar-custom::-webkit-scrollbar-thumb {
+        background-color: transparent !important;
+        border: 2px solid transparent !important;
+      }
+
+      .navbar-custom:hover::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .navbar-custom:hover::-webkit-scrollbar {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+
+      .navbar-custom:hover::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 2px solid rgba(0, 0, 0, 0.2);
+      }
+
+      @media (min-width: 768px) {
+        .navbar-custom>li {
+          float: none;
+          display: inline-block;
+        }
+      }
+    }
+
+    .navbar-custom li a {
+      border: 0px !important;
+    }
+
+    hr {
+      border: 1px dashed;
+    }
+
+    .btn-col {
+      background-color: #b9c763;
+      color: white;
+    }
+
+    .btn-col:hover {
+      color: white;
+    }
+
+    .main-header .navbar {
+      background: rgb(101, 177, 209);
+      background: linear-gradient(225deg, rgba(101, 177, 209, 1) 0%, rgba(26, 106, 155, 1) 100%);
+      border: 0px !important;
+
+    }
+
+    .skin-black-light .main-header .logo {
+      background-color: #2c3e50;
+      border: 0px !important;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .skin-black-light .main-header .logo {
+      color: white;
+      font-weight: bold;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .skin-black-light .main-header .logo:hover {
+      background-color: #2c3e50;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .navbar-custom-menu ul li {
+      border: none !important;
+    }
+
+    .skin-black-light .main-header .navbar-static-top a {
+      background-color: transparent !important;
+      border: 0px !important;
+      color: white !important;
+    }
+
+    .skin-black-light .main-header .navbar-static-top a:hover {
+      background-color: transparent !important;
+    }
+
+    .user-footer {
+      background-color: black !important;
+    }
+
+    .user-footer a {
+      color: black !important;
+    }
+
+    .header {
+      background-color: #d6d4d4 !important;
+    }
+
+    .link-nav {
+      color: #fff !important;
+    }
+
+    .link-nav:hover {
+      color: #000 !important;
+      background-color: #fff !important;
+    }
+
+    .link-nav:focus {
+      color: #000 !important;
+      background-color: #fff !important;
+    }
+
+    .menukanan:hover {
+      color: #fff !important;
+      background-color: #233d56 !important;
+    }
+
+    .menukanan:focus {
+      color: #fff !important;
+      background-color: #233d56 !important;
+    }
+
+    .main-footer {
+      background: #3A5A6E;
+    }
+
+    .disabled-link {
+      pointer-events: none;
+      cursor: not-allowed;
+  }
+  </style>
+</head>
+
+<body class="hold-transition skin-black sidebar-mini fixed  layout-top-nav">
+    <!-- Modal -->
+  <div class="wrapper" style="margin-bottom: -20px;">
+    <header class="main-header">
+      <!-- Logo -->
+      <a href="https://bastbanpem.pertanian.go.id/assets/images/logo.png" class="logo">
+        <!-- mini logo for sidebar mini 50x50 pixels -->
+        <span class="logo-mini">
+          SM        </span>
+        <!-- logo for regular state and mobile devices -->
+        <span class="logo-lg" style="font-family: 'Poppins', sans-serif;">
+          <p>BASTBANPEM 2022</p>        </span>
+      </a>
+      <nav class="navbar navbar-static-top">
+        <div class="container">
+          <div class="navbar-header">
+            <a href="https://bastbanpem.pertanian.go.id/" class="navbar-brand" style="margin-left: -217px;padding: 3px 0px;border:0px;">
+              <img src="https://bastbanpem.pertanian.go.id/assets/images/logo.png"
+                style="font-family: 'Poppins', sans-serif; height:45px;padding: 5px;display: inline-block;float: left;">
+              <span
+                style="font-family: 'Poppins', sans-serif; display: inline-block;font-weight: bold;font-family: Poppins-Bold;float: left;padding-top: 13px;font-size: 15px;font-family: 'Poppins', sans-serif;   padding-right: 22px; color: #fff;">BANPEM
+                2025              </span>
+            </a>
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse">
+              <i class="fa fa-bars"></i>
+            </button>
+          </div>
+          <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+            <ul class="nav navbar-nav navbar-custom" style="margin-left: -60px;color: #ffffff;">
+                              <li>
+                  <a class="link-nav" href="https://bastbanpem.pertanian.go.id/"><i class="fa  fa-home"></i> Home</a>
+                </li>
+                                                                                          <li class="dropdown">
+                  <a href="#" class="dropdown-toggle link-nav" type="button" data-toggle="dropdown"><i
+                      class="fa fa-list"></i> Semua Bantuan </a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a href="https://bastbanpem.pertanian.go.id/kontrak/listkontrakvendor"><i class="fa fa-list"></i> List Barang</a>
+                    </li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="link-nav" href="https://bastbanpem.pertanian.go.id/home/panduan"><i class="fa fa-book"></i> Panduan</a>
+                </li>
+                <li>
+                  <a class="link-nav" href="https://bastbanpem.pertanian.go.id/home/faq"><i class="fa fa-question-circle"></i> F.A.Q</a>
+                </li>
+                <li>
+                  <a class="link-nav" href="https://bastbanpem.pertanian.go.id/home/chat"><i class="fa fa-comments-o"></i> Pertanyaan</a>
+                </li>
+                                        </ul>
+          </div>
+          <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+              <!-- User Account: style can be found in dropdown.less -->
+              <li class="dropdown user user-menu" style="background: rgba(255,255,255,0.1);">
+                                <a href="#" class="dropdown-toggle menukanan" data-toggle="dropdown" style="border:0px;">
+                  <span class="hidden-xs" style="color: #fff;"><i class="fa fa-user"></i>
+                    CV KARYA ALFREDO N...                  </span>
+                  <span class="caret" style="color: #fff;"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <!-- User image -->
+                  <li class="user-header">
+                    <p>
+                      CV KARYA ALFREDO NUSANTARA <br>
+                      Vendor<br><span style="font-size:15px;">-84.299.005.3-416.000</span><br>                    </p>
+                  </li>
+                  <!-- Menu Footer-->
+                  <li class="user-footer">
+                    <!-- <div class="pull-left"> -->
+                    <a href="https://bastbanpem.pertanian.go.id/master/user/editUser/N1lSMTBOdVFvcFdrL0Z4RnFGUlVjQT09"
+                      class="btn btn-default btn-flat"><i class="fa fa-user"></i> Profile</a>
+                    <a href="https://bastbanpem.pertanian.go.id/login/lockscreen?user=84.299.005.3-416.000"
+                      class="btn btn-default btn-flat"><i class="fa fa-key"></i> Lockscreen</a>
+                                        <!-- </div> -->
+                    <!-- <div class="pull-right"> -->
+                    <a href="https://bastbanpem.pertanian.go.id/login/logout" class="btn btn-default btn-flat"><i
+                        class="fa fa-sign-out"></i> Sign out</a>
+                  </li>
+                </ul>
+              </li>
+              <!-- Control Sidebar Toggle Button -->
+              <!-- <li>
+                    <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+                  </li> -->
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <div class="content-wrapper">
+      <section class="content">
+        <div class="container-fluid" style="margin-top: 20px;">
+    <script type="26052257ddeaec8764b18ec4-text/javascript" src="https://bastbanpem.pertanian.go.id/assets/tinymce/js/tinymce/tinymce.min.js"></script>
+
+<div class="row newContent">
+  <div class="col-md-12 no-padding">
+    <ul class="nav nav-tabs navTabsCustom">
+      <li class="nav-item">
+        <a href="https://bastbanpem.pertanian.go.id/kontrak/detail/7395" class="nav-link"><i class="mdi mdi-note-text"></i> DATA KONTRAK</a>
+      </li>
+      <li class="nav-item">
+        <a href="https://bastbanpem.pertanian.go.id/kontrak/rincian_penyaluran/7395" class="nav-link active"><i class="mdi mdi-file-tree"></i> RINCIAN PENYALURAN</a>
+      </li>
+      <li class="nav-item">
+        <a href="https://bastbanpem.pertanian.go.id/kontrak/bast/7395" class="nav-link "><i class="mdi mdi-file-document"></i> BAST</a>
+      </li>
+
+              <li class="nav-item">
+          <a href="https://bastbanpem.pertanian.go.id/kontrak/catatan_satker/7395" class="nav-link "><i class="mdi mdi-file-multiple"></i> CATATAN DARI SATKER</a>
+        </li>
+        <li class="nav-item">
+          <a href="https://bastbanpem.pertanian.go.id/kontrak/catatan_aktifitas/7395" class="nav-link "><i class="mdi mdi-file-multiple"></i> CATATAN AKTIVITAS REVIEW</a>
+        </li>
+      
+          </ul>
+
+    <div class="tab-content tabLight">
+      <div class="tab-pane active">
+        <h4 style="margin-top: 0px;">
+          <b> DATA KONTRAK BARANG </b>
+                                        </h4>
+
+        <div class="row">
+			<div class="col-md-3" style="margin-top: 15px">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<b style="font-size:16px;">EP-01KAGNCBVE683NN1DSW73ZBW8P</b>
+						<br>
+						<small> Status Review : <span class="badge bg-red">Belum diajukan</span> </small>
+																																				<button id="btn-ajukan-pembayaran" class="btn btn-success btn-block btn-sm dim" style="margin-top:10px"> <i class="fa fa-arrow-right"></i> Ajukan Pembayaran</button><br>
+									<span style="color: red;font-size: 9px;">*Note : Sebelum ajukan pembayaran silahkan klik tombol kalkuasi monitoring kontrak yang ada dibawah dan Pastikan sudah Ajukan Pembayaran untuk dapat melakukan pengajuan review.</span>
+																											<hr class="hr_dashed">
+						
+				    	<table class="table table-striped table-bordered">
+			                <tr>
+			                    <td>
+			                    	<sup>Eselon 1</sup><br>
+			                    	<b>DITJEN PRASARANA DAN SARANA PERTANIAN</b>
+			                    </td>
+							</tr>
+							<tr>
+			                    <td>
+			                    	<sup>Satker</sup><br>
+			                    	<b>DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN - 633656KP</b>
+			                    </td>
+							</tr>
+							<tr>
+			                    <td>
+			                    	<sup>Tanggal Kontrak</sup><br>
+			                    	<b>24-11-2025</b>
+			                    </td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Nilai Kontrak</sup><br>
+									<b>Rp. 422.959.124</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Nomor Dipa</sup><br>
+									<b>DIPA-018.08.1.633656/2025 </b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Kegiatan/Output/Akun</sup><br>
+									<b>3993.RAG.004.053.A/526311/3993.RAG</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									
+									<sup>Judul Kegiatan</sup><br>
+									<b></b>
+								</td>
+
+							</tr>
+							<tr>
+								<td>
+									<sup>Titik Bagi</sup><br>
+									<b>Desa</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Tipe Penerima</sup><br>
+									<b>Poktan/Gapoktan/Brigade/Lainnya</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Jenis Kontrak</sup><br>
+									<b>Barang</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>vendor</sup><br>
+									<b>CV KARYA ALFREDO NUSANTARA</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>NPWP vendor</sup><br>
+									<b>84.299.005.3-416.000</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>File Kontrak/SPK</sup><br>
+								<b>																	                							                		 <a href="https://bastbanpem.pertanian.go.id/webfile/dokumen_kontrak/7395-633656-01808/EP-01KAGNCBVE683NN1DSW73ZBW8P.pdf" target="_blank"><span class="badge bg-green"><i class="fa fa-download"></i> download</span></a>
+						                							                																	</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>File CPCL</sup><br>
+									<b>
+																												                  <a href="https://bastbanpem.pertanian.go.id/webfile/dokumen_kontrak/7395-633656-01808/EP-01KAGNCBVE683NN1DSW73ZBW8P1.pdf" target="_blank"><span class="badge bg-green"><i class="fa fa-download"></i> download</span></a>
+							                																			</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+												                        	<a href="https://bastbanpem.pertanian.go.id/kontrak/synckontrak/7395" class="btn btn-primary btn-xs btn-block dim"><i class="fa fa-refresh"></i> Kalkulasi Monitoring Kontrak</a>
+			                        								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Nilai Penyaluran</sup>
+									<br>
+									<b>Rp. 422.959.124</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Nilai Bast</sup><br>
+									<b>Rp. 0</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Nilai SPM</sup><br>
+									<b>Rp. 0</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Nilai Konfirmasi Penerima</sup><br>
+									<b>Rp. 145.581.546</b>
+								</td>
+							</tr>
+														<tr>
+								<td>
+									<sup>Dibuat oleh</sup><br>
+									<b>DIREKTORAT JENDERAL PRASARANA DAN SARANA PERTANIAN</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Apakah kontrak ini menggunakan ongkir terpisah ?</sup><br>
+									<b>Ya</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Apakah kontrak ini Swakelola ?</sup><br>
+									<b>Tidak</b>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<sup>Apakah kontrak ini meggunakan Termin ?</sup><br>
+									<b>Tidak</b> <br>
+							        								</td>
+							</tr>
+														
+						</table>
+							
+						<table class="table table-striped table-bordered">
+			          <thead>
+			            <tr>
+			              <th colspan="3"><h4>Kegiatan & Wilayah</h4></th>
+			            </tr>
+			            <tr style="background-color: #ddd;">
+			              <th> Judul Kegiatan</th>
+			              <th> Kode KRO</th>
+			              <th> Kode RO</th>
+			            </tr>
+			          </thead>
+			          <tbody>
+			            			          </tbody>
+			        </table>
+
+			        															
+
+					</div>
+			    </div>
+			</div>
+
+			<!-- Modal -->
+			<div id="modal-hapus" class="modal fade" role="dialog">
+			 	<div class="modal-dialog">
+			    	<!-- Modal content-->
+			    	<div class="modal-content">
+			      		<div class="modal-header">
+			        		<button type="button" class="close" data-dismiss="modal">&times;</button>
+			        		<h4 class="modal-title">Apakah Anda Yakin Untuk Menghapus Kontrak Ini ?</h4>
+			      		</div>
+			      		<form method="post" id="delete-kontrak" action="https://bastbanpem.pertanian.go.id/kontrak/deletekontrak/">
+				      		<div class="modal-body">
+				      			<div id="show_error_hapus_kontrak"></div>
+				      			<input type="hidden" name="idkontrak" id="txt-idkontrak">
+				      			<div class="form-group">
+				      				<label>Cofirm Password</label>
+				      				<input type="password" name="password" placeholder="Confirm Password" class="form-control">
+				      			</div>
+				      		</div>
+				      		<div class="modal-footer">
+				        		<button type="button" class="btn btn-default" data-dismiss="modal">Tidak</button>
+				        		<button type="submit" class="btn btn-danger" id="btn-hapus-kontrak">Ya</button>
+				      		</div>
+				      	</form>
+			    	</div>
+			  	</div>
+			</div>
+
+			<!-- Modal -->
+			<div id="modal-ajukankontrak" class="modal fade" role="dialog">
+			  	<div class="modal-dialog">
+				    <!-- Modal content-->
+				    <div class="modal-content">
+				      	<div class="modal-header">
+					        <button type="button" class="close" data-dismiss="modal">&times;</button>
+					        <h4 class="modal-title">Pengajuan Kontrak</h4>
+				      	</div>
+				      	<div class="modal-body">
+				      		<div class="form-group">
+					      		<label>Pilih Tipe Pengajuan</label>
+					      		<select class="form-control" id="sel-tipe" onchange="if (!window.__cfRLUnblockHandlers) return false; gettipe()" data-cf-modified-26052257ddeaec8764b18ec4-="">
+					      			<option value="" disabled="" selected="">Silahkan pilih tipe pengajuan</option>
+					      			<option value="Normal">Normal</option>
+					      			<option value="Pengembalian">Dengan Pengembalian</option>
+					      			<option value="Tunda Bayar">Dengan Tunda Bayar</option>
+					      		</select>
+					      	</div>
+					      	<div class="form-group" id="div-tundabayar">
+					      		<label>Nilai Penundaan</label>
+					      		<input type="text" id="txt-nilai-tunda" placeholder="Masukkan Nilai Penundaan" class="form-control rupiah" value="">
+					      	</div>
+				      	</div>
+				      	<div class="modal-footer">
+				        	<button type="button" class="btn btn-primary" id="btn-ajukan-kontrak"><i class="fa fa-arrow-right"></i> Ajukan kontrak</button>
+				      	</div>
+				    </div>
+			  	</div>
+			</div>
+			<div class="modal fade" id="modal-verifikasi">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+							<h4 class="modal-title">Verifikasi PPK</h4>
+						</div>
+						<form method="post" action="https://bastbanpem.pertanian.go.id/kontrak/verifikasippk/" id="upload-verfikasi-ppk">
+							<div class="modal-body">
+								<div id="show_error_verifikasi_ppk"></div>
+								<div id="div-gettermin">
+								</div>
+								<input type="hidden" name="idtermin" id="txt-idtermin">
+								<input type="hidden" name="id" value="7395">
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+								<button type="submit" class="btn btn-primary btn-simpan">Submit</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+<script type="26052257ddeaec8764b18ec4-text/javascript">
+	function verifikasippk(id_termin) {
+		$('#modal-verifikasi').modal('show');
+		$('#txt-idtermin').val(id_termin);
+		$('#div-gettermin').html('<center><i clas="fa fa-spin fa-spinner"></i> Loading...</center>');
+		$('#div-gettermin').load('https://bastbanpem.pertanian.go.id/kontrak/getterminppk/'+id_termin);
+	}
+	$("#upload-verfikasi-ppk").submit(function(){
+        var form = $(this);
+        var mydata = new FormData(this);
+        $.ajax({
+            type: "POST",
+            url: form.attr("action"),
+            data: mydata,
+            cache: false,
+            contentType: false,
+            dataType: "json",
+            processData: false,
+            beforeSend : function(){
+                $("#btn-simpan").addClass("disabled").html("<i class='fa fa-spinner fa-spin'></i>  Sedang memproses...").attr('disabled',true);
+                $("#show_error_verifikasi_ppk").slideUp().html("");
+            },
+            success: function(response, textStatus, xhr) {
+                if (response.message==true) {
+                    $("#show_error_verifikasi_ppk").hide().html(response).slideDown("fast");
+                    location.reload();
+                }else{
+                	validasi = "";
+	    	  		total = response.validasi.length; 
+	    	  		$.each(response.validasi, function(index, val) {
+						validasi += "- "+val;
+						if (index < total - 1) {
+							validasi += "\n";
+						}
+	    	  		});
+	    	  		alert(validasi);
+                    $("#btn-simpan").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                }
+                $("#btn-simpan").html('Ya').attr('disabled',false).removeClass('disabled');
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              console.log(xhr);
+                $("#btn-simpan").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                $("#show_error_verifikasi_ppk").hide().html(xhr).slideDown("fast");
+            }
+        });
+        return false;
+    });
+</script>
+<script type="26052257ddeaec8764b18ec4-text/javascript">
+	function gettipe() {
+		var tipe = $('#sel-tipe').val();
+		if (tipe=="Tunda Bayar"){
+			$("#div-tundabayar").fadeIn();
+		}else{
+			$("#div-tundabayar").fadeOut();
+		}
+	}
+	gettipe();
+	function deletekontrak(idkontrak) {
+		$('#modal-hapus').modal('show');
+		$('#txt-idkontrak').val(idkontrak);
+	}
+	$("#delete-kontrak").submit(function(){
+        var form = $(this);
+        var mydata = new FormData(this);
+        $.ajax({
+            type: "POST",
+            url: form.attr("action"),
+            data: mydata,
+            cache: false,
+            contentType: false,
+            dataType: "html",
+            processData: false,
+            beforeSend : function(){
+                $("#btn-hapus-kontrak").addClass("disabled").html("<i class='fa fa-spinner fa-spin'></i>  Sedang memproses...").attr('disabled',true);
+                $("#show_error_hapus_kontrak").slideUp().html("");
+            },
+            success: function(response, textStatus, xhr) {
+                var str = response;
+                if (str.indexOf("Berhasil")!=-1){
+                    $("#show_error_hapus_kontrak").hide().html(response).slideDown("fast");
+                    window.location.href = "https://bastbanpem.pertanian.go.id/kontrak";
+                }else{
+                    $("#show_error_hapus_kontrak").hide().html(response).slideDown("fast");
+                }
+                $("#btn-hapus-kontrak").html('Ya').attr('disabled',false).removeClass('disabled');
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              console.log(xhr);
+                $("#btn-hapus-kontrak").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                $("#show_error_hapus_kontrak").hide().html(xhr).slideDown("fast");
+            }
+        });
+        return false;
+    });
+    $('#btn-ajukan-pembayaran').click(function(event) {
+    	if (confirm('Apakah anda yakin akan mengajukan pembayaran untuk Kontrak ini ?')) {
+	    	jQuery.ajax({
+	    	  url: 'https://bastbanpem.pertanian.go.id/kontrak/validasi_sebelum_pembayaran',
+	    	  type: 'POST',
+	    	  dataType: 'json',
+	    	  data: {
+	    	  	id: '7395',
+	    	  },
+	    	  beforeSend: function(xhr, textStatus) {
+	    	    $('#btn-ajukan-pembayaran').addClass("disabled").html("<i class='fa fa-spinner fa-spin'></i>  Sedang memproses...").attr('disabled',true);
+	    	  },
+	    	  success: function(data, textStatus, xhr) {
+	    	  	if (data.message==true) {
+	    	  		location.reload();
+	    	  	} else {
+	    	  		validasi = "";
+	    	  		console.log(data.validasi);
+	    	  		total = data.validasi.length; 
+	    	  		$.each(data.validasi, function(index, val) {
+						validasi += "- "+val;
+						if (index < total - 1) {
+							validasi += "\n";
+						}
+	    	  		});
+	    	  		alert(validasi);
+                	$("#btn-ajukan-pembayaran").removeClass("disabled").html('<i class="fa fa-arrow-right"></i> Ajukan Pembayaran').attr('disabled',false);
+	    	  	}
+	    	  },
+	    	  error: function(xhr, textStatus, errorThrown) {
+                $("#btn-ajukan-pembayaran").removeClass("disabled").html('<i class="fa fa-arrow-right"></i> Ajukan Pembayaran').attr('disabled',false);
+                alert('Terjadi kesalahan, silahkan coba lagi ');
+	    	  }
+	    	});
+    	}
+    });
+    $('#btn-ajukan-kontrak').click(function(event) {
+    	var tipe = $('#sel-tipe').val();
+    	var nilai_tunda_bayar = $('#txt-nilai-tunda').val();
+    	if (confirm('Apakah anda yakin akan mengajukan Kontrak ini ?')) {
+	    	jQuery.ajax({
+	    	  url: 'https://bastbanpem.pertanian.go.id/kontrak/validasi_sebelum_mengajukan',
+	    	  type: 'POST',
+	    	  dataType: 'json',
+	    	  data: {
+	    	  	id: '7395',
+	    	  	tipe: tipe,
+	    	  	nilai_tunda_bayar: nilai_tunda_bayar
+	    	  },
+	    	  beforeSend: function(xhr, textStatus) {
+	    	    $('#btn-ajukan-kontrak').addClass("disabled").html("<i class='fa fa-spinner fa-spin'></i>  Sedang memproses...").attr('disabled',true);
+	    	  },
+	    	  success: function(data, textStatus, xhr) {
+	    	  	if (data.message==true) {
+	    	  		window.location.href = 'https://bastbanpem.pertanian.go.id/kontrak/updatestatusajukan/menunggu/7395';
+	    	  	} else {
+	    	  		validasi = "";
+	    	  		total = data.validasi.length; 
+	    	  		$.each(data.validasi, function(index, val) {
+						validasi += "- "+val;
+						if (index < total - 1) {
+							validasi += "\n";
+						}
+	    	  		});
+	    	  		alert(validasi);
+                	$("#btn-ajukan-kontrak").removeClass("disabled").html('<i class="fa fa-arrow-right"></i> Ajukan Untuk Review').attr('disabled',false);
+	    	  	}
+	    	  },
+	    	  error: function(xhr, textStatus, errorThrown) {
+                $("#btn-ajukan-kontrak").removeClass("disabled").html('<i class="fa fa-arrow-right"></i> Ajukan Untuk Review').attr('disabled',false);
+                alert('Terjadi kesalahan, silahkan coba lagi ');
+	    	  }
+	    	});
+    	}
+    });
+    $('#btn-ajukan').click(function(event) {
+    	$('#modal-ajukankontrak').modal('show');
+    });
+</script>
+        <div class="col-md-9" style="margin-top: 15px">
+                                                <div class="panel panel-success" >
+                        <div class="panel-heading" style="background-color:#39648f">
+                          <h4 class="panel-title">
+                            <a data-toggle="collapse" href="#addrinci" class="btn btn-success dim" style="color:white;"><i class="fa fa-plus"></i> Tambah Rincian Penerima Bantuan</a>
+                            <a href="https://bastbanpem.pertanian.go.id/kontrak/rincian_penyaluran_import/7395" class="btn btn-success pull-right dim" style="color:white;" target="_blank"><i class="fa fa-file-excel-o"></i> Import Penerima Dari File Excel</a>
+                            <a data-toggle="collapse" href="#dataimport" class="btn btn-success hidden dim" style="color:white;"><i class="fa fa-list"></i> Data Import Excel</a>
+                          </h4>
+                        </div>
+                        <div id="addrinci" class="panel-collapse collapse">
+                            <div class="panel-body" style="font-size:small">
+                                <!-- <h4>
+                                 <b>TAMBAH RINCIAN PENERIMA BANTUAN</b>
+                                </h4> -->
+                                <!-- <hr class="hr_dashed"> -->
+                                    <input type="hidden" name="dt[tipe_kontrak]" value="Barang">
+                                    <table class="table table-condensed">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 275px;">Pilih Barang</th>
+                                                <th>Informasi Barang</th>
+                                                <!-- <th>Aksi</th> -->
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbody-rincian">
+                                            <tr>
+                                                <td style="width: 275px;">
+                                                    <select  class="form-control select2" name="barang" id="sel-barang" style="width: 100%;">
+                                                        <option value="0">Pilih Barang</option>
+                                                                                                            </select>
+                                                </td>
+                                                <td id="informasi-barang">
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <p>Pilih Titik Bagi</p>
+                                    <div id="wrapper-tambah-rincian"></div>
+                                <form action="https://bastbanpem.pertanian.go.id/kontrak/tambah_rincian" id="form-tambah-rincian">
+                                    <div id="wrapper-titik-bagi-terpilih" style="margin-top: 5px;margin-bottom: 5px;"></div>
+                                    <div id="show_error-tambah-rincian"></div>
+                                    <div class="form-group">
+                                      <div class="row">
+                                        <div class="col-md-5">
+                                            <a class="btn btn-warning btn-xs pull-right" data-toggle="modal" href="#modal-tambah-penerima"> Tambah penerima baru</a>
+                                            <label>Penerima</label> 
+                                            <select  name="pn_nik" class="form-control" id="sel-penerima" style="width:100%;border-radius:0px;">
+                                            </select>
+                                            <small id="result-lokasi-penerima" style="display: none;color: green;">-</small>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label >Qty</label>
+                                            <input type="text" class="form-control" id="txt-qty-tambah-rincian" name="pn_qty_disalurkan">
+                                        </div>
+                                        <div class="form-group col-md-5"> 
+                                            <label >Nilai</label>
+                                            <input type="text" class="form-control rupiah" id="txt-nilai-tambah-rincian" name="pn_nilai_disalurkan">
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary btn-block btn-simpandata" type="submit" id="btn-save-tambah-rincian"><i class="fa fa-save"></i> Simpan Rincian</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="addimport" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <h4>
+                                 <b>Import Excel</b>
+                                </h4>
+                                <hr class="hr_dashed">
+                                <div class="form-group">
+                                    <li>Untuk file import dapat di download disini <a href="https://bastbanpem.pertanian.go.id/kontrak/exportpenyaluran/7395" target="_blank"><i class="fa fa-download"></i> unduh</a> .</li>
+                                    <li>Pastikan data sudah terisi semua & NIK sudah ada.</li>
+                                    <li>Data Difile Bisa Dihapus. Jangan Di Hapus Judulnya.</li>
+                                    <li><b style="color:red">UNTUK FORMAT EXCEL SUDAH BAKU MAKA TOLONG JANGAN DI UBAH. TERMASUK TIPE FORMAT NUMBER & TEXT</b></li>
+                                </div>
+                                <form method="post" id="post-file" action="https://bastbanpem.pertanian.go.id/kontrak/impor/penyaluran/7395" enctype="multipart/form-data">
+                                    <div class="form-group">
+                                        <label>File Excel</label>
+                                        <input type="file" name="file" class="form-control file-dokumen">
+                                     </div>
+                                     <div class="form-group" id="resultExcel" style="width:100%;">
+                                     </div>
+                                     <button type="submit" class="btn btn-primary btn-sm" id="btn-import-excel" onclick="if (!window.__cfRLUnblockHandlers) return false; " data-cf-modified-26052257ddeaec8764b18ec4-=""><i class="fa fa-file-excel-o"></i>Import Excel</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div id="dataimport" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <h4>
+                                 <b>Data Import Excel</b>
+                                </h4>
+                                <button type="button" class="btn btn-primary" id="btn-data-belum-submit" onclick="if (!window.__cfRLUnblockHandlers) return false; getdataimportexcel('belum')" data-cf-modified-26052257ddeaec8764b18ec4-="">Data belum submit</button>
+                                <button type="button" class="btn btn-default" id="btn-data-salah" onclick="if (!window.__cfRLUnblockHandlers) return false; getdataimportexcel('salah')" data-cf-modified-26052257ddeaec8764b18ec4-="">Data Salah</button>
+                                <button type="button" class="btn btn-success pull-right" id="btn-export-data-salah">Export data salah</button>
+                                <hr class="hr_dashed">
+                                <div id="div-data-import-excel">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                                        <div id="modal-titikbagi" class="modal fade" role="dialog">
+                <div class="modal-dialog modal-lg">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Titik Bagi Barang</h4>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-condensed table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Provinsi</th>
+                                        <th>Kota</th>
+                                        <th>Kecamatan</th>
+                                        <th>Desa</th>
+                                        <th>Total Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-titik-bagi">
+                                </tbody>
+                            </table>
+                            <div id="body-content"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default" style="margin-bottom: 15px">
+                <div class="panel-body" style="font-size:small">
+                    <h4>
+                        <b>RINCIAN PENERIMA BANTUAN</b> 
+                        <button type="button" data-toggle="collapse" data-target="#ShowRincian"class="btn btn-primary btn-xs"><i class="fa fa-plus"></i></button>
+                                                                                    <button type="button" class="btn btn-danger btn-xs dim" style="float: right; margin-left: 10px;" onclick="if (!window.__cfRLUnblockHandlers) return false; hapus_semua_rincian('7395')" data-cf-modified-26052257ddeaec8764b18ec4-=""><i class="fa fa-trash"></i>Hapus Semua Rincian Kontrak</button>
+                                                                                        <a href="https://bastbanpem.pertanian.go.id/kontrak/export_rincian_penerima/7395" target="_blank" class="btn btn-success btn-xs dim" style="float: right;" ><i class="fa fa-file-excel-o"></i>Export Excel</a>
+                                                                        </h4>
+                    <hr class="hr_dashed">
+                    <div id="ShowRincian" class="collapse in">
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default" style="margin-bottom: 15px">
+                <div class="panel-body">
+                    <h4>
+                        <b>MONITOR RINCIAN KONTRAK DAN PENYALURAN</b> <button type="button" data-toggle="collapse" data-target="#ShowRekap"class="btn btn-primary btn-xs"><i class="fa fa-plus"></i></button>
+                                                                                    <a href="https://bastbanpem.pertanian.go.id/kontrak/detail-edit/7395" class="btn btn-warning btn-xs pull-right dim" style="margin-right: 10px;"><i class="fa fa-pencil"></i> Edit Titik Bagi</a>
+                                                                        </h4>
+                    <hr class="hr_dashed">
+                    <div id="ShowRekap" class="collapse">
+                        <div id="wrapper-monitorin-rincian"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default" style="margin-bottom: 15px">
+                <div class="panel-body">
+                    <h4>
+                        <b>REKAP RINCIAN PENYALURAN</b> <button type="button" data-toggle="collapse" data-target="#Showrekaprincian"class="btn btn-primary btn-xs"><i class="fa fa-plus"></i></button>
+                    </h4>
+                    <hr class="hr_dashed">
+                    <div id="Showrekaprincian" class="collapse">
+                        <table class="table table-condensed table-bordered table-striped">
+                            <thead class="bg-success">
+                                <tr>
+                                    <th>Nilai Kontrak</th>
+                                    <th>Total Nilai Rincian</th>
+                                    <th>Selisih</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                                                        <td style="text-align: right;">422.959.124</td>
+                                    <td style="text-align: right;">422.959.124</td>
+                                    <td style="text-align: right;">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h5>Note : Jika total nilai rincian tidak muncul silahkan klik button kalkulasi monitoring kontrak terlebih dahulu</h5>
+                    </div>
+                </div>
+            </div>
+                                                </div>
+
+    <!-- close div for side-kontrak -->
+    </div>
+</div>
+
+<div class="modal fade" id="modal-tambah-penerima">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Tambah Penerima Baru</h4>
+            </div>
+            <form action="https://bastbanpem.pertanian.go.id/master/master_penerima/store" enctype="multipart/form-data" id="form-tambah-penerima">
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                      <div class="show_error"></div>
+                      <div class="form-group">
+                          <label>NIK</label>
+                          <input type="number" name="dt[p_nik]" id="txt-nik" class="form-control" value="" minlength="16">
+                          <span id="alert-nik"></span>
+                      </div>  
+                      <div class="form-group">
+                          <label>Nama</label>
+                          <input type="text" name="dt[p_nama]" id="txt-nama" class="form-control" value="">
+                      </div>  
+                      <div class="form-group">
+                          <label>File KTP</label>
+                          <input type="file" name="file" class="form-control file-dokumen" value="" accept="image/jpeg,image/png" required>
+                      </div>  
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                <button type="submit" class="btn btn-primary" id="btn-save-tambah-penerima" style="display: none;"><i class="fa fa-save"></i> Simpan</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-edit-rincian">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Ubah Rincian</h4>
+            </div>
+            <form action="https://bastbanpem.pertanian.go.id/kontrak/proses_edit_rincian" id="form-edit-rincian">
+            <div class="modal-body">
+                <div class="row" id="wrapper-edit-rincian">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+                <button type="submit" class="btn btn-primary" id="btn-save-edit-rincian"><i class="fa fa-save"></i> Simpan</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-upload-do-bukti">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Unggah DO & Bukti Terima</h4>
+            </div>
+            <div class="modal-body" id="wrapper-upload-do-bukti">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-upload-dari-penerima">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">File Upload Dari Penerima</h4>
+            </div>
+            <div class="modal-body" id="wrapper-upload-dari-penerima">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-detailpenerimabantuan" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Detail Penerima Bantuan</h4>
+      </div>
+      <div class="modal-body">
+        <div id="wrapper-detail-penerima-bantuan">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-hapus-semua-rincian" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Apakah Anda Yakin Untuk Menghapus Semua Rincian Ini ?</h4>
+            </div>
+            <form method="post" id="delete-semua-rincian" action="https://bastbanpem.pertanian.go.id/kontrak/hapus_semua_rincian/">
+                <div class="modal-body">
+                    <div id="show_error_hapus_semua_rincian_kontrak"></div>
+                    <input type="hidden" name="idkontrak" id="txt-idkontrak-semua-rincian">
+                    <div class="form-group">
+                        <label>Cofirm Password</label>
+                        <input type="password" name="password" placeholder="Confirm Password" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Tidak</button>
+                    <button type="submit" class="btn btn-danger" id="btn-hapus-semua-rincian-kontrak">Ya</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="26052257ddeaec8764b18ec4-text/javascript">
+    $("#delete-semua-rincian").submit(function(){
+        var form = $(this);
+        var mydata = new FormData(this);
+        $.ajax({
+            type: "POST",
+            url: form.attr("action"),
+            data: mydata,
+            cache: false,
+            contentType: false,
+            dataType: "html",
+            processData: false,
+            beforeSend : function(){
+                $("#btn-hapus-semua-rincian-kontrak").addClass("disabled").html("<i class='fa fa-spinner fa-spin'></i>  Sedang memproses...").attr('disabled',true);
+                $("#show_error_hapus_semua_rincian_kontrak").slideUp().html("");
+            },
+            success: function(response, textStatus, xhr) {
+                var str = response;
+                if (str.indexOf("Berhasil")!=-1){
+                    $("#show_error_hapus_semua_rincian_kontrak").hide().html(response).slideDown("fast");
+                    location.reload();
+                }else{
+                    $("#show_error_hapus_semua_rincian_kontrak").hide().html(response).slideDown("fast");
+                }
+                $("#btn-hapus-semua-rincian-kontrak").html('Ya').attr('disabled',false).removeClass('disabled');
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              console.log(xhr);
+                $("#btn-hapus-semua-rincian-kontrak").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                $("#show_error_hapus_semua_rincian_kontrak").hide().html(xhr).slideDown("fast");
+            }
+        });
+        return false;
+    });
+</script>
+
+<script type="26052257ddeaec8764b18ec4-text/javascript">
+    tinymce.init({
+        selector: '#txt-catatan',
+        fontsize_formats: "8pt 10pt 12pt 14pt 18pt 24pt 36pt 40pt 48pt",
+        font_formats: 'Arial=arial,helvetica,sans-serif;Courier New=courier new,courier,monospace;Calibri=calibri,sans-serif;Gugi=Gugi, cursive;Indie Flower=indie flower, cursive;Tahoma=Tahoma, Verdana, Segoe, sans-serif;Times New Roman=times new roman,times;AkrutiKndPadmini=Akpdmi-n',
+        plugins: [
+           "advlist autolink link image lists charmap print preview hr anchor pagebreak",
+           "searchreplace wordcount visualblocks visualchars insertdatetime media nonbreaking",
+           "table contextmenu directionality emoticons paste textcolor code"
+        ],
+        las_seconds: 15,
+        las_nVersions: 15,
+        las_keyName: "LocalAutoSave",
+        las_callback: function() {
+            var content = this.content; //content saved
+            var time = this.time; //time on save action
+        }
+    });
+    function saveCatatan() {
+        var catatan = tinymce.get("txt-catatan").getContent();
+        var tab = 'rincian';
+        var kontrak_id = $('#kontrak_id').val();
+        if (catatan == '') {
+            alert("Catatan Belum Di Isi");
+        }else{
+            $.ajax({
+              type: 'post',
+              url: 'https://bastbanpem.pertanian.go.id/Kontrak/simpan_catatan',
+              dataType: 'html',
+              data: {
+                catatan : catatan,
+                tab : tab,
+                // radioValue: radioValue,
+                kontrak_id : kontrak_id
+              },
+              beforeSend : function(){
+                $('#btn-savecatatan').attr('disabled', true);
+                $('#btn-savecatatan').html('<i class="fa fa-spin fa-spinner"></i> Loading...');
+              },
+              success: function(response, textStatus, xhr) {
+                alert("Berhasil Simpan Catatan");
+                $('#btn-savecatatan').attr('disabled', false);
+                $('#btn-savecatatan').html('<i class="fa fa-pencil"></i> Submit Catatan');
+              },
+              error: function(xhr, textStatus, errorThrown) {
+                alert("Gagal");
+              }
+           });
+        }
+    }
+</script>
+
+<script type="26052257ddeaec8764b18ec4-text/javascript">
+    $("#post-file").submit(function(){
+        var form = $(this);
+        var mydata = new FormData(this);
+        $.ajax({
+            type: "POST",
+            url: form.attr("action"),
+            data: mydata,
+            cache: false,
+            contentType: false,
+            dataType: "html",
+            processData: false,
+            beforeSend : function(){
+                $("#btn-import-excel").addClass("disabled").html("<i class='la la-spinner la-spin'></i>  Sedang memproses...").attr('disabled',true);
+                form.find("#resultExcel").slideUp().html("");
+            },
+            success: function(response, textStatus, xhr) {
+               var str = response;
+                if (str.indexOf("Success") != -1){
+                    form.find("#resultExcel").hide().html(response).slideDown("fast");
+                    setTimeout(function(){ 
+                        form.find("#resultExcel").slideUp().html("");
+                    }, 1000);
+                }else{
+                    form.find("#resultExcel").hide().html(response).slideDown("fast");
+                }
+                $("#btn-import-excel").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              console.log(xhr);
+                $("#btn-import-excel").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                form.find(".show_error").hide().html(xhr).slideDown("fast");
+            }
+        });
+        return false;
+    });
+    function getdataimportexcel(status) {
+        if (status=="belum") {
+            $('#btn-data-salah').removeClass('btn-primary').addClass('btn-default');
+            $('#btn-data-belum-submit').removeClass('btn-default').addClass('btn-primary');
+            $('#btn-export-data-salah').fadeOut();
+            $('#div-data-import-excel').html('<center><i class="fa fa-spin fa-spinner"></i> Loading...</center>');
+            $('#div-data-import-excel').load('https://bastbanpem.pertanian.go.id/kontrak/getdatabelumsubmit/7395');
+        }else{
+            $('#btn-data-belum-submit').removeClass('btn-primary').addClass('btn-default');
+            $('#btn-data-salah').removeClass('btn-default').addClass('btn-primary');
+            $('#btn-export-data-salah').fadeIn();
+            $('#div-data-import-excel').html('<center><i class="fa fa-spin fa-spinner"></i> Loading...</center>');
+            $('#div-data-import-excel').load('https://bastbanpem.pertanian.go.id/kontrak/getdataimportsalah/7395');
+        }
+    }
+    // getdataimportexcel('belum');
+</script>
+
+<script type="26052257ddeaec8764b18ec4-text/javascript">
+     $("#form-tambah-penerima").submit(function(){
+            var form = $(this);
+            var mydata = new FormData(this);
+            $.ajax({
+                type: "POST",
+                url: form.attr("action"),
+                data: mydata,
+                cache: false,
+                contentType: false,
+                dataType: "html",
+                processData: false,
+                beforeSend : function(){
+                    $("#btn-save-tambah-penerima").addClass("disabled").html("<i class='la la-spinner la-spin'></i>  Sedang memproses...").attr('disabled',true);
+                    form.find(".show_error").slideUp().html("");
+                },
+                success: function(response, textStatus, xhr) {
+                   var str = response;
+                    if (str.indexOf("Success") != -1){
+                        form.find(".show_error").hide().html(response).slideDown("fast");
+                        setTimeout(function(){ 
+                            form.find(".show_error").slideUp().html("");
+                            $('#sel-penerima').html('<option value="'+$('#txt-nik').val()+'" selected>'+$('#txt-nik').val()+' - '+$('#txt-nama').val()+'</option>');
+                            $('#sel-penerima').change();
+                            $("#form-tambah-penerima")[0].reset();
+                            $("#modal-tambah-penerima").modal('hide');
+                        }, 1000);
+                    }else{
+                        form.find(".show_error").hide().html(response).slideDown("fast");
+                        $("#btn-save-tambah-penerima").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                  console.log(xhr);
+                    $("#btn-save-tambah-penerima").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                    form.find(".show_error").hide().html(xhr).slideDown("fast");
+                }
+            });
+            return false;
+        });
+
+     $("#form-tambah-rincian").submit(function(){
+        if (confirm('Apakah anda yakin ingin menambah Rincian berikut ini?')) {            
+            var form = $(this);
+            var mydata = new FormData(this);
+            $.ajax({
+                type: "POST",
+                url: form.attr("action"),
+                data: mydata,
+                cache: false,
+                contentType: false,
+                dataType: "html",
+                processData: false,
+                beforeSend : function(){
+                    $("#btn-save-tambah-rincian").addClass("disabled").html("<i class='la la-spinner la-spin'></i>  Sedang memproses...").attr('disabled',true);
+                    $("#show_error-tambah-rincian").slideUp().html("");
+                },
+                success: function(response, textStatus, xhr) {
+                    var str = response;
+                    if (str.indexOf("Success") != -1){
+                        $("#show_error-tambah-rincian").hide().html(response).slideDown("fast");
+                        setTimeout(function(){ 
+                            $("#show_error-tambah-rincian").slideUp().html("");
+                            $('#sel-penerima').html('');
+                            $('#sel-penerima').change();
+                            $('#wrapper-titik-bagi-terpilih').html('');
+                            $("#form-tambah-rincian")[0].reset();
+                            loadtablerincian();
+                        }, 1000);
+                    }else{
+                        // alert("Data melebihi titik bagi");
+                        $("#show_error-tambah-rincian").hide().html(response).slideDown("fast");
+                    }
+                    $("#btn-save-tambah-rincian").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                  console.log(xhr);
+                    $("#btn-save-tambah-rincian").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                    $("#show_error-tambah-rincian").hide().html(xhr).slideDown("fast");
+                }
+            });
+        // } else {
+            // return false;
+        }
+            return false;
+     });
+
+    $('#sel-barang').change(function(event) {
+        $('#informasi-barang').html($(this).find(':selected').attr('data-spek'));
+        loadtable(this.value);
+        $('#wrapper-titik-bagi-terpilih').html('');
+    });
+
+    function getselbarang() {
+        $.ajax({
+            url: 'https://bastbanpem.pertanian.go.id/kontrak/getdatabarang/7395',
+            type: 'post',
+            dataType: 'html',
+            beforeSend:function() {
+                $('#sel-barang').html('Memuat ...');
+            },
+            success:function(response) {
+                $('#sel-barang').html(response);
+            }
+        });
+    }
+    getselbarang();
+
+    function loadmonitoring() {
+        $.ajax({
+            url: 'https://bastbanpem.pertanian.go.id/kontrak/getmonitoringbarang/7395',
+            type: 'post',
+            dataType: 'html',
+            beforeSend:function() {
+                $('#wrapper-monitorin-rincian').html('<center><i class="fa fa-spin fa-spinner"></i></center>');
+            },
+            success:function(response) {
+                $('#wrapper-monitorin-rincian').html(response);
+            }
+        });
+    }
+    loadmonitoring();
+
+    jQuery(document).ready(function($) {
+        $('#sel-penerima').select2({
+            placeholder: 'Search Penerima',
+            ajax: { 
+            url: 'https://bastbanpem.pertanian.go.id/kontrak/getPenerima',
+            type: "post",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+              return {
+                searchTerm: params.term // search term
+              };
+            },
+            processResults: function (response) {
+              return {
+                 results: response
+              };
+            },
+            cache: true
+         }
+        });
+    });
+
+
+        function loadtable(barang) {
+            var table = '<table class="table table-bordered table-condensed table-striped datatables" id="table-tambah-rincian" style="width: 100%">'+
+                        '    <thead>'+
+                        '        <tr>'+
+                        '            <td>#</td>'+
+                        '            <td>No</td>'+
+                        '            <td>Provinsi</td>'+
+                        '            <td>Kota</td>'+
+                        '            <td>Kecamatan</td>'+
+                        '            <td>Kel/Desa</td>'+
+                        '            <td>Pemda/Gapoktan</td>'+
+                        '            <td>Qty</td>'+
+                        '            <td>Nilai</td>'+
+                        '        </tr>'+
+                        '        <tr>'+
+                        '            <td></td>'+
+                        '            <td></td>'+
+                        '            <td>Provinsi</td>'+
+                        '            <td>Kota</td>'+
+                        '            <td>Kecamatan</td>'+
+                        '            <td>Kel/Desa</td>'+
+                        '            <td>Gapoktan</td>'+
+                        '            <td></td>'+
+                        '            <td></td>'+
+                        '        </tr>'+
+                        '    </thead>'+
+                        '    <tbody>'+
+                        '    </tbody>'+
+                        '</table>';
+             // body...
+             $("#wrapper-tambah-rincian").html(table)
+              var t = $("#table-tambah-rincian").dataTable({
+                initComplete: function() {
+                    var api = this.api();
+                    $('#table-tambah-rincian_filter').hide();
+
+                    $('#table-tambah-rincian thead tr:eq(1) th,#table-tambah-rincian thead tr:eq(1) td').each( function (i) {
+                        if (i>1 && i<7) {                            
+                            var title = $(this).text();
+                            $(this).html( '<input type="text" style="width: 100%" placeholder="Cari '+title+'" />' );
+                     
+                            $( 'input', this ).on( 'keyup', function () {
+                                if ( api.column(i).search() !== this.value ) {
+                                    api.column(i).search(this.value).draw();
+                                    api.columns(1).search('').draw();
+                                }
+                            } );
+                        }
+                    } );
+                },
+                oLanguage: {
+                    sProcessing: "loading..."
+                },
+                processing: true,
+                orderCellsTop: true,
+                serverSide: true,
+                lengthChange: false,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                ajax: {"url": "https://bastbanpem.pertanian.go.id/kontrak/json_kontrak_penyaluran/"+barang, "type": "POST"},
+                columns: [
+                    {"data": "view","orderable": false},
+                    {"data": "idkontrak_penyaluran","orderable": false},
+                    {"data": "kp_endpoint_provinsi"},
+                    {"data": "kp_endpoint_kota"},
+                    {"data": "kp_endpoint_kecamatan"},
+                    {"data": "kp_endpoint_desa"},
+                    {"data": "kp_endpoint_gapoktan"},
+                    {"data": "kp_qty"},
+                    {"data": "kp_nilai"}
+                ],
+                order: [[1, 'asc']],
+                columnDefs : [
+                    { targets : [8],
+                        render : function (data, type, row, meta) {
+                            if (data!=null){
+                                return numberWithCommas(data);
+                            }else{
+                                return "0";
+                            }
+                          }
+                      }
+                ],
+                rowCallback: function(row, data, iDisplayIndex) {
+                    var info = this.fnPagingInfo();
+                    var page = info.iPage;
+                    var length = info.iLength;
+                    var index = page * length + (iDisplayIndex + 1);
+                    $('td:eq(1)', row).html(index);
+                }
+            });
+         }
+
+         function pilih_titik_bagi(id) {
+             jQuery.ajax({
+               url: 'https://bastbanpem.pertanian.go.id/kontrak/get_titik_bagi/'+id,
+               type: 'POST',
+               dataType: 'html',
+               beforeSend: function() {
+                 $('#wrapper-titik-bagi-terpilih').html('Sedang memuat...')
+               },
+               success: function(data, textStatus, xhr) {
+                 $('#wrapper-titik-bagi-terpilih').html(data);
+               },
+               error: function(xhr, textStatus, errorThrown) {
+                 alert('Maaf terjadi kesalahan, silahkan pilih ulang');
+               }
+             });
+             
+         }
+         function numberWithCommas(x) {
+            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+         }
+
+         $('#txt-nik').on('keyup change', function(event) {
+            var old_nik = this.value;
+            var nik = old_nik.replace(/\s/g, "");
+            if (nik.length < 15){
+                $('#alert-nik').html('NIK belum 16 karakter').css('color','red');
+                $('#btn-save-tambah-penerima').fadeOut();
+                $('#txt-nik').css('border-color','#d2d6de');
+            }else{
+                $('#btn-save-tambah-penerima').fadeIn();
+                $(this).val(nik);
+                 event.preventDefault();
+                 jQuery.ajax({
+                   url: 'https://bastbanpem.pertanian.go.id/master/master_penerima/ceknik/'+nik,
+                   type: 'POST',
+                   dataType: 'json',
+                   beforeSend: function(xhr, textStatus) {
+                    $('#alert-nik').html('<i class="fa fa-spin fa-spinner"></i> Memproses...');
+                    $('#txt-nik').css('border-color','#d2d6de').attr('minlength', '16');
+                   },
+                   success: function(data, textStatus, xhr) {
+                        if (data.response=="tidak") {
+                          $('#alert-nik').html('NIK tersedia').css('color','black');
+                          $('#btn-save-tambah-penerima').prop('disabled', false);
+                          $('#txt-nik').css('border-color','green').attr('minlength', '16');
+                        } else {
+                          $('#btn-save-tambah-penerima').prop('disabled', true);
+                          $('#alert-nik').html('NIK sudah ada').css('color','black');
+                          $('#txt-nik').css('border-color','red').attr('minlength', '16');
+                        }
+                   },
+                   error: function(xhr, textStatus, errorThrown) {
+                     //called when there is an error
+                   }
+                });
+            }             
+         });
+
+
+//============================================================================================================== tengah
+
+
+        function loadtablerincian() {
+            var table2 = '<table class="table table-bordered table-condensed table-striped datatables" id="table-rincian" style="width: 100%">'+
+                        '    <thead>'+
+                        '       <tr>'+
+                        '           <th>No</th>'+
+                        '           <th>Penerima</th>'+
+                        '           <th>Titik Bagi</th>'+
+                        '           <th>Gapoktan</th>'+
+                        '           <th>Barang</th>'+
+                        '           <th>Qty</th>'+
+                        '           <th>Nilai</th>'+
+                                                                                '           <th>Aksi</th>'+
+                                                                            '       </tr>'+
+                        '       <tr>'+
+                        '           <th></th>'+
+                        '           <th>Penerima</th>'+
+                        '           <th>Titik Bagi</th>'+
+                        '           <th>Pemda/Gapoktan</th>'+
+                        '           <th>Barang</th>'+
+                        '           <th></th>'+
+                        '           <th></th>'+
+                                                                                '           <th></th>'+
+                                                                            '       </tr>'+
+                        '    </thead>'+
+                        '    <tbody>'+
+                        '    </tbody>'+
+                        '</table>';
+             // body...
+             $("#ShowRincian").html(table2)
+              var t2 = $("#table-rincian").dataTable({
+                initComplete: function() {
+                    var api = this.api();
+                    $('#table-rincian_filter').hide();
+
+                    $('#table-rincian thead tr:eq(1) th,#table-rincian thead tr:eq(1) td').each( function (i) {
+                        if (i>0 && i<5) {                            
+                            var title = $(this).text();
+                            $(this).html( '<input type="text" style="width: 100%" placeholder="Cari '+title+'" />' );
+                     
+                            $( 'input', this ).on( 'keyup', function () {
+                                if ( api.column(i).search() !== this.value ) {
+                                    api.column(i).search(this.value).draw();
+                                    // api.columns(1).search('').draw();
+                                }
+                            } );
+                        }
+                    } );
+                },
+                oLanguage: {
+                    sProcessing: "loading..."
+                },
+                orderCellsTop: true,
+                processing: true,
+                serverSide: true,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                ajax: {"url": "https://bastbanpem.pertanian.go.id/kontrak/json_kontrak_penyaluran_penerima/7395", "type": "POST"},
+                columns: [
+                    {"data": "idkontrak_penerima"},
+                    {"data": "penerima"},
+                    {"data": "pn_endpoint_json"},
+                    {"data": "pn_endpoint_json"},
+                    {"data": "pn_barang_json"},
+                    {"data": "pn_qty_disalurkan"},
+                    {"data": "pn_nilai_disalurkan"},
+                                                                        {"data": "view","orderable":false}
+                                                            ],
+                order: [[0, 'desc']],
+                columnDefs : [
+                    { targets : [1],
+                        render : function (data, type, row, meta) {
+                                                                                                if (row['pn_diterima_status']) {
+                                        if (row['is_bermasalah']!=1){
+                                            label ='<span onclick="detailpenerimabantuan(\''+row['pn_nik']+'\')">'+row['penerima']+'</span><br><button onclick="getdetailpenerimaan('+row['idkontrak_penerima']+')" class="btn btn-success btn-xs">Sudah Diterima</button>';
+                                        }else{
+                                            label ='<span onclick="detailpenerimabantuan(\''+row['pn_nik']+'\')">'+row['penerima']+'</span><br><button onclick="getdetailpenerimaan('+row['idkontrak_penerima']+')" class="btn btn-success btn-xs">Sudah Diterima</button><br><br> <b>Data Bermasalah</b>';
+                                        }
+                                    } else {
+                                        if (row['is_bermasalah']!=1){
+                                            label = '<span onclick="detailpenerimabantuan(\''+row['pn_nik']+'\')">'+row['penerima']+'</span>'+'<br><button class="btn btn-danger btn-xs disabled">Belum Diterima</button>';
+                                        }else{
+                                            label = '<span onclick="detailpenerimabantuan(\''+row['pn_nik']+'\')">'+row['penerima']+'</span>'+'<br><button class="btn btn-danger btn-xs disabled">Belum Diterima</button><br><br> <b>Data Bermasalah</b>';
+                                        }
+                                    }
+                                                                                        htmls = label;
+                            return htmls;
+                          }
+                    },
+                    { targets : [2],
+                        render : function (data, type, row, meta) {
+                            obj = jQuery.parseJSON(data);
+                            htmls = obj.provinsi;
+                            if (obj.kota!=null && obj.kota!="null") {
+                                htmls = htmls+"<br>"+obj.kota
+                            }
+                            if (obj.kecamatan!=null && obj.kecamatan!="null") {
+                                htmls = htmls+"<br>"+obj.kecamatan
+                            }
+                            if (obj.desa!=null && obj.desa!="null") {
+                                htmls = htmls+"<br>"+obj.desa
+                            }
+                            return htmls;
+                          }
+                      },
+                    { targets : [3],
+                        render : function (data, type, row, meta) {
+                            obj = jQuery.parseJSON(data);
+                            return obj.gapoktan;
+                          }
+                      },
+                    { targets : [4],
+                        render : function (data, type, row, meta) {
+                            obj = jQuery.parseJSON(data);
+                            let barang = '-';
+                            if(obj) {
+                                barang = obj.kv_barang;
+                            }
+                            return barang;
+                        }
+                    },
+                    { targets : [6],
+                        render : function (data, type, row, meta) {
+                            if (data!=null) {
+                                return numberWithCommas(data);
+                            }else{
+                                return "0";
+                            }
+                        }
+                    }
+                                                                        ,{ targets : [7],
+                                render : function (data, type, row, meta) {
+                                    if (row['pn_diterima_status']) {
+                                        var htmls = '<button class="btn btn-xs btn-primary dim" onclick="updatestatus('+row['idkontrak_penerima']+')">Update Status</button>';
+                                    }else{
+                                        var htmls = row['view'];
+                                    }
+                                    return htmls;
+                                }
+                            }
+                                                            ],
+                rowCallback: function(row, data, iDisplayIndex) {
+                    var info = this.fnPagingInfo();
+                    var page = info.iPage;
+                    var length = info.iLength;
+                    var index = page * length + (iDisplayIndex + 1);
+                    $('td:eq(0)', row).html(index);
+                }
+            });
+         }  
+
+         jQuery(document).ready(function($) { 
+            loadtablerincian();
+         });
+
+         function hapus_rincian(id) {
+            if (confirm("Apakah anda yakin ingin menghapus Rincian ini?")) {                
+             jQuery.ajax({
+               url: 'https://bastbanpem.pertanian.go.id/kontrak/hapus_rincian/'+id,
+               type: 'POST',
+               dataType: 'json',
+               beforeSend:function(){
+                $('#div-button-'+id).html('<center><i class="fa fa-spin fa-spinner"></i> Prosessing...</center>');
+               },
+               success: function(data, textStatus, xhr) {
+                 // loadtablerincian();
+                 $('#div-button-'+id).html("Terhapus");
+                 $('#btn-edit-rincian-'+id).hide();
+                 $('#btn-hapus-rincian-'+id).hide();
+               },
+               error: function(xhr, textStatus, errorThrown) {
+                 var htmls = '<button type="button" class="btn btn-xs btn-warning" onclick="edit_rincian('+id+')" id="btn-edit-rincian-'+id+'"><i class="mdi mdi-pencil"></i></button><button type="button" class="btn btn-xs btn-danger" onclick="hapus_rincian('+id+')" id="btn-hapus-rincian-'+id+'"><i class="mdi mdi-trash-can-outline"></i></button>';
+                 $('#div-button-'+id).html(htmls);
+               }
+             });
+            } else {
+                return false;
+            }
+         }
+
+         function hapus_semua_rincian(idkontrak) {
+            $('#modal-hapus-semua-rincian').modal('show');
+            $('#txt-idkontrak-semua-rincian').val(idkontrak);
+         }
+
+         function edit_rincian(id) {
+             jQuery.ajax({
+               url: 'https://bastbanpem.pertanian.go.id/kontrak/edit_rincian/'+id,
+               type: 'POST',
+               dataType: 'html',
+               beforeSend: function() {
+                 $('#modal-edit-rincian').modal('show');
+                 $('#wrapper-edit-rincian').html('Sedang memuat...');
+                 $('#btn-save-edit-rincian').prop('disabled', true);
+               },
+               success: function(data, textStatus, xhr) {
+                 $('#wrapper-edit-rincian').html(data);
+                 $('#btn-save-edit-rincian').prop('disabled', false);
+               },
+               error: function(xhr, textStatus, errorThrown) {
+                 //called when there is an error
+               }
+             });
+             
+         }
+
+     $("#form-edit-rincian").submit(function(){
+            var form = $(this);
+            var mydata = new FormData(this);
+            $.ajax({
+                type: "POST",
+                url: form.attr("action"),
+                data: mydata,
+                cache: false,
+                contentType: false,
+                dataType: "html",
+                processData: false,
+                beforeSend : function(){
+                    $("#btn-save-edit-rincian").addClass("disabled").html("<i class='la la-spinner la-spin'></i>  Sedang memproses...").attr('disabled',true);
+                    form.find(".show_error").slideUp().html("");
+                },
+                success: function(response, textStatus, xhr) {
+                   var str = response;
+                    if (str.indexOf("Success") != -1){
+                        form.find(".show_error").hide().html(response).slideDown("fast");
+                        setTimeout(function(){ 
+                            form.find(".show_error").slideUp().html("");
+                            $("#modal-edit-rincian").modal('hide');
+                            loadtablerincian();
+                        }, 1000);
+                    }else{
+                        form.find(".show_error").hide().html(response).slideDown("fast");
+                    }
+                    $("#btn-save-edit-rincian").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                  console.log(xhr);
+                    $("#btn-save-edit-rincian").removeClass("disabled").html('<i class="fa fa-save"></i> Simpan').attr('disabled',false);
+                    form.find(".show_error").hide().html(xhr).slideDown("fast");
+                }
+            });
+            return false;
+        });
+
+
+     //========================================================================================== bawah
+
+     function upladoDOBukti(id) {
+         $('#wrapper-upload-do-bukti').html('Sedang memuat...');
+         $('#modal-upload-do-bukti').modal('show');
+         $('#wrapper-upload-do-bukti').load('https://bastbanpem.pertanian.go.id/kontrak/upload_do_bukti/'+id);
+     }
+
+
+      $(document).on('change','.file-upload',function(e){
+        if (this.files.length > 0) { 
+          for (const i = 0; i <= this.files.length - 1; i++) { 
+            const fsize = this.files.item(i).size; 
+            const file = Math.round((fsize / 1024));
+            if (file > 2000) { 
+              alert("Ukuran file melebihi 2MB");
+            }else{
+                id = this.id;
+                field = $(this).attr('data-field');
+                kontrak = $(this).attr('data-kontrak');
+                prefik = $(this).attr('data-prefik');
+                e.preventDefault();
+                var link="https://bastbanpem.pertanian.go.id/kontrak/proses_upload_do_bukti";
+                var form_data = new FormData();  
+                form_data.append("file", this.files[0]);  
+                form_data.append("field", field);  
+                form_data.append("id", id);  
+                form_data.append("kontrak", kontrak);  
+                form_data.append("prefik", prefik);  
+                $.ajax({
+                  url: link,
+                  type: 'POST',
+                  processData: false, // important
+                  contentType: false, // important
+                  dataType : 'json',
+                  data: form_data,
+                  beforeSend: function(xhr) {
+                    $("#alert-"+id).html("<i class='fa fa-spinner fa-spin'></i> Memprosess..");
+                  },
+                  success: function(res){  
+                    $('#'+id).val(null);
+                    if (res.response) {
+                      // data_json = jQuery.parseJSON(res.message);
+                      $("#alert-"+id).html("<i class='fa fa-check'></i> Berhasil Upload");
+                      $('#txt-file-'+id).val(JSON.stringify(res.message));
+                      $('#btn-download-'+id).attr('href','https://bastbanpem.pertanian.go.id/'+res.message.dir).attr('target', '_blank').show();
+                      $('#btn-hapus-'+id).show();
+                    } else {
+                      $("#alert-"+id).html("<i class='fa fa-times'></i> Gagal");
+                      $('#btn-download-'+id).removeAttr('href').removeAttr('target').hide();
+                      $('#btn-hapus-'+id).hide();
+                    }
+                  },
+                  error: function(xhr, textStatus, errorThrown) {
+                    alert("Gagal mengunggah berkas, silahkan coba lagi atau gunakan berkas lain")
+                    $("#alert-"+id).html("");
+                    $('#'+id).val(null);
+                  }
+                });
+            }
+          }
+        }
+      });
+
+    function getnorangka(id) {
+        $('#tbody-nomor-rangka').html('<center><i class="fa fa-spin fa-spinner"></i> Loading...</center>');
+        $('#tbody-nomor-rangka').load('https://bastbanpem.pertanian.go.id/kontrak/getnorangka/'+id);
+    }
+
+    function getsearchnorangka(id) {
+        var nomor_rangka = $('#txt-nomor-rangka').val();
+        $.ajax({
+            url: 'https://bastbanpem.pertanian.go.id/kontrak/getsearchnorangka',
+            type: 'post',
+            dataType: 'html',
+            data: {
+                nomor_rangka: nomor_rangka
+            },
+            beforeSend:function(){
+                $('#spn-alert-nomor-rangka').html('<i class="fa fa-spin fa-spinner"></i> Loading...');
+            },
+            success: function(response, textStatus, xhr) {
+               var str = response;
+                if (str.indexOf("Success") != -1){
+                    $('#txt-nomor-rangka').css('border-color','green');
+                    $('#spn-alert-nomor-rangka').html('Nomor Rangka Tersedia');
+                    $('#btn-simpan-do').fadeIn().removeClass('disabled').attr('disabled', false);
+                }else{
+                    $('#txt-nomor-rangka').css('border-color','red');
+                    $('#spn-alert-nomor-rangka').html('Nomor Rangka Sudah ada');
+                    $('#btn-simpan-do').fadeOut().addClass('disabled').attr('disabled', true);
+                }
+            }
+        });
+    }
+
+      function hapusBerkas(id,tipe,idelement) {
+        if (confirm('Apakah anda yakin ingin menghapus berkas ini?')) {
+          jQuery.ajax({
+            url: 'https://bastbanpem.pertanian.go.id/kontrak/hapus_do_bukti/'+id+'/'+tipe+'/'+idelement,
+            type: 'POST',
+            dataType: 'json',
+            beforeSend: function(xhr, textStatus) {
+                $("#alert-"+idelement).html("<i class='fa fa-spinner fa-spin'></i> Memprosess..");
+            },
+            success: function(data, textStatus, xhr) {
+              $("#alert-"+idelement).html("");
+              $('#btn-download-'+idelement).removeAttr('href').removeAttr('target').hide();
+              $('#btn-hapus-'+idelement).hide();
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              $("#alert-"+idelement).html("");
+              //called when there is an error
+            }
+          });
+        } else {
+            return false;  
+        }
+    }
+
+    function getdetailpenerimaan(idpenerima) {
+        $('#modal-upload-dari-penerima').modal('show');
+        $('#wrapper-upload-dari-penerima').html('<center><i class="fa fa-spin fa-spinner"></i> Loading...</center>');
+        $('#wrapper-upload-dari-penerima').load('https://bastbanpem.pertanian.go.id/kontrak/getdatauploadpenerima/'+idpenerima);
+    }
+
+    function detailpenerimabantuan(nik) {
+        $('#modal-detailpenerimabantuan').modal('show');
+        $('#wrapper-detail-penerima-bantuan').html('<center><i class="fa fa-spin fa-spinner"></i> Loading...</center>');
+        $('#wrapper-detail-penerima-bantuan').load('https://bastbanpem.pertanian.go.id/kontrak/getdatapenerima/'+nik);
+    }
+
+    function setdatabermasalah(idpenerima) {
+        if (confirm('Apakah anda yakin data penerima ini bermasalah ?')) {
+          jQuery.ajax({
+            url: 'https://bastbanpem.pertanian.go.id/kontrak/setdatabermasalah/'+idpenerima,
+            type: 'POST',
+            dataType: 'html',
+            beforeSend: function(xhr, textStatus) {
+                $("#btn-setdatabermasalah-"+idpenerima).html("<i class='fa fa-spinner fa-spin'></i> Memprosess..");
+            },
+            success: function() {
+                loadtablerincian();
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              $("#btn-setdatabermasalah-"+idpenerima).html("Set data bermasalah");
+            }
+          });
+        } else {
+            return false;  
+        }
+    }
+
+    function backdatabermasalah(idpenerima) {
+        if (confirm('Apakah anda yakin untuk reset data bermasalah pada penerima ini ?')) {
+          jQuery.ajax({
+            url: 'https://bastbanpem.pertanian.go.id/kontrak/backdatabermasalah/'+idpenerima,
+            type: 'POST',
+            dataType: 'html',
+            beforeSend: function(xhr, textStatus) {
+                $("#btn-backdatabermasalah-"+idpenerima).html("<i class='fa fa-spinner fa-spin'></i> Memprosess..");
+            },
+            success: function() {
+                loadtablerincian();
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              $("#btn-backdatabermasalah-"+idpenerima).html("Set data bermasalah");
+            }
+          });
+        } else {
+            return false;  
+        }
+    }
+    
+    function updatestatus(idpenerima) {
+        if (confirm("Apakah Anda yakin untuk mengubah status penerimaan dari penerima ini?")) {
+            location.href = 'https://bastbanpem.pertanian.go.id/kontrak/updatestatuspenerimaan/'+idpenerima;
+        }
+        return false;
+    }
+</script>      </section>
+    </div>
+    <footer class="main-footer" style="position: relative;z-index: 1;">
+      <div class="pull-right hidden-xs" style="color: #F1f1f1">
+        <b>Version</b>
+        1.0.0      </div>
+      <strong style="color: #F1f1f1">Copyright
+        <strong>© Biro Keuangan dan Perlengkapan Kementerian Pertanian.</strong>    </footer>
+    <script type="26052257ddeaec8764b18ec4-text/javascript">
+      $.widget.bridge('uibutton', $.ui.button);
+
+    </script>
+
+
+    <script src="https://bastbanpem.pertanian.go.id/assets/plugins/bootstrap-tagsinput/bootstrap-tagsinput.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- Bootstrap 3.3.7 -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/bootstrap/dist/js/bootstrap.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- Morris.js charts -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/select2/dist/js/select2.full.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/raphael/raphael.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/morris.js/morris.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- Sparkline -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/jquery-sparkline/dist/jquery.sparkline.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- jvectormap -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <script src="https://bastbanpem.pertanian.go.id/assets/plugins/jvectormap/jquery-jvectormap-world-mill-en.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- jQuery Knob Chart -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/jquery-knob/dist/jquery.knob.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- daterangepicker -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/moment/min/moment.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/bootstrap-daterangepicker/daterangepicker.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- datepicker -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- Bootstrap WYSIHTML5 -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- Slimscroll -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/jquery-slimscroll/jquery.slimscroll.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- FastClick -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/bower_components/fastclick/lib/fastclick.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- AdminLTE App -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/dist/js/adminlte.min.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/dist/js/pages/dashboard.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="https://bastbanpem.pertanian.go.id/assets/dist/js/demo.js" type="26052257ddeaec8764b18ec4-text/javascript"></script>
+    <script type="26052257ddeaec8764b18ec4-text/javascript">
+      $(document).ready(function () {
+        
+        $('#user-data-autocomplete').autocomplete({
+          source: "https://bastbanpem.pertanian.go.id/home/get_autocomplete",
+
+          select: function (event, ui) {
+            // $('[name="title"]').val(ui.item.label);
+            // $('[name="description"]').val(ui.item.description);
+            window.location.href = "https://bastbanpem.pertanian.go.id/master/user/editUser_redirect/" + ui.item.id;
+          }
+        });
+      });
+      var url = window.location;
+      // for sidebar menu but not for treeview submenu
+      $('ul.sidebar-menu a').filter(function () {
+        return this.href == url;
+      }).parent().siblings().removeClass('active').end().addClass('active');
+      // for treeview which is like a submenu
+      $('ul.treeview-menu a').filter(function () {
+        return this.href == url;
+      }).parentsUntil(".sidebar-menu > .treeview-menu").siblings().removeClass('active menu-open').end().addClass('active menu-open');
+
+    </script>
+    <script type="26052257ddeaec8764b18ec4-text/javascript">
+      $('.select2').select2();
+      $('.tgl').datepicker({
+        autoclose: true,
+        format: 'yyyy-mm-dd'
+      });
+      $(function () {
+        $('.table-export').DataTable({
+          dom: 'Bfrtip',
+          buttons: [
+            'copy', 'csv', 'excel', 'pdf', 'print'
+          ],
+          lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        });
+        $('.datatables-scroll').DataTable({
+          scrollX: true,
+          lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        })
+        $('#example2').DataTable({
+          'paging': true,
+          'lengthChange': false,
+          'searching': false,
+          'ordering': true,
+          'info': true,
+          'autoWidth': false,
+          'lengthMenu': [[10, 25, 50, -1], [10, 25, 50, "All"]]
+        })
+      });
+
+      $('.select2-judulkegiatan').select2({
+        minimumInputLength: 3,
+        allowClear: true,
+        placeholder: '--',
+        ajax: {
+          dataType: 'json',
+          url: 'https://bastbanpem.pertanian.go.id/master/master_judul_kegiatan/ajaxGetdata',
+          delay: 800,
+          data: function (params) {
+            return {
+              search: params.term
+            }
+          },
+          processResults: function (data, page) {
+            return {
+              results: data
+            };
+          },
+        }
+      });
+
+      function fungsiRupiah() {
+        $(".rupiah").keyup(function () {
+          $(this).val(formatRupiah(this.value, ''));
+        });
+
+        /* Fungsi formatRupiah */
+        function formatRupiah(angka, prefix) {
+          var number_string = angka.replace(/[^,\d]/g, '').toString(),
+            split = number_string.split(','),
+            sisa = split[0].length % 3,
+            rupiah = split[0].substr(0, sisa),
+            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+          // tambahkan titik jika yang di input sudah menjadi angka ribuan
+          if (ribuan) {
+            separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+          }
+
+          rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+          return prefix == undefined ? rupiah : (rupiah ? '' + rupiah : '');
+        }
+      }
+
+      fungsiRupiah();
+
+      // function maskRupiah(angka) {
+      //     var bilangan = angka;
+
+      //     var reverse = bilangan.toString().split('').reverse().join(''),
+      //         ribuan = reverse.match(/\d{1,3}/g);
+      //     ribuan = ribuan.join('.').split('').reverse().join('');
+
+      //     // Cetak hasil  
+      //     return ribuan;
+      // }
+
+      function maskRupiah(angka) {
+        if (angka == null || angka == "") {
+          var angkabaru = 0;
+        } else {
+          var angkabaru = angka;
+        }
+        var number_string = angkabaru.toString().replace(/[^,\d]/g, '').toString(),
+          split = number_string.split(','),
+          sisa = split[0].length % 3,
+          rupiah = split[0].substr(0, sisa),
+          ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        // tambahkan titik jika yang di input sudah menjadi angka ribuan
+        if (ribuan) {
+          separator = sisa ? '.' : '';
+          rupiah += separator + ribuan.join('.');
+        }
+
+        rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+        return rupiah;
+      }
+
+
+      function alertsuccess(status = null) {
+        var html = '<div class="alert alert-success ks-solid ks-active-border" role="alert">' +
+          '  <button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+          '    <span aria-hidden="true" class="fa fa-close"></span>' +
+          '  </button>' +
+          '  <h5 class="alert-heading">Alert</h5>' +
+          '    <ul>' +
+          '      <li>' + status + '</li>' +
+          '    </ul>' +
+          '</div>';
+
+        return html
+      }
+
+      function alertdanger(error = null) {
+        if (error == null) {
+          error = 'Something Error';
+        }
+        var html = '<div class="alert alert-danger ks-solid ks-active-border" role="alert">' +
+          '  <button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+          '    <span aria-hidden="true" class="fa fa-close"></span>' +
+          '  </button>' +
+          '  <h5 class="alert-heading">Warning</h5>' +
+          '    <ul>' +
+          '      <li>' + error + '</li>' +
+          '    </ul>' +
+          '</div>';
+        return html
+      }
+
+      $('.file-dokumen-kontrak').change(function () {
+        // const fi = this; 
+        // Check if any file is selected. 
+        if (this.files.length > 0) {
+          for (var i = 0; i <= this.files.length - 1; i++) {
+
+            const fsize = this.files.item(i).size;
+            const file = Math.round((fsize / 1024));
+            // The size of the file. 
+            if (file > 20000) {
+              alert("Ukuran file melebihi 20MB");
+              $('.btn-simpandata').fadeOut();
+            } else {
+              $('.btn-simpandata').fadeIn();
+            }
+          }
+        }
+      });
+
+      $('.file-dokumen').change(function () {
+        // const fi = this; 
+        // Check if any file is selected. 
+        if (this.files.length > 0) {
+          for (const i = 0; i <= this.files.length - 1; i++) {
+
+            const fsize = this.files.item(i).size;
+            const file = Math.round((fsize / 1024));
+            // The size of the file. 
+            if (file > 2000) {
+              alert("Ukuran file melebihi 2MB");
+              $('.btn-simpandata').fadeOut();
+            } else {
+              $('.btn-simpandata').fadeIn();
+            }
+          }
+        }
+      });
+
+      function adminReadonly(){
+        // $('a.dim')
+        //   .not('.btnExceptionReadonly')
+        //   .attr('disabled', true)
+        //   .addClass('disabled-link');
+          
+        // $('button.dim')
+        //   .not('#btn-belum-bast')
+        //   .not('#btn-sudah-bast')
+        //   .not('#btn-banyak-bast')
+        //   .not('.btnExceptionReadonly')
+        //   .attr('disabled', true);
+        const allowedText = /(filter|export)/i;
+        $('a.dim')
+            .not('.btnExceptionReadonly')
+            .each(function () {
+                if (allowedText.test($(this).text())) return;
+
+                $(this)
+                    .attr('disabled', true)
+                    .addClass('disabled-link');
+            });
+
+        $('button.dim')
+            .not('#btn-belum-bast')
+            .not('#btn-sudah-bast')
+            .not('#btn-banyak-bast')
+            .not('.btnExceptionReadonly')
+            .each(function () {
+                if (allowedText.test($(this).text())) return;
+
+                $(this).prop('disabled', true);
+            });
+      }
+    </script>
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="26052257ddeaec8764b18ec4-|49" defer></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec00a9d9e245fc7',t:'MTc3NjE0MTcyMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+</html>

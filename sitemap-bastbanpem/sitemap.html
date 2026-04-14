@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BastBanpem Portal - Final Blueprint</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+        .container { max-width: 1400px; margin: auto; }
+        h1 { color: #38bdf8; border-bottom: 3px solid #38bdf8; padding-bottom: 10px; margin-bottom: 30px; }
+        .card { background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card-header { font-size: 1.5em; font-weight: bold; color: #f8fafc; margin-bottom: 20px; border-left: 5px solid #38bdf8; padding-left: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #0f172a; }
+        th, td { padding: 12px; border: 1px solid #334155; text-align: left; }
+        th { background: #334155; color: #38bdf8; }
+        code { background: #334155; padding: 2px 5px; border-radius: 4px; color: #fbbf24; font-size: 0.9em; }
+        .search-box { width: 100%; padding: 15px; margin-bottom: 30px; background: #1e293b; border: 2px solid #38bdf8; border-radius: 10px; color: white; font-size: 1.1em; }
+        ul { columns: 2; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>[FINAL] BastBanpem Portal Master Blueprint</h1>
+        <input type="text" class="search-box" id="searchInput" placeholder="Search tabs, fields, button IDs, or action names...">
+        
+        <div id="tabsContainer">
+            
+        <div class="card" data-search="DATA KONTRAK">
+            <div class="card-header">DATA KONTRAK Tab</div>
+            
+            <h3>Data Input Fields</h3>
+            <table>
+                <thead><tr><th>Label</th><th>ID/Name</th><th>Type</th><th>Required</th></tr></thead>
+                <tbody><tr><td>N/A</td><td><code>idkontrak</code></td><td>hidden</td><td>False</td></tr><tr><td>Cofirm Password</td><td><code>password</code></td><td>password</td><td>False</td></tr></tbody>
+            </table>
+
+            <h3>Primary Actions & Buttons</h3>
+            <ul><li>Profile (<code></code>) - <em>link</em></li><li>Lockscreen (<code></code>) - <em>link</em></li><li>Sign out (<code></code>) - <em>link</em></li><li>× (<code></code>) - <em>button</em></li><li>Tidak (<code></code>) - <em>button</em></li><li>Ya (<code>btn-hapus-kontrak</code>) - <em>submit</em></li></ul>
+        </div>
+        
+        <div class="card" data-search="RINCIAN PENYALURAN">
+            <div class="card-header">RINCIAN PENYALURAN Tab</div>
+            
+            <h3>Data Input Fields</h3>
+            <table>
+                <thead><tr><th>Label</th><th>ID/Name</th><th>Type</th><th>Required</th></tr></thead>
+                <tbody><tr><td>N/A</td><td><code>idkontrak</code></td><td>hidden</td><td>False</td></tr><tr><td>Cofirm Password</td><td><code>password</code></td><td>password</td><td>False</td></tr><tr><td>Pilih Tipe Pengajuan</td><td><code>sel-tipe</code></td><td>select-one</td><td>False</td></tr><tr><td>Nilai Penundaan</td><td><code>txt-nilai-tunda</code></td><td>text</td><td>False</td></tr><tr><td>N/A</td><td><code>idtermin</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>id</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>dt[tipe_kontrak]</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>barang</code></td><td>select-one</td><td>False</td></tr><tr><td>Penerima</td><td><code>pn_nik</code></td><td>select-one</td><td>False</td></tr><tr><td>Qty</td><td><code>pn_qty_disalurkan</code></td><td>text</td><td>False</td></tr><tr><td>Nilai</td><td><code>pn_nilai_disalurkan</code></td><td>text</td><td>False</td></tr><tr><td>File Excel</td><td><code>file</code></td><td>file</td><td>False</td></tr><tr><td>N/A</td><td><code>table-rincian_length</code></td><td>select-one</td><td>False</td></tr><tr><td>NIK</td><td><code>dt[p_nik]</code></td><td>number</td><td>False</td></tr><tr><td>Nama</td><td><code>dt[p_nama]</code></td><td>text</td><td>False</td></tr><tr><td>File KTP</td><td><code>file</code></td><td>file</td><td>True</td></tr><tr><td>N/A</td><td><code>idkontrak</code></td><td>hidden</td><td>False</td></tr><tr><td>Cofirm Password</td><td><code>password</code></td><td>password</td><td>False</td></tr></tbody>
+            </table>
+
+            <h3>Primary Actions & Buttons</h3>
+            <ul><li>Profile (<code></code>) - <em>link</em></li><li>Lockscreen (<code></code>) - <em>link</em></li><li>Sign out (<code></code>) - <em>link</em></li><li>AJUKAN PEMBAYARAN (<code>btn-ajukan-pembayaran</code>) - <em>submit</em></li><li>KALKULASI MONITORING KONTRAK (<code></code>) - <em>link</em></li><li>× (<code></code>) - <em>button</em></li><li>Tidak (<code></code>) - <em>button</em></li><li>Ya (<code>btn-hapus-kontrak</code>) - <em>submit</em></li><li>× (<code></code>) - <em>button</em></li><li>Ajukan kontrak (<code>btn-ajukan-kontrak</code>) - <em>button</em></li><li>× (<code></code>) - <em>button</em></li><li>Close (<code></code>) - <em>button</em></li><li>Submit (<code></code>) - <em>submit</em></li><li>TAMBAH RINCIAN PENERIMA BANTUAN (<code></code>) - <em>link</em></li><li>IMPORT PENERIMA DARI FILE EXCEL (<code></code>) - <em>link</em></li></ul>
+        </div>
+        
+        <div class="card" data-search="BAST">
+            <div class="card-header">BAST Tab</div>
+            
+            <h3>Data Input Fields</h3>
+            <table>
+                <thead><tr><th>Label</th><th>ID/Name</th><th>Type</th><th>Required</th></tr></thead>
+                <tbody><tr><td>N/A</td><td><code>idkontrak</code></td><td>hidden</td><td>False</td></tr><tr><td>Cofirm Password</td><td><code>password</code></td><td>password</td><td>False</td></tr><tr><td>Pilih Tipe Pengajuan</td><td><code>sel-tipe</code></td><td>select-one</td><td>False</td></tr><tr><td>Nilai Penundaan</td><td><code>txt-nilai-tunda</code></td><td>text</td><td>False</td></tr><tr><td>N/A</td><td><code>idtermin</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>id</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>dt[b_idkontrak]</code></td><td>hidden</td><td>False</td></tr><tr><td>Apakah BAST digunakan lebih dari satu penerima ?</td><td><code>lebihdarisatu</code></td><td>radio</td><td>False</td></tr><tr><td>Apakah BAST digunakan lebih dari satu penerima ?</td><td><code>lebihdarisatu</code></td><td>radio</td><td>False</td></tr><tr><td>Nomor BAST</td><td><code>dt[b_nomor]</code></td><td>text</td><td>True</td></tr><tr><td>Nilai BAST</td><td><code>dt[b_nilai]</code></td><td>text</td><td>True</td></tr><tr><td>Tanggal BAST</td><td><code>dt[b_tanggal]</code></td><td>text</td><td>True</td></tr><tr><td>Dokumen BAST</td><td><code>file</code></td><td>file</td><td>True</td></tr><tr><td>Penerima BAST</td><td><code>penerimabast</code></td><td>select-one</td><td>False</td></tr><tr><td>N/A</td><td><code>bp_idbast</code></td><td>select-one</td><td>False</td></tr><tr><td>N/A</td><td><code>txt-penerima</code></td><td>text</td><td>False</td></tr><tr><td>N/A</td><td><code>txt-desa</code></td><td>text</td><td>False</td></tr><tr><td>N/A</td><td><code>mytable-bast_length</code></td><td>select-one</td><td>False</td></tr><tr><td>N/A</td><td><code>dt[b_idkontrak]</code></td><td>hidden</td><td>False</td></tr><tr><td>Nomor NTPN</td><td><code>dt[b_nomor]</code></td><td>text</td><td>True</td></tr><tr><td>Nilai</td><td><code>dt[b_nilai]</code></td><td>text</td><td>True</td></tr><tr><td>Tanggal</td><td><code>dt[b_tanggal]</code></td><td>text</td><td>True</td></tr><tr><td>Bukti Setor NTPN</td><td><code>file</code></td><td>file</td><td>True</td></tr><tr><td>N/A</td><td><code>idbastreview</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>valreview</code></td><td>hidden</td><td>False</td></tr></tbody>
+            </table>
+
+            <h3>Primary Actions & Buttons</h3>
+            <ul><li>Profile (<code></code>) - <em>link</em></li><li>Lockscreen (<code></code>) - <em>link</em></li><li>Sign out (<code></code>) - <em>link</em></li><li>AJUKAN PEMBAYARAN (<code>btn-ajukan-pembayaran</code>) - <em>submit</em></li><li>KALKULASI MONITORING KONTRAK (<code></code>) - <em>link</em></li><li>× (<code></code>) - <em>button</em></li><li>Tidak (<code></code>) - <em>button</em></li><li>Ya (<code>btn-hapus-kontrak</code>) - <em>submit</em></li><li>× (<code></code>) - <em>button</em></li><li>Ajukan kontrak (<code>btn-ajukan-kontrak</code>) - <em>button</em></li><li>× (<code></code>) - <em>button</em></li><li>Close (<code></code>) - <em>button</em></li><li>Submit (<code></code>) - <em>submit</em></li><li>SIMPAN (<code>btn-save-bast</code>) - <em>submit</em></li><li>PENERIMA BELUM BAST (<code>btn-belum-bast</code>) - <em>submit</em></li></ul>
+        </div>
+        
+        <div class="card" data-search="CATATAN DARI SATKER">
+            <div class="card-header">CATATAN DARI SATKER Tab</div>
+            
+            <h3>Data Input Fields</h3>
+            <table>
+                <thead><tr><th>Label</th><th>ID/Name</th><th>Type</th><th>Required</th></tr></thead>
+                <tbody><tr><td>N/A</td><td><code>idkontrak</code></td><td>hidden</td><td>False</td></tr><tr><td>Cofirm Password</td><td><code>password</code></td><td>password</td><td>False</td></tr><tr><td>Pilih Tipe Pengajuan</td><td><code>sel-tipe</code></td><td>select-one</td><td>False</td></tr><tr><td>Nilai Penundaan</td><td><code>txt-nilai-tunda</code></td><td>text</td><td>False</td></tr><tr><td>N/A</td><td><code>idtermin</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>id</code></td><td>hidden</td><td>False</td></tr></tbody>
+            </table>
+
+            <h3>Primary Actions & Buttons</h3>
+            <ul><li>Profile (<code></code>) - <em>link</em></li><li>Lockscreen (<code></code>) - <em>link</em></li><li>Sign out (<code></code>) - <em>link</em></li><li>AJUKAN PEMBAYARAN (<code>btn-ajukan-pembayaran</code>) - <em>submit</em></li><li>KALKULASI MONITORING KONTRAK (<code></code>) - <em>link</em></li><li>× (<code></code>) - <em>button</em></li><li>Tidak (<code></code>) - <em>button</em></li><li>Ya (<code>btn-hapus-kontrak</code>) - <em>submit</em></li><li>× (<code></code>) - <em>button</em></li><li>Ajukan kontrak (<code>btn-ajukan-kontrak</code>) - <em>button</em></li><li>× (<code></code>) - <em>button</em></li><li>Close (<code></code>) - <em>button</em></li><li>Submit (<code></code>) - <em>submit</em></li><li>× (<code></code>) - <em>button</em></li><li>Close (<code></code>) - <em>button</em></li></ul>
+        </div>
+        
+        <div class="card" data-search="CATATAN AKTIVITAS REVIEW">
+            <div class="card-header">CATATAN AKTIVITAS REVIEW Tab</div>
+            
+            <h3>Data Input Fields</h3>
+            <table>
+                <thead><tr><th>Label</th><th>ID/Name</th><th>Type</th><th>Required</th></tr></thead>
+                <tbody><tr><td>N/A</td><td><code>idkontrak</code></td><td>hidden</td><td>False</td></tr><tr><td>Cofirm Password</td><td><code>password</code></td><td>password</td><td>False</td></tr><tr><td>Pilih Tipe Pengajuan</td><td><code>sel-tipe</code></td><td>select-one</td><td>False</td></tr><tr><td>Nilai Penundaan</td><td><code>txt-nilai-tunda</code></td><td>text</td><td>False</td></tr><tr><td>N/A</td><td><code>idtermin</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>id</code></td><td>hidden</td><td>False</td></tr><tr><td>N/A</td><td><code>status</code></td><td>hidden</td><td>False</td></tr><tr><td>Comfirm Password</td><td><code>password</code></td><td>password</td><td>False</td></tr><tr><td>Catatan</td><td><code>catatan_status</code></td><td>textarea</td><td>True</td></tr></tbody>
+            </table>
+
+            <h3>Primary Actions & Buttons</h3>
+            <ul><li>Profile (<code></code>) - <em>link</em></li><li>Lockscreen (<code></code>) - <em>link</em></li><li>Sign out (<code></code>) - <em>link</em></li><li>AJUKAN PEMBAYARAN (<code>btn-ajukan-pembayaran</code>) - <em>submit</em></li><li>KALKULASI MONITORING KONTRAK (<code></code>) - <em>link</em></li><li>× (<code></code>) - <em>button</em></li><li>Tidak (<code></code>) - <em>button</em></li><li>Ya (<code>btn-hapus-kontrak</code>) - <em>submit</em></li><li>× (<code></code>) - <em>button</em></li><li>Ajukan kontrak (<code>btn-ajukan-kontrak</code>) - <em>button</em></li><li>× (<code></code>) - <em>button</em></li><li>Close (<code></code>) - <em>button</em></li><li>Submit (<code></code>) - <em>submit</em></li><li>× (<code></code>) - <em>button</em></li><li>Close (<code></code>) - <em>button</em></li></ul>
+        </div>
+        
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const filter = this.value.toUpperCase();
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const text = card.innerText.toUpperCase();
+                card.style.display = text.indexOf(filter) > -1 ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

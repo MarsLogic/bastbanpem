@@ -6,7 +6,7 @@ import {
     Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter,
     Eye, EyeOff, XCircle, ShieldAlert, ArrowUpDown, RotateCcw,
     CornerDownLeft, Info, RefreshCcw, PlusCircle, ChevronDown, ExternalLink,
-    Image as ImageIcon, Loader2
+    Image as ImageIcon, Loader2, ListTree
 } from 'lucide-react';
 import { ingestExcel, balanceExcel } from '../lib/api';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ImportMapper } from './ImportMapper';
 
 const formatIDR = (num: number) => {
   return new Intl.NumberFormat('id-ID', {
@@ -116,6 +117,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
 }) => {
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showMapper, setShowMapper] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
@@ -154,6 +156,31 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
       setTotalTarget(sum);
     }
   }, [rows]);
+
+  const handleMappedData = (mappedRows: any[]) => {
+    const transformed = mappedRows.map(r => ({
+        id: crypto.randomUUID(),
+        nik: String(r["NIK Penerima"] || "").replace(/\D/g, ''),
+        name: r["Penerima"] || r["Nama"] || "",
+        location: {
+            provinsi: r["Provinsi"] || "",
+            kabupaten: r["Kota"] || "",
+            kecamatan: r["Kecamatan"] || "",
+            desa: r["Kel / Desa"] || ""
+        },
+        financials: {
+            qty: parseFloat(r["Qty Disalurkan"] || r["Qty"] || "0"),
+            target_value: parseFloat(r["Nilai Disalurkan"] || r["Nilai"] || "0"),
+            calculated_value: parseFloat(r["Nilai Disalurkan"] || r["Nilai"] || "0")
+        },
+        is_synced: false,
+        is_excluded: false,
+        original_row: r
+    }));
+    onDataLoaded(transformed);
+    setShowMapper(false);
+    toast.success(`Imported ${transformed.length} recipients via Mapper`);
+  };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -241,19 +268,41 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
     }
   };
 
+  if (showMapper) {
+    return (
+        <div className="bg-white border rounded-xl shadow-xl overflow-hidden h-[700px] flex flex-col mx-4 mb-8">
+            <div className="p-4 border-b flex justify-between items-center bg-slate-50">
+                <div className="flex items-center gap-3">
+                    <div className="p-1.5 bg-indigo-600 rounded-lg shadow-md shadow-indigo-100">
+                        <ListTree size={16} className="text-white" />
+                    </div>
+                    <span className="font-black text-[10px] uppercase tracking-widest text-slate-500">Visual Schema Alignment Engine</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setShowMapper(false)} className="h-8 text-[10px] font-bold uppercase hover:bg-red-50 hover:text-red-600">Cancel</Button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+                <ImportMapper onMappingComplete={handleMappedData} />
+            </div>
+        </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full p-4 bg-slate-50/20">
       <Card className="border-slate-200 shadow-sm bg-white">
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-lg font-bold text-slate-900">Distribution Workbench (Python Engine)</CardTitle>
+              <CardTitle className="text-lg font-bold text-slate-900">Distribution Workbench</CardTitle>
               <CardDescription className="flex items-center gap-2 mt-1">
                 Precision audit mode enabled
                 <Badge variant="secondary" className="bg-slate-100 text-slate-500 text-[9px] h-4 uppercase">{rows.length} Rows</Badge>
               </CardDescription>
             </div>
             <div className="flex gap-2">
+               <Button variant="outline" size="sm" onClick={() => setShowMapper(true)} className="h-8 gap-2 text-[10px] font-bold border-indigo-200 text-indigo-600 hover:bg-indigo-50">
+                  <ListTree size={12} /> SMART MAPPER
+               </Button>
                <Button variant="outline" size="sm" onClick={clearWorkbench} className="h-8 gap-2 text-[10px] font-bold border-slate-200 text-red-600 hover:bg-red-50">
                   <Trash2 size={12} /> CLEAR
                </Button>
@@ -281,7 +330,10 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
         <div {...getRootProps()} className={cn("flex flex-col items-center justify-center min-h-[300px] border-2 border-dashed rounded-xl transition-all gap-4 bg-white/50", isDragActive ? "border-indigo-400 bg-indigo-50/50" : "border-slate-200 hover:bg-white")}>
           <input {...getInputProps()} />
           <FileSpreadsheet size={40} className="text-slate-300" />
-          <p className="font-semibold text-slate-900">Upload Excel Distribution Payload</p>
+          <div className="text-center">
+            <p className="font-semibold text-slate-900">Upload Excel Distribution Payload</p>
+            <p className="text-[10px] text-slate-400 uppercase mt-1">Or use SMART MAPPER for custom formats</p>
+          </div>
           <Button variant="outline" className="mt-2" disabled={isProcessing}>
             {isProcessing ? "Processing via Python..." : "Select XLSX File"}
           </Button>
@@ -374,13 +426,13 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
                         />
                       </TableCell>
                       <TableCell className="px-4 py-1 text-[11px] border-l border-slate-100">
-                        {row.location.desa}
+                        {row.location?.desa}
                       </TableCell>
                       <TableCell className="px-4 py-1 text-right text-[11px] font-mono font-bold border-l border-slate-100">
-                        {row.financials.qty}
+                        {row.financials?.qty}
                       </TableCell>
                       <TableCell className="px-4 py-1 text-right text-[11px] font-bold border-l border-slate-100">
-                        {formatIDR(row.financials.target_value)}
+                        {formatIDR(row.financials?.target_value || 0)}
                       </TableCell>
                     </TableRow>
                   ))}

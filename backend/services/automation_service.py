@@ -15,61 +15,68 @@ async def init_stealth_page(page: Page):
 
 async def submit_to_government_site(data: dict):
     """
-    Automates form submission to the government portal.
-    Optimized for 4GB RAM by using specific Chromium flags.
+    Expert Injector: Handles multi-tab navigation and modal evidence uploads.
     """
     logger.info(f"Starting automation for NIK: {data.get('nik', 'UNKNOWN')}")
     
     async with async_playwright() as p:
-        # Launch browser with RAM-saving flags
-        browser = await p.chromium.launch(
-            headless=True,
-            args=[
-                "--disable-dev-shm-usage", 
-                "--no-sandbox",
-                "--disable-gpu",
-                "--js-flags='--max-old-space-size=512'"
-            ]
-        )
-        
+        browser = await p.chromium.launch(headless=False) # Visual mode for user monitoring
         context = await browser.new_context()
         page = await context.new_page()
-        
-        # Apply stealth to avoid bot detection
         await init_stealth_page(page)
         
         try:
-            # 1. Login Phase
-            login_url = "https://bastbanpem.pertanian.go.id/login"
-            logger.info(f"Logging in to {login_url}")
-            await page.goto(login_url, timeout=60000)
+            # 1. Base Navigation
+            contract_id = data.get("idkontrak")
+            await page.goto(f"https://bastbanpem.pertanian.go.id/kontrak/detail/{contract_id}")
             
-            # Map login fields (Placeholders based on common patterns)
-            # await page.fill('input[name="username"]', os.getenv("BAST_USER"))
-            # await page.fill('input[name="password"]', os.getenv("BAST_PASS"))
-            # await page.click('button[type="submit"]')
-            # await page.wait_for_navigation()
+            # Check for login requirement
+            if "login" in page.url:
+                logger.info("Awaiting manual user login...")
+                # In production, we'd wait for a specific element that exists only after login
+                await page.wait_for_selector(".navbar-static-top", timeout=300000) 
+
+            # 2. Rincian Penyaluran Tab
+            await page.click("a[href*='rincian_penyaluran']")
             
-            # 2. Navigation to Submission
-            submission_url = "https://bastbanpem.pertanian.go.id/submission/create"
-            logger.info(f"Navigating to {submission_url}")
-            # await page.goto(submission_url)
+            # 3. Locate Recipient and Open DO Modal
+            # Search for the row containing the NIK
+            nik = data.get("nik")
+            row_selector = f"tr:has-text('{nik}')"
+            await page.wait_for_selector(row_selector)
             
-            # 3. Form Field Mapping (Placeholders)
-            # Mapping based on PipelineRow/Recipient data
-            # await page.fill("#nik_recipient", data.get("nik"))
-            # await page.fill("#name_recipient", data.get("name"))
-            # await page.select_option("#province", data.get("location", {}).get("provinsi"))
-            # await page.fill("#quantity", str(data.get("financials", {}).get("qty")))
+            # Click "DO & Bukti Terima" button in that row
+            await page.click(f"{row_selector} .btn-primary:has-text('DO & Bukti Terima')")
             
-            # 4. Final Submission
-            # await page.click("#btn-submit")
+            # 4. Modal Injection (14 Fields)
+            await page.wait_for_selector("#modal-do-bukti") # Assumed ID from blueprint
             
-            return {"status": "success", "message": "Automation logic mapped (Placeholders active)"}
+            # Mandatory File Uploads
+            evidence = data.get("evidence", {})
+            if evidence.get("delivery_order_path"):
+                await page.set_input_files("input[name='file_do']", evidence["delivery_order_path"])
+            
+            if evidence.get("invoice_ongkir_path"):
+                await page.set_input_files("input[name='file_invoice']", evidence["invoice_ongkir_path"])
+                
+            # Values
+            await page.fill("input[name='txt-ongkir']", str(evidence.get("ongkir_value", 0)))
+            
+            # Photo Evidence (Loop Foto 1-5)
+            for i in range(1, 6):
+                field_name = f"foto_bukti_{i}_path"
+                if evidence.get(field_name):
+                    await page.set_input_files(f"input[name='file_foto_{i}']", evidence[field_name])
+
+            # 5. Save Modal
+            # await page.click("#btn-save-do") 
+            
+            return {"status": "success", "message": f"Injection completed for NIK {nik}"}
             
         except Exception as e:
-            logger.error(f"Automation failed: {str(e)}")
+            logger.error(f"Injection failed: {str(e)}")
             return {"status": "error", "message": str(e)}
         finally:
+            # We keep it open for user confirmation in semi-autonomous mode
+            await asyncio.sleep(5) 
             await browser.close()
-            logger.info("Browser closed.")

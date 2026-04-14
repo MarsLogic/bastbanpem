@@ -67,4 +67,14 @@ export const parsePdf = async (path: string) => {
   return data;
 };
 
+export const splitPdf = async (path: string, pages: number[], outputDir: string, prefix: str) => {
+  const { data } = await api.post('/pdf/split', { path, pages, output_dir: outputDir, prefix });
+  return data;
+};
+
+export const extractCpcl = async (path: string) => {
+  const { data } = await api.post('/contracts/cpcl', { path });
+  return data;
+};
+
 export default api;

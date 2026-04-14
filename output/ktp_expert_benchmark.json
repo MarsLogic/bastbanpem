@@ -1,0 +1,982 @@
+[
+  {
+    "folder": "D:\\BINDER\\FOTO PESAWARAN\\KTP-TEST",
+    "engine": "v5",
+    "total_files": 24,
+    "successful": 22,
+    "accuracy": 91.66666666666666,
+    "avg_ms": 0.0,
+    "total_time_sec": 59.28,
+    "details": [
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.47.jpeg",
+        "nik": "1809040808710002",
+        "nama": "SUHERMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48.jpeg",
+        "nik": "1809041201800001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (2).jpeg",
+        "nik": "1810020704840008",
+        "nama": "AMBARTRAPSILO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48 (1).jpeg",
+        "nik": "NOT_FOUND",
+        "nama": "THENDRA.AO",
+        "success": false,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (1).jpeg",
+        "nik": "1809041012810003",
+        "nama": "NURUCIKHWAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (1).jpeg",
+        "nik": "1809042001620002",
+        "nama": "ROSADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (2).jpeg",
+        "nik": "1809040508630006",
+        "nama": "SUHARYANTO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50.jpeg",
+        "nik": "1809043102740002",
+        "nama": "HAIRUODM",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49.jpeg",
+        "nik": "1000222150504889",
+        "nama": "EAEMN O612",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (1).jpeg",
+        "nik": "1809041011740003",
+        "nama": "AMIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (2).jpeg",
+        "nik": "1809042921760002",
+        "nama": "KABUPATEN PESAWARAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51.jpeg",
+        "nik": "1180904121268000",
+        "nama": "MUKHLISINZEN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.47.jpeg",
+        "nik": "1809040808710002",
+        "nama": "SUHERMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48.jpeg",
+        "nik": "1809041201800001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (2).jpeg",
+        "nik": "1810020704840008",
+        "nama": "AMBARTRAPSILO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48 (1).jpeg",
+        "nik": "NOT_FOUND",
+        "nama": "THENDRA.AO",
+        "success": false,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (1).jpeg",
+        "nik": "1809041012810003",
+        "nama": "NURUCIKHWAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (1).jpeg",
+        "nik": "1809042001620002",
+        "nama": "ROSADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (2).jpeg",
+        "nik": "1809040508630006",
+        "nama": "SUHARYANTO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49.jpeg",
+        "nik": "1000222150504889",
+        "nama": "EAEMN O612",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50.jpeg",
+        "nik": "1809043102740002",
+        "nama": "HAIRUODM",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (1).jpeg",
+        "nik": "1809041011740003",
+        "nama": "AMIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (2).jpeg",
+        "nik": "1809042921760002",
+        "nama": "KABUPATEN PESAWARAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51.jpeg",
+        "nik": "1180904121268000",
+        "nama": "MUKHLISINZEN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      }
+    ]
+  },
+  {
+    "folder": "D:\\BINDER\\FOTO PESAWARAN\\KTP-TEST",
+    "engine": "v4",
+    "total_files": 24,
+    "successful": 22,
+    "accuracy": 91.66666666666666,
+    "avg_ms": 0.0,
+    "total_time_sec": 42.33,
+    "details": [
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.47.jpeg",
+        "nik": "1809040808710002",
+        "nama": "SUHERMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48.jpeg",
+        "nik": "1809041201800001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (2).jpeg",
+        "nik": "1810020704840008",
+        "nama": "AMBARTRAPSILO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48 (1).jpeg",
+        "nik": "NOT_FOUND",
+        "nama": "THENDRA.AO",
+        "success": false,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (1).jpeg",
+        "nik": "1809041012810003",
+        "nama": "NURUCIKHWAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (1).jpeg",
+        "nik": "1809042001620002",
+        "nama": "ROSADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (2).jpeg",
+        "nik": "1809040508630006",
+        "nama": "SUHARYANTO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50.jpeg",
+        "nik": "1809043102740002",
+        "nama": "HAIRUODM",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49.jpeg",
+        "nik": "1000222150504889",
+        "nama": "EAEMN O612",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (1).jpeg",
+        "nik": "1809041011740003",
+        "nama": "AMIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (2).jpeg",
+        "nik": "1809042921760002",
+        "nama": "KABUPATEN PESAWARAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51.jpeg",
+        "nik": "1180904121268000",
+        "nama": "MUKHLISINZEN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.47.jpeg",
+        "nik": "1809040808710002",
+        "nama": "SUHERMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48.jpeg",
+        "nik": "1809041201800001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (2).jpeg",
+        "nik": "1810020704840008",
+        "nama": "AMBARTRAPSILO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.48 (1).jpeg",
+        "nik": "NOT_FOUND",
+        "nama": "THENDRA.AO",
+        "success": false,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49 (1).jpeg",
+        "nik": "1809041012810003",
+        "nama": "NURUCIKHWAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (1).jpeg",
+        "nik": "1809042001620002",
+        "nama": "ROSADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50 (2).jpeg",
+        "nik": "1809040508630006",
+        "nama": "SUHARYANTO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.49.jpeg",
+        "nik": "1000222150504889",
+        "nama": "EAEMN O612",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.50.jpeg",
+        "nik": "1809043102740002",
+        "nama": "HAIRUODM",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (1).jpeg",
+        "nik": "1809041011740003",
+        "nama": "AMIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51 (2).jpeg",
+        "nik": "1809042921760002",
+        "nama": "KABUPATEN PESAWARAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "WhatsApp Image 2026-02-23 at 11.17.51.jpeg",
+        "nik": "1180904121268000",
+        "nama": "MUKHLISINZEN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      }
+    ]
+  },
+  {
+    "folder": "C:\\Users\\Wyx\\Desktop\\ktp-test\\KTP",
+    "engine": "v5",
+    "total_files": 28,
+    "successful": 28,
+    "accuracy": 100.0,
+    "avg_ms": 0.0,
+    "total_time_sec": 54.15,
+    "details": [
+      {
+        "file": "ktp10.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp10 - Copy.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp1.jpg",
+        "nik": "1705041611570001",
+        "nama": "WAHIJAN EPENDI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp2.jpg",
+        "nik": "1705040204710001",
+        "nama": "HAMDANI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp3.jpg",
+        "nik": "1705041508660001",
+        "nama": "LISAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp4.jpg",
+        "nik": "1705040407790004",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp5.jpg",
+        "nik": "1705042006750001",
+        "nama": "ASWANSURATNO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp6.jpg",
+        "nik": "1705041708900007",
+        "nama": "SULATMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp7.jpg",
+        "nik": "1405020102730009",
+        "nama": "WADIRMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp8.jpg",
+        "nik": "1705041708670001",
+        "nama": "NGARIPIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9 - Copy.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16.jpg",
+        "nik": "3308151802740001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp1.jpg",
+        "nik": "1705041611570001",
+        "nama": "WAHIJAN EPENDI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp10 - Copy.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp10.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16_edited_1775889026554.jpg",
+        "nik": "3308151802740001",
+        "nama": "PARING",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp2.jpg",
+        "nik": "1705040204710001",
+        "nama": "HAMDANI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp3.jpg",
+        "nik": "1705041508660001",
+        "nama": "LISAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp4.jpg",
+        "nik": "1705040407790004",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp5.jpg",
+        "nik": "1705042006750001",
+        "nama": "ASWANSURATNO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp6.jpg",
+        "nik": "1705041708900007",
+        "nama": "SULATMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp7.jpg",
+        "nik": "1405020102730009",
+        "nama": "WADIRMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp8.jpg",
+        "nik": "1705041708670001",
+        "nama": "NGARIPIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9 - Copy.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16.jpg",
+        "nik": "3308151802740001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16_edited_1775889026554.jpg",
+        "nik": "3308151802740001",
+        "nama": "PARING",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      }
+    ]
+  },
+  {
+    "folder": "C:\\Users\\Wyx\\Desktop\\ktp-test\\KTP",
+    "engine": "v4",
+    "total_files": 28,
+    "successful": 28,
+    "accuracy": 100.0,
+    "avg_ms": 0.0,
+    "total_time_sec": 45.3,
+    "details": [
+      {
+        "file": "ktp10 - Copy.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp10.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp1.jpg",
+        "nik": "1705041611570001",
+        "nama": "WAHIJAN EPENDI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp2.jpg",
+        "nik": "1705040204710001",
+        "nama": "HAMDANI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp3.jpg",
+        "nik": "1705041508660001",
+        "nama": "LISAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp4.jpg",
+        "nik": "1705040407790004",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp5.jpg",
+        "nik": "1705042006750001",
+        "nama": "ASWANSURATNO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp6.jpg",
+        "nik": "1705041708900007",
+        "nama": "SULATMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp7.jpg",
+        "nik": "1405020102730009",
+        "nama": "WADIRMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp8.jpg",
+        "nik": "1705041708670001",
+        "nama": "NGARIPIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9 - Copy.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16.jpg",
+        "nik": "3308151802740001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp1.jpg",
+        "nik": "1705041611570001",
+        "nama": "WAHIJAN EPENDI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp10 - Copy.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp10.jpg",
+        "nik": "1705045509710001",
+        "nama": "\uff1aMUNASNAH",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16_edited_1775889026554.jpg",
+        "nik": "3308151802740001",
+        "nama": "PARING",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp2.jpg",
+        "nik": "1705040204710001",
+        "nama": "HAMDANI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp3.jpg",
+        "nik": "1705041508660001",
+        "nama": "LISAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp4.jpg",
+        "nik": "1705040407790004",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp5.jpg",
+        "nik": "1705042006750001",
+        "nama": "ASWANSURATNO",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp6.jpg",
+        "nik": "1705041708900007",
+        "nama": "SULATMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp7.jpg",
+        "nik": "1405020102730009",
+        "nama": "WADIRMAN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp8.jpg",
+        "nik": "1705041708670001",
+        "nama": "NGARIPIN",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9 - Copy.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "ktp9.jpg",
+        "nik": "1705041010920003",
+        "nama": "ASEPOKTARIADI",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16.jpg",
+        "nik": "3308151802740001",
+        "nama": "NIK",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      },
+      {
+        "file": "Picture16_edited_1775889026554.jpg",
+        "nik": "3308151802740001",
+        "nama": "PARING",
+        "success": true,
+        "version": null,
+        "ms": 0,
+        "confidence": 0
+      }
+    ]
+  }
+]

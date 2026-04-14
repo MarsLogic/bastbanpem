@@ -46,7 +46,9 @@ All distribution data MUST follow this schema in both Python (Pydantic) and Type
 - Uses `PyMuPDF` (`fitz`) to slice physical pages from the master contract.
 - Embeds KTP and Delivery photos into a consolidated PDF report for each recipient.
 
-### D. Dual-Model OCR (`ktp_service.py`)
-- **v4 Mobile**: For 4GB RAM speed.
-- **v5 Server**: For 8GB+ RAM accuracy.
-- **Blue-Channel Isolation**: Suppresses Indonesian KTP background patterns to improve character recognition.
+### D. Elite OCR Suite (`ktp_service.py`) [DOCS-002]
+Our KTP extraction engine is a multi-stage vision pipeline:
+- **Spatial-Semantic Parser**: Instead of line-by-line reading, every text box is mapped to a 2D coordinate grid. Labels (e.g., "Nama") are linked to values based on Y-axis alignment and X-axis proximity.
+- **NIK Triangulation**: Uses the 16-digit NIK as a checksum. If the OCR text for Gender or DOB contradicts the NIK, the system auto-repairs the fields based on the NIK data.
+- **Multi-Scale Inference**: If initial extraction fails, the engine automatically upscales the image (1.5x) using OpenCV `INTER_CUBIC` interpolation and retries.
+- **Hierarchical Location Repair**: Cross-references Province/Regency names against the master village database to auto-complete broken OCR results (e.g., `C1LACAP` -> `CILACAP`).

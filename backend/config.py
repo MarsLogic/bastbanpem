@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     LOG_FILE: str = os.path.join(BASE_DIR, "forensic_diagnostics.log")
     
     # OCR Settings
-    DEFAULT_OCR_VERSION: str = "v5"
+    DEFAULT_OCR_VERSION: str = "v4"
     
     class Config:
         env_file = ".env"

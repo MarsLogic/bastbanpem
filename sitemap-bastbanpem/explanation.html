@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAST Automator - Expert Strategy Map</title>
+    <style>
+        :root {
+            --primary: #1a6a9b;
+            --secondary: #65b1d1;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --bg: #f4f7f6;
+            --text: #2c3e50;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 { color: var(--primary); border-bottom: 3px solid var(--secondary); padding-bottom: 10px; }
+        h2 { color: var(--primary); margin-top: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .card {
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+            background: #f9f9f9;
+        }
+        .card.audit { border-left-color: var(--warning); }
+        .card.sync { border-left-color: var(--success); }
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 40px 0;
+            padding: 20px;
+            background: #fff;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+        }
+        .node {
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            width: 150px;
+        }
+        .arrow { font-size: 24px; color: #999; }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .tag-portal { background: #e1f5fe; color: #01579b; }
+        .tag-app { background: #e8f5e9; color: #1b5e20; }
+        .tag-expert { background: #fff3e0; color: #e65100; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Expert Strategy: Bidirectional Reconciliation</h1>
+        <p>Moving from a simple "Scraper" to an "Enterprise Compliance Tool." The goal is to ensure 100% data alignment between the Government Portal and Vendor Records.</p>
+
+        <div class="flow-diagram">
+            <div class="node">Government Portal<br><small>(Source of Truth)</small></div>
+            <div class="arrow">↔</div>
+            <div class="node" style="background:var(--warning)">Intelligent Audit Engine</div>
+            <div class="arrow">↔</div>
+            <div class="node">Local Workspace<br><small>(PDF/Excel/KTP)</small></div>
+        </div>
+
+        <div class="grid">
+            <div class="card audit">
+                <h2>1. Intelligent Audit</h2>
+                <ul>
+                    <li><strong>NIK Validation:</strong> Cross-check Excel NIKs with Portal <code>ceknik</code> API.</li>
+                    <li><strong>Qty Reconciliation:</strong> Compare <code>k_kontrak_nilai</code> on portal vs PDF extraction.</li>
+                    <li><strong>Location Matching:</strong> Map local names to Portal IDs (Provinsi, Kota, etc.).</li>
+                </ul>
+            </div>
+            <div class="card sync">
+                <h2>2. Seamless Sync</h2>
+                <ul>
+                    <li><strong>Bulk Registration:</strong> POST missing recipients to <code>/tambah_rincian</code>.</li>
+                    <li><strong>Evidence Linkage:</strong> Auto-upload BASTB/Surat Jalan to <code>/proses_upload_do_bukti</code>.</li>
+                    <li><strong>Status Tracking:</strong> Monitor review progress via <code>catatan_satker</code>.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>Technical Alignment</h2>
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>Expert Action</th>
+            </tr>
+            <tr>
+                <td><strong>Data Structure</strong></td>
+                <td>Inject <code>portalId</code> into <code>ContractData</code> for 1:1 binding.</td>
+            </tr>
+            <tr>
+                <td><strong>Flow</strong></td>
+                <td>Implement "Verification Checkpoints" before any data is sent to the portal.</td>
+            </tr>
+            <tr>
+                <td><strong>Tools</strong></td>
+                <td>Enhance <code>automation_service.py</code> to handle multi-tab scraping and payload generation.</td>
+            </tr>
+        </table>
+
+        <div style="margin-top:40px; text-align:center;">
+            <button onclick="alert('Proceeding with Audit-First Design...')" style="padding:15px 30px; background:var(--primary); color:white; border:none; border-radius:5px; cursor:pointer; font-weight:bold;">
+                Approve Audit-First Path
+            </button>
+        </div>
+    </div>
+</body>
+</html>

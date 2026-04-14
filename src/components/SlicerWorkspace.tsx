@@ -14,8 +14,12 @@ import * as pdfjs from 'pdfjs-dist';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { splitPdf } from '../lib/api';
 
 // Set up PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -38,6 +42,8 @@ interface SlicerWorkspaceProps {
 export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFarmers }) => {
   const [selectedFarmerId, setSelectedFarmerId] = useState<string | null>(null);
   const [pdfDoc, setPdfDoc] = useState<pdfjs.PDFDocumentProxy | null>(null);
+  const [pdfPath, setPdfPath] = useState<string | null>(null);
+  const [evidenceType, setEvidenceType] = useState<string>("KTP");
   const [numPages, setNumPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.5);
@@ -68,10 +74,48 @@ export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFa
     if (pdfDoc) renderPage(currentPage, scale, rotation);
   }, [currentPage, scale, rotation, renderPage, pdfDoc]);
 
+  const handleSplitAndBind = async () => {
+    if (!selectedFarmerId || selectedPages.length === 0 || !pdfPath) {
+      toast.error("Selection incomplete: Select a recipient, pages, and load a PDF.");
+      return;
+    }
+
+    const farmer = farmers.find(f => f.id === selectedFarmerId);
+    if (!farmer) return;
+
+    try {
+      const prefix = `${farmer.nik}_${evidenceType}`;
+      const outputDir = `App_Data/evidence/${farmer.nik}`;
+      // In this expert tool environment, we pass the "filename" as path 
+      // the backend should be configured to find it in the temp/upload dir
+      const result = await splitPdf(pdfPath, selectedPages, outputDir, prefix);
+      
+      if (result.status === "success") {
+        toast.success(`Successfully bound ${selectedPages.length} pages to ${farmer.name} as ${evidenceType}`);
+        
+        setFarmers((prev: any[]) => prev.map(f => {
+          if (f.id === selectedFarmerId) {
+            const updated = { ...f };
+            if (evidenceType === "KTP") updated.hasKtp = true;
+            if (evidenceType === "DO") updated.hasSJ = true;
+            if (evidenceType === "PHOTO") updated.hasPhoto = true;
+            return updated;
+          }
+          return f;
+        }));
+
+        setSelectedPages([]);
+      }
+    } catch (e: any) {
+      toast.error("Split/Bind failed: " + e.message);
+    }
+  };
+
   const onFileDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file && file.type === 'application/pdf') {
+       setPdfPath(file.name);
        const buffer = await file.arrayBuffer();
        const loadingTask = pdfjs.getDocument({ data: buffer });
        const doc = await loadingTask.promise;
@@ -150,6 +194,21 @@ export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFa
 
             <div className="w-px h-6 bg-border" />
 
+            <Select value={evidenceType} onValueChange={setEvidenceType}>
+              <SelectTrigger className="w-[140px] h-8 text-[10px] font-black uppercase rounded-full">
+                <SelectValue placeholder="Evidence Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="KTP">IDENTITY (KTP)</SelectItem>
+                <SelectItem value="DO">DELIVERY (DO)</SelectItem>
+                <SelectItem value="PHOTO">PHOTO BUKTI</SelectItem>
+                <SelectItem value="BAST">BAST REPORT</SelectItem>
+                <SelectItem value="LAB">CERT LAB</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="w-px h-6 bg-border" />
+
             <Button 
               variant={isSniperMode ? "default" : "secondary"} 
               size="sm" 
@@ -164,8 +223,9 @@ export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFa
               size="sm" 
               className="px-6 h-8 rounded-full bg-black text-white hover:bg-zinc-800 font-bold text-[10px] uppercase"
               disabled={!selectedFarmerId || selectedPages.length === 0}
+              onClick={handleSplitAndBind}
             >
-              <Scissors className="size-4 mr-2" /> Split Buffer
+              <Scissors className="size-4 mr-2" /> Bind to {evidenceType}
             </Button>
           </div>
         </div>

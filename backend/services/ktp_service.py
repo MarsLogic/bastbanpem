@@ -1,199 +1,184 @@
-# [DOCS-002] RapidOCR Identity Extraction
+# [ELITE-001] Expert KTP OCR Suite
 import cv2
 import numpy as np
 import os
 import re
-from typing import Optional, List, Dict, Any
+import json
+import threading
+import time
+from typing import Optional, List, Dict, Any, Tuple
 from rapidocr_onnxruntime import RapidOCR
+from rapidfuzz import process, fuzz
 from backend.services.diagnostics import diagnostics
-from backend.services.hardware_orchestrator import HardwareOrchestrator
-from backend.models import KtpResult
 from backend.config import settings
+
+class KtpExpertConstants:
+    AGAMA = ["ISLAM", "PROTESTAN", "KATOLIK", "HINDU", "BUDHA", "KHONGHUCU"]
+    STATUS = ["BELUM KAWIN", "KAWIN", "CERAI HIDUP", "CERAI MATI"]
+    KELAMIN = ["LAKI-LAKI", "PEREMPUAN"]
+
+class KtpExpertRepair:
+    @staticmethod
+    def validate_nik(data: Dict[str, Any]):
+        nik = data.get("nik", "")
+        if not nik or len(nik) < 15: return
+        # Auto-correct common OCR errors in NIK
+        nik = nik.replace("L", "1").replace("I", "1").replace("O", "0").replace("B", "8").replace("S", "5")
+        digits = "".join(filter(str.isdigit, nik))
+        if len(digits) >= 16:
+            data["nik"] = digits[:16]
+            try:
+                day = int(digits[6:8])
+                month = digits[8:10]
+                year = digits[10:12]
+                gender = "PEREMPUAN" if day > 40 else "LAKI-LAKI"
+                actual_day = day - 40 if day > 40 else day
+                data["derived_dob"] = f"{actual_day:02d}-{month}-{year}"
+                if not data.get("jenis_kelamin"): data["jenis_kelamin"] = gender
+            except: pass
+
+    @staticmethod
+    def fuzzy_fix_fields(data: Dict[str, Any]):
+        for key, choices in [("agama", KtpExpertConstants.AGAMA), ("status_perkawinan", KtpExpertConstants.STATUS), ("jenis_kelamin", KtpExpertConstants.KELAMIN)]:
+            val = data.get(key, "").upper()
+            if not val: continue
+            match = process.extractOne(val, choices, scorer=fuzz.WRatio)
+            if match and match[1] > 70: data[key] = match[0]
+
+class KtpSpatialParser:
+    ANCHORS = {
+        "nik": ["NIK", "N1K", "N!K"], 
+        "nama": ["NAMA", "N4MA", "NAM4"], 
+        "tgl_lahir": ["TEMPAT", "TGL", "LAHIR", "LAH1R"],
+        "jenis_kelamin": ["JENIS", "KELAMIN", "KELAM1N"], 
+        "alamat": ["ALAMAT", "AL4MAT"], 
+        "rtrw": ["RT/RW", "RT", "RW"],
+        "desa": ["KEL", "DESA", "KEL/DESA"], 
+        "kecamatan": ["KECAMATAN"], 
+        "agama": ["AGAMA"],
+        "status_perkawinan": ["STATUS", "PERKAWINAN"], 
+        "pekerjaan": ["PEKERJAAN"]
+    }
+
+    def __init__(self, ocr_result: List[Any], img_shape: Tuple[int, int]):
+        self.boxes = []
+        self.data = {}
+        self.h, self.w = img_shape
+        if not ocr_result: return
+        for res in ocr_result:
+            try:
+                box, text, conf = res[0], res[1], res[2]
+                pts = np.array(box).reshape(-1, 2)
+                self.boxes.append({
+                    "text": str(text).upper().strip(),
+                    "conf": float(conf),
+                    "x": np.mean(pts[:, 0]), "y": np.mean(pts[:, 1]),
+                    "x_min": np.min(pts[:, 0]), "y_min": np.min(pts[:, 1]),
+                    "h": np.max(pts[:, 1]) - np.min(pts[:, 1])
+                })
+            except: pass
+
+    def extract(self) -> Dict[str, Any]:
+        if not self.boxes: return {}
+        
+        # 1. NIK Scavenging (High priority)
+        for b in self.boxes:
+            clean = b["text"].replace(" ", "").replace("O", "0").replace("L", "1").replace("I", "1")
+            match = re.search(r'(\d{16})', clean)
+            if match:
+                self.data["nik"] = match.group(1)
+                break
+        
+        # 2. Header (Provinsi/Kabupaten)
+        prov_box = next((b for b in self.boxes if "PROVINSI" in b["text"]), None)
+        if prov_box: self.data["provinsi"] = prov_box["text"].replace("PROVINSI", "").strip()
+        kab_box = next((b for b in self.boxes if any(k in b["text"] for k in ["KABUPATEN", "KOTA"])), None)
+        if kab_box: self.data["kabupaten"] = kab_box["text"].replace("KABUPATEN", "").replace("KOTA", "").strip()
+
+        # 3. Anchor-Value Spatial Binding
+        for field, anchors in self.ANCHORS.items():
+            if field == "nik" or field in self.data: continue
+            anchor_box = next((b for b in self.boxes if any(a in b["text"] for a in anchors)), None)
+            if anchor_box:
+                # Value extraction
+                val = anchor_box["text"]
+                for a in anchors: val = val.replace(a, "")
+                val = val.replace(":", "").strip()
+                if len(val) < 2:
+                    # Look right
+                    near = sorted([b for b in self.boxes if abs(b["y"] - anchor_box["y"]) < (anchor_box["h"] * 0.8) and b["x"] > anchor_box["x"]], key=lambda x: x["x"])
+                    if near: val = near[0]["text"].replace(":", "").strip()
+                if val: self.data[field] = val
+
+        # 4. Fallback: If Nama is missing, look for text above ALAMAT but below NIK
+        if not self.data.get("nama") and self.data.get("nik"):
+            nik_y = next((b["y"] for b in self.boxes if self.data["nik"] in b["text"].replace(" ", "")), 0)
+            addr_y = next((b["y"] for b in self.boxes if "ALAMAT" in b["text"]), 1000)
+            candidates = [b for b in self.boxes if nik_y < b["y"] < addr_y and b["x"] > 150 and len(b["text"]) > 3]
+            if candidates:
+                candidates.sort(key=lambda x: x["y"])
+                self.data["nama"] = candidates[0]["text"]
+
+        return self.data
 
 class EliteOcrEngine:
     def __init__(self):
-        self.engine = None
-        self.current_version = None
-        self.initialize_engine()
+        self.engine = RapidOCR(use_angle_cls=True)
+        self.lock = threading.Lock()
 
-    def initialize_engine(self):
-        """
-        Elite Initialization: Hardware-aware model selection (v4 vs v5).
-        Optimized for portable execution from a 'models' folder.
-        """
-        caps = HardwareOrchestrator.get_system_capabilities()
-        providers = HardwareOrchestrator.get_onnx_providers()
-        
-        target_version = caps["recommended_ocr_version"]
-        
-        # Define Model Paths (Portable Pattern)
-        models_dir = settings.MODELS_DIR
-        
-        paths = {
-            "v5": {
-                "det": os.path.join(models_dir, "v5", "ch_PP-OCRv5_det_infer.onnx"),
-                "rec": os.path.join(models_dir, "v5", "ch_PP-OCRv5_rec_infer.onnx"),
-                "keys": os.path.join(models_dir, "v5", "ppocr_keys_v1.txt")
-            },
-            "v4": {
-                "det": os.path.join(models_dir, "v4", "ch_PP-OCRv4_det_infer.onnx"),
-                "rec": os.path.join(models_dir, "v4", "ch_PP-OCRv4_rec_infer.onnx")
-            }
-        }
-
-        # --- ATTEMPT 1: Load Target Version (v5 or v4) ---
-        try:
-            p = paths.get(target_version)
-            if p and os.path.exists(p["det"]) and os.path.exists(p["rec"]):
-                diagnostics.log_breadcrumb("OCR", f"Loading Engine {target_version} (Recommended)")
-                
-                # Build initialization arguments
-                ocr_kwargs = {
-                    "det_model_path": p["det"],
-                    "rec_model_path": p["rec"],
-                    "providers": providers,
-                    "use_angle_cls": True # Always detect rotation
-                }
-                
-                # v5 usually requires explicit keys path for better accuracy
-                if "keys" in p and os.path.exists(p["keys"]):
-                    ocr_kwargs["rec_keys_path"] = p["keys"]
-                
-                # Mobile/Quantized models often perform better with standard shapes
-                if target_version == "v4":
-                    ocr_kwargs["cls_image_shape"] = [3, 48, 192]
-                else:
-                    ocr_kwargs["cls_image_shape"] = [3, 80, 160]
-
-                self.engine = RapidOCR(**ocr_kwargs)
-                self.current_version = target_version
-            else:
-                diagnostics.log_breadcrumb("OCR", f"Target models {target_version} missing at {models_dir}, falling back to internal")
-                self.engine = RapidOCR(providers=providers, use_angle_cls=True)
-                self.current_version = "internal"
-        except Exception as e:
-            diagnostics.log_error("OCR-INIT-FAIL", f"Failed to load {target_version}: {str(e)}")
-            try:
-                self.engine = RapidOCR(use_angle_cls=True) # Last resort default
-                self.current_version = "default"
-            except:
-                self.engine = None
-                self.current_version = "failed"
-
-        # --- SESSION WARMUP (Anti-Lag Pattern) ---
-        if self.engine:
-            try:
-                # Perform a dummy inference on a 32x32 black pixel to 'pre-heat' ONNX shaders.
-                # This avoids the 1-2 minute lag on integrated GPUs at the start of the first real image.
-                dummy_img = np.zeros((32, 32, 3), dtype=np.uint8)
-                self.engine(dummy_img)
-                diagnostics.log_breadcrumb("OCR", "Session warmup complete.")
-            except Exception as we:
-                diagnostics.log_error("OCR-WARMUP-FAIL", str(we))
-
-    def process_ktp(self, image_path: str) -> dict:
-        if not self.engine:
-            return {"error": "OCR Engine not initialized"}
-
-        filename = os.path.basename(image_path)
-        turbo_nik = self.turbo_match_nik(filename)
-        
-        processed_img = self.preprocess_image(image_path)
-        if processed_img is None:
-            return {"nik": turbo_nik, "error": "Failed to read/preprocess image"}
-            
-        result, elapse = self.engine(processed_img)
-        
-        if not result and not turbo_nik:
-            return {"error": "No text detected"}
-
-        full_text = []
-        confidences = []
-        ocr_nik = None
-        potential_names = []
-        img_height = processed_img.shape[0]
-        
-        if result:
-            for line in result:
-                box = line[0] # [x1, y1, x2, y2, x3, y3, x4, y4]
-                text = str(line[1]).upper().strip()
-                conf = float(line[2])
-                
-                full_text.append(text)
-                confidences.append(conf)
-                
-                # Coordinate-Aware NIK Extraction (SmartBind Pattern)
-                # Remove spaces/noise for digit check
-                clean_line = text.replace(' ', '').replace(':', '').replace('-', '')
-                nik_match = re.search(r'(\d{16})', clean_line)
-                if nik_match and not ocr_nik:
-                    # NIK is typically in the upper 45% of the KTP card
-                    avg_y = sum([box[1], box[3], box[5], box[7]]) / 4
-                    if avg_y < (img_height * 0.45):
-                        ocr_nik = nik_match.group(1)
-                
-                # Nama extraction (look for NAMA keyword or lines shortly after NIK)
-                if "NAMA" in text or (ocr_nik and not potential_names):
-                    clean_name = self.clean_artifact_text(text)
-                    if len(clean_name) > 3 and clean_name != ocr_nik:
-                        potential_names.append(clean_name)
-
-        final_nik = turbo_nik or ocr_nik
-        nama = potential_names[0] if potential_names else None
-        
-        # Simple cleanup if name looks like a keyword
-        if nama and any(k in nama for k in ["NIK", "PROVINSI", "ALAMAT"]):
-            nama = None
-
-        return {
-            "nik": final_nik,
-            "nama": nama,
-            "confidence": round(sum(confidences) / len(confidences), 4) if confidences else 1.0 if turbo_nik else 0.0,
-            "metadata": {
-                "version": self.current_version,
-                "elapsed_ms": round(elapse * 1000, 2) if isinstance(elapse, (int, float)) else 0,
-                "is_turbo": bool(turbo_nik and not ocr_nik)
-            }
-        }
-
-    def preprocess_image(self, path):
-        """
-        Elite Preprocessing: Blue Channel Isolation + CLAHE.
-        Suppresses cyan/blue KTP background to isolate black text.
-        """
+    def process(self, path: str) -> Dict[str, Any]:
         img = cv2.imread(path)
-        if img is None: return None
+        if img is None: return {"error": "IO Fail"}
         
-        # 1. Resize for RAM optimization if massive
-        h, w = img.shape[:2]
-        if max(h, w) > 1500:
-            scale = 1500 / max(h, w)
-            img = cv2.resize(img, (int(w * scale), int(h * scale)))
+        # Strategy 1: Standard
+        res = self._run_inference(img)
+        if not self._is_satisfactory(res):
+            # Strategy 2: Multi-Scale 1.5x
+            scaled = cv2.resize(img, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
+            res_s2 = self._run_inference(scaled)
+            if self._is_satisfactory(res_s2): res = res_s2
+            
+        # Expert Repairs
+        KtpExpertRepair.validate_nik(res)
+        KtpExpertRepair.fuzzy_fix_fields(res)
+        res = KtpLocationRepair.repair(res)
+        return res
 
-        # 2. Blue channel isolation
-        blue = img[:,:,0]
-        
-        # 3. CLAHE
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-        enhanced = clahe.apply(blue)
-        
-        return enhanced
+    def _run_inference(self, img: np.ndarray) -> Dict[str, Any]:
+        with self.lock:
+            raw, elapse = self.engine(img)
+        if not raw: return {}
+        parser = KtpSpatialParser(raw, img.shape[:2])
+        return parser.extract()
 
-    def turbo_match_nik(self, filename):
-        """Instant NIK discovery from filename."""
-        match = re.search(r'(\d{16})', filename)
-        return match.group(1) if match else None
+    def _is_satisfactory(self, data: Dict[str, Any]) -> bool:
+        return bool(data.get("nik") and data.get("nama"))
 
-    def clean_artifact_text(self, text):
-        """Removes common OCR prefix noise."""
-        cleaned = re.sub(r'[^A-Z0-9\s\.\,\-\/]', '', text.upper())
-        for art in ["NIK", "NAMA", "PROVINSI", "KABUPATEN", "ALAMAT", ":", " -"]:
-            cleaned = cleaned.replace(art, "").strip()
-        return cleaned
-
-# Singleton Instance
 ocr_engine = EliteOcrEngine()
 
-def extract_ktp_data(image_path: str) -> dict:
-    """Entry point for FastAPI router."""
-    return ocr_engine.process_ktp(image_path)
+def extract_ktp_data(path: str, model_version: Optional[str] = None) -> dict:
+    return ocr_engine.process(path)
+
+class KtpLocationRepair:
+    _tree = None
+    @classmethod
+    def repair(cls, data: Dict[str, Any]) -> Dict[str, Any]:
+        if not cls._tree:
+            path = os.path.join(settings.BASE_DIR, "public", "master_locations.json")
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf-8') as f:
+                    raw = json.load(f); cls._tree = {}
+                    for i in raw:
+                        p, k = i["provinsi"].upper(), i["kabupaten"].upper()
+                        if p not in cls._tree: cls._tree[p] = []
+                        if k not in cls._tree[p]: cls._tree[p].append(k)
+        p_raw = data.get("provinsi", "").upper()
+        if not p_raw or not cls._tree: return data
+        p_m = process.extractOne(p_raw, cls._tree.keys(), scorer=fuzz.WRatio)
+        if p_m and p_m[1] > 75:
+            data["provinsi"] = p_m[0]
+            k_raw = data.get("kabupaten", "").upper()
+            if k_raw:
+                k_m = process.extractOne(k_raw, cls._tree[p_m[0]], scorer=fuzz.WRatio)
+                if k_m and k_m[1] > 75: data["kabupaten"] = k_m[0]
+        return data

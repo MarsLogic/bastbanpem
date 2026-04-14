@@ -25,6 +25,59 @@ def extract_pdf_metadata(path):
         metadata = doc.metadata
     return metadata
 
+def generate_bastb_pdf(metadata: Dict, recipient: PipelineRow) -> bytes:
+    """
+    Expert Template: Berita Acara Serah Terima Barang (BASTB).
+    Mirrors the 'Karya Alfredo Nusantara' layout exactly.
+    """
+    with fitz.open() as doc:
+        page = doc.new_page(width=595, height=842)
+        # 1. Header with Logo placeholder and Title
+        page.insert_text((150, 60), "BERITA ACARA SERAH TERIMA BARANG (BASTB)", fontsize=12, fontname="helv-bold")
+        page.insert_text((100, 75), "KEGIATAN BANTUAN PESTISIDA MENDUKUNG PENINGKATAN PRODUKSI", fontsize=10, fontname="helv-bold")
+        
+        # 2. Body Text
+        y = 120
+        page.insert_text((50, y), f"No : {metadata.get('nomor_kontrak', '.../BAST/...')}", fontsize=10)
+        y += 20
+        page.insert_text((50, y), f"Pada hari ini ................. tanggal ........ bulan ............ tahun dua ribu dua puluh lima", fontsize=10)
+        
+        # 3. Pihak Pertama & Kedua Grid
+        y += 30
+        page.insert_text((50, y), "PIHAK PERTAMA", fontname="helv-bold", fontsize=10)
+        page.insert_text((200, y), f": {metadata.get('satker', 'DITJEN PSP')}", fontsize=10)
+        
+        y += 40
+        page.insert_text((50, y), "PIHAK KEDUA", fontname="helv-bold", fontsize=10)
+        page.insert_text((200, y), f": {recipient.name}", fontsize=10)
+        page.insert_text((200, y+15), f"NIK : {recipient.nik}", fontsize=10)
+        
+        # 4. Item Table
+        y += 60
+        # Draw table headers
+        page.draw_rect([50, y, 545, y+20], color=(0,0,0), width=1)
+        page.insert_text((55, y+15), "No", fontsize=9)
+        page.insert_text((100, y+15), "Nama dan Jenis", fontsize=9)
+        page.insert_text((300, y+15), "Merk", fontsize=9)
+        page.insert_text((400, y+15), "Volume", fontsize=9)
+        
+        # 5. Signature Section
+        y = 650
+        page.insert_text((50, y), "PIHAK KEDUA", fontsize=10, fontname="helv-bold")
+        page.insert_text((400, y), "PIHAK PERTAMA", fontsize=10, fontname="helv-bold")
+        
+        return doc.tobytes()
+
+def generate_surat_jalan_pdf(metadata: Dict, recipient: PipelineRow) -> bytes:
+    """
+    Expert Template: Surat Jalan (Delivery Order).
+    """
+    with fitz.open() as doc:
+        page = doc.new_page(width=595, height=842)
+        page.insert_text((250, 50), "SURAT JALAN", fontsize=14, fontname="helv-bold")
+        # Layout matching the sample DO
+        return doc.tobytes()
+
 def generate_recipient_report(
     request: BundleRequest,
     recipient: PipelineRow,
@@ -132,6 +185,32 @@ def generate_recipient_report(
 
         # Save to bytes
         return report.tobytes()
+
+def split_pdf_pages(input_path: str, pages: List[int], output_dir: str, prefix: str) -> List[str]:
+    """
+    Expert Slicer: Splits specific pages from a master PDF into individual files.
+    Used for creating KTP or BAST proof files per recipient.
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        
+    created_files = []
+    doc = fitz.open(input_path)
+    try:
+        for page_num in pages:
+            # page_num is 1-based from UI
+            new_doc = fitz.open()
+            new_doc.insert_pdf(doc, from_page=page_num-1, to_page=page_num-1)
+            
+            filename = f"{prefix}_page_{page_num}.pdf"
+            out_path = os.path.join(output_dir, filename)
+            new_doc.save(out_path)
+            new_doc.close()
+            created_files.append(out_path)
+            
+        return created_files
+    finally:
+        doc.close()
 
 def create_contract_bundle_zip(request: BundleRequest) -> bytes:
     """

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { ContractData } from '../lib/contractStore';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Server, FileText, ImageIcon, Scissors, Save, FileUp, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Server, FileText, ImageIcon, Scissors, Save, FileUp, ShieldCheck, Printer, FileCheck } from 'lucide-react';
 import { ExcelWorkbench } from './ExcelWorkbench';
 import { ImageTaggerWorkspace } from './ImageTaggerWorkspace';
 import { SlicerWorkspace } from './SlicerWorkspace';
 import { PdfSyncModule } from './PdfSyncModule';
 import { DocumentManager } from './DocumentManager';
 import { ReconciliationTab } from './ReconciliationTab';
+import { ContractSummary } from './ContractSummary';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { Badge } from "@/components/ui/badge";
@@ -21,13 +22,15 @@ interface ContractDetailViewProps {
 }
 
 const DashboardSection = ({ id, icon: Icon, title, subtitle, badge, actions, children, viewportClassName }: any) => (
-  <section id={id} className="admin-section">
-    <div className="px-6 py-4 border-b bg-slate-50 flex justify-between items-center">
+  <section id={id} className="admin-section border-slate-200 bg-white shadow-sm rounded-xl overflow-hidden mb-8">
+    <div className="px-6 py-4 border-b bg-slate-50/50 flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <Icon className="size-5 text-slate-400" />
+        <div className="p-2 bg-white rounded-lg border border-slate-200 shadow-sm">
+          <Icon className="size-5 text-slate-600" />
+        </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-900 leading-tight">{title}</h2>
-          <p className="text-slate-400 text-[10px] font-medium uppercase tracking-tight">{subtitle}</p>
+          <h2 className="text-lg font-bold text-slate-900 leading-tight">{title}</h2>
+          <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">{subtitle}</p>
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -35,15 +38,13 @@ const DashboardSection = ({ id, icon: Icon, title, subtitle, badge, actions, chi
         {actions}
       </div>
     </div>
-    <div className={cn("admin-viewport", viewportClassName)}>
+    <div className={cn("min-h-[400px]", viewportClassName)}>
       {children}
     </div>
   </section>
 );
 
 export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract, globalNIKRegistry, onBack, onUpdate }) => {
-  const [activeSection, setActiveSection] = useState<'all' | 'pdf' | 'excel' | 'ktp' | 'proof' | 'docs'>('all');
-
   const ktpDir = contract.ktpDir || '';
   const proofDir = contract.proofDir || '';
 
@@ -73,7 +74,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
     id: r.nik,
     nik: r.nik,
     name: r.name,
-    hasSJ: false,
+    hasSJ: r.hasSJ || false,
     hasPhoto: r.hasPhoto || false,
     hasKtp: r.hasKtp || false,
     isMathSynced: r.isSynced,
@@ -82,11 +83,10 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
 
   const setFarmersProxyByNik = (setter: any) => {
     const updatedFarmers = typeof setter === 'function' ? setter(farmers) : setter;
-    // Map back to recipients
     const updatedRecipients = contract.recipients.map(r => {
         const matchingFarmer = updatedFarmers.find((f:any) => f.nik === r.nik);
         if (matchingFarmer) {
-            return { ...r, hasPhoto: matchingFarmer.hasPhoto, hasKtp: matchingFarmer.hasKtp };
+            return { ...r, hasPhoto: matchingFarmer.hasPhoto, hasKtp: matchingFarmer.hasKtp, hasSJ: matchingFarmer.hasSJ };
         }
         return r;
     });
@@ -94,39 +94,48 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
   };
 
   return (
-    <div className="h-full flex flex-col bg-background">
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b px-6 py-4 flex items-center justify-between shadow-sm">
+    <div className="h-full flex flex-col bg-slate-50/50">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b px-6 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-muted/50 hover:bg-muted">
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full hover:bg-slate-100">
+            <ArrowLeft className="h-5 w-5 text-slate-600" />
           </Button>
           <div>
-            <div className="text-xs font-mono text-muted-foreground uppercase tracking-widest">Editing Contract</div>
-            <h1 className="text-xl font-bold">{contract.name}</h1>
+            <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Workspace Pipeline</div>
+            <h1 className="text-base font-black text-slate-900 uppercase tracking-tight">{contract.name}</h1>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("sec-pdf")?.scrollIntoView({behavior: "smooth"})}>PDF Sync</Button>
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("sec-excel")?.scrollIntoView({behavior: "smooth"})}>Excel</Button>
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("sec-audit")?.scrollIntoView({behavior: "smooth"})} className="bg-indigo-50 border-indigo-100 text-indigo-700">Audit</Button>
-          <Button variant="outline" size="sm" onClick={() => document.getElementById("sec-ktp")?.scrollIntoView({behavior: "smooth"})}>KTPs</Button>
-          <div className="w-px h-6 bg-border mx-2" />
-          <Button className="gap-2 bg-slate-900 hover:bg-black font-bold h-9 px-4 rounded-lg shadow-sm">
-            <Server className="h-4 w-4" /> Inject All to Portal
+          <NavButton icon={FileText} label="PDF Sync" target="sec-pdf" />
+          <NavButton icon={Server} label="Workbench" target="sec-excel" />
+          <NavButton icon={ShieldCheck} label="Audit" target="sec-audit" className="bg-indigo-50 border-indigo-100 text-indigo-700" />
+          <NavButton icon={ImageIcon} label="Evidence" target="sec-ktp" />
+          <div className="w-px h-6 bg-slate-200 mx-2" />
+          <Button className="gap-2 bg-black hover:bg-zinc-800 text-white font-bold h-8 px-4 rounded-full shadow-lg text-[10px] uppercase tracking-widest">
+            <Server className="h-3.5 w-3.5" /> Portal Injection
           </Button>
         </div>
       </header>
 
-      <div className="flex-1 overflow-auto p-6 space-y-8 pb-16 scroll-smooth">
+      <div className="flex-1 overflow-auto p-8 max-w-[1600px] mx-auto w-full space-y-2 pb-24 scroll-smooth">
+        
+        {/* Elite Contract Summary Grid */}
+        <ContractSummary metadata={contract.metadata || {
+            nomor_kontrak: contract.nomorKontrak,
+            tanggal_kontrak: contract.tanggalKontrak,
+            vendor_name: contract.namaPenyedia,
+            satker: "PSP - KEMENTAN"
+        }} />
+
         <DashboardSection 
           id="sec-pdf"
           icon={FileText}
           title="1. Master PDF Sync"
-          subtitle="Link and extract core contract metadata."
+          subtitle="Contract Intelligence & Extraction"
           actions={
-            <Button variant="outline" size="sm" className="h-8 gap-2 border-slate-200 text-[10px] font-bold uppercase">
-              <FileUp className="h-3.5 w-3.5 text-slate-400"/> Attach PDF
+            <Button variant="outline" size="sm" className="h-7 gap-2 rounded-full border-slate-200 text-[9px] font-black uppercase">
+              <FileUp className="h-3 w-3 text-slate-400"/> Attach Contract
             </Button>
           }
         >
@@ -140,7 +149,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
           id="sec-excel"
           icon={Server}
           title="2. Distribution Workbench"
-          subtitle="Reconcile Excel payload with contract values."
+          subtitle="Data Cleaning & Auto-Balancing"
         >
           <ExcelWorkbench 
             recipients={contract.recipients}
@@ -155,78 +164,76 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         <DashboardSection 
           id="sec-audit"
           icon={ShieldCheck}
-          title="3. Audit & Reconciliation"
-          subtitle="Physical PDF vs Digital Excel data integrity report."
+          title="3. Integrity Audit"
+          subtitle="Reconciliation Discrepancy Report"
         >
-          <ReconciliationTab contract={contract} />
+          <div className="p-6">
+            <ReconciliationTab contract={contract} />
+          </div>
         </DashboardSection>
 
-        <DashboardSection 
-          id="sec-ktp"
-          icon={ImageIcon}
-          title="4. KTP Tagging Gallery"
-          subtitle="Scan folders to attach local KTP images."
-          badge={
-            <Badge variant={ktpDir ? "outline" : "secondary"} className="h-6">
-              {ktpDir ? "Connected" : "Disconnected"}
-            </Badge>
-          }
-          actions={
-            <Button variant="outline" size="sm" className="h-8 gap-2 border-slate-200 text-[10px] font-bold uppercase">
-              <Server className="h-3.5 w-3.5 text-slate-400"/> Export Stats
-            </Button>
-          }
-        >
-          <ImageTaggerWorkspace 
-            farmers={farmers}
-            setFarmers={setFarmersProxyByNik}
-            globalConfig={globalConfig}
-            setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
-            type="ktp"
-            bindings={contract.ktpBindings}
-            onBindChange={(newBindings) => onUpdate(contract.id, { ktpBindings: newBindings })}
-          />
-        </DashboardSection>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <DashboardSection 
+              id="sec-ktp"
+              icon={ImageIcon}
+              title="4. Identity Vault"
+              subtitle="KTP Auto-Matching & Tagging"
+              viewportClassName="min-h-[600px]"
+            >
+              <ImageTaggerWorkspace 
+                farmers={farmers}
+                setFarmers={setFarmersProxyByNik}
+                globalConfig={globalConfig}
+                setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
+                type="ktp"
+                bindings={contract.ktpBindings}
+                onBindChange={(newBindings) => onUpdate(contract.id, { ktpBindings: newBindings })}
+              />
+            </DashboardSection>
 
-        <DashboardSection 
-          id="sec-proof"
-          icon={ImageIcon}
-          title="5. Photo Tagging Gallery"
-          subtitle="Scan folders to attach local Proof/Photo images."
-          badge={
-            <Badge variant={proofDir ? "outline" : "secondary"} className="h-6">
-              {proofDir ? "Connected" : "Disconnected"}
-            </Badge>
-          }
-        >
-          <ImageTaggerWorkspace 
-            farmers={farmers}
-            setFarmers={setFarmersProxyByNik}
-            globalConfig={globalConfig}
-            setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
-            type="proof"
-            bindings={contract.proofBindings}
-            onBindChange={(newBindings) => onUpdate(contract.id, { proofBindings: newBindings })}
-          />
-        </DashboardSection>
+            <DashboardSection 
+              id="sec-proof"
+              icon={ImageIcon}
+              title="5. Logistical Proof"
+              subtitle="Photo Delivery Binding"
+              viewportClassName="min-h-[600px]"
+            >
+              <ImageTaggerWorkspace 
+                farmers={farmers}
+                setFarmers={setFarmersProxyByNik}
+                globalConfig={globalConfig}
+                setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
+                type="proof"
+                bindings={contract.proofBindings}
+                onBindChange={(newBindings) => onUpdate(contract.id, { proofBindings: newBindings })}
+              />
+            </DashboardSection>
+        </div>
 
         <DashboardSection 
           id="sec-docs"
           icon={Scissors}
-          title="6. Global Documents & Slicer"
-          subtitle="Attach or slice BASTB, Surat Jalan, and Uji LAB."
+          title="6. Expert Slicer & Report Factory"
+          subtitle="Generate BASTB, SJ, and Uji LAB Bundles"
           actions={
-            <Button variant="outline" size="sm" className="h-8 gap-2 border-slate-200 text-[10px] font-bold uppercase">
-              <Server className="h-4 w-4 text-slate-400"/> Export Docs
-            </Button>
+            <div className="flex gap-2">
+                <Button variant="outline" size="sm" className="h-7 gap-2 rounded-full border-slate-200 text-[9px] font-black uppercase">
+                  <Printer className="h-3 w-3 text-slate-400"/> Batch Print
+                </Button>
+                <Button size="sm" className="h-7 gap-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-black uppercase shadow-md shadow-indigo-200">
+                  <FileCheck className="h-3 w-3"/> Bundle All
+                </Button>
+            </div>
           }
         >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 h-[800px]">
-             <DocumentManager contract={contract} onUpdate={(updates) => onUpdate(contract.id, updates)} />
-             <div className="border rounded-xl border-slate-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
-                <div className="px-4 py-2 bg-slate-50 border-b flex justify-between items-center">
-                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Document Slicer</span>
-                   <Badge variant="outline" className="text-[9px] border-slate-200 bg-white">BETA</Badge>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 h-[800px]">
+             <div className="border-r border-slate-100">
+                <DocumentManager contract={contract} onUpdate={(updates) => onUpdate(contract.id, updates)} />
+             </div>
+             <div className="bg-slate-50/30 overflow-hidden flex flex-col">
+                <div className="px-6 py-3 border-b flex justify-between items-center bg-white/50">
+                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Master Slicer Console</span>
+                   <Badge variant="outline" className="text-[9px] font-black border-indigo-200 text-indigo-600 bg-indigo-50 px-3">ELITE MODE</Badge>
                 </div>
                 <div className="flex-1 overflow-hidden">
                    <SlicerWorkspace farmers={farmers} setFarmers={setFarmersProxyByNik} />
@@ -238,3 +245,14 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
     </div>
   );
 };
+
+const NavButton = ({ icon: Icon, label, target, className }: any) => (
+  <Button 
+    variant="ghost" 
+    size="sm" 
+    onClick={() => document.getElementById(target)?.scrollIntoView({behavior: "smooth"})}
+    className={cn("h-8 text-[10px] font-bold uppercase tracking-tight gap-2 rounded-full", className)}
+  >
+    <Icon className="size-3.5 opacity-60" /> {label}
+  </Button>
+);
