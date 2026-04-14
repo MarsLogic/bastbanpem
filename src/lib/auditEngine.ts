@@ -1,18 +1,21 @@
 /**
  * auditEngine.ts
  *
- * Core logic for reconciling PDF delivery blocks against Excel distribution rows.
+ * Core logic for reconciling PDF delivery blocks against Excel distribution rows,
+ * and local data against Government Portal records.
  */
 
 import Decimal from 'decimal.js';
-import { ExcelRow, DeliveryBlock } from './contractStore';
+import { ExcelRow, DeliveryBlock, ContractData } from './contractStore';
 
 export interface AuditIssue {
-  type: 'QUANTITY_MISMATCH' | 'NAME_FUZZY_MATCH' | 'MISSING_DATA' | 'ROUNDING_ERROR';
+  type: 'QUANTITY_MISMATCH' | 'NAME_FUZZY_MATCH' | 'MISSING_DATA' | 'ROUNDING_ERROR' | 'METADATA_MISMATCH';
   severity: 'high' | 'medium' | 'low';
   message: string;
-  pdfValue: string;
-  excelValue: string;
+  pdfValue?: string;
+  excelValue?: string;
+  portalValue?: string;
+  localValue?: string;
   pageSource?: number;
 }
 
@@ -20,6 +23,21 @@ export interface ReconciliationResult {
   isMatched: boolean;
   score: number; // 0-100
   issues: AuditIssue[];
+}
+
+export interface PortalRecipientData {
+  pn_nik: string;
+  penerima: string;
+  pn_qty_disalurkan: number;
+  pn_nilai_disalurkan: number;
+}
+
+export interface PortalContractData {
+  idkontrak: string;
+  k_kontrak_nomor: string;
+  k_kontrak_tgl: string;
+  k_kontrak_nilai: number;
+  recipients: PortalRecipientData[];
 }
 
 /**
@@ -44,6 +62,9 @@ export function calculateNameSimilarity(pdfName: string, excelName: string): num
   return (intersection.length / union.length) * 100;
 }
 
+/**
+ * Reconcile PDF blocks against Excel rows.
+ */
 export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: ExcelRow[]): ReconciliationResult {
   const issues: AuditIssue[] = [];
 
@@ -107,6 +128,86 @@ export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: Exc
                 pageSource: (block as any).pageSource
             });
         }
+    }
+  });
+
+  return {
+    isMatched: issues.length === 0,
+    score: Math.max(0, 100 - (issues.length * 5)),
+    issues
+  };
+}
+
+/**
+ * Reconcile Local Data against Portal Records.
+ */
+export function performPortalReconciliation(local: ContractData, portal: PortalContractData): ReconciliationResult {
+  const issues: AuditIssue[] = [];
+
+  // 1. Metadata Check
+  if (local.nomorKontrak !== portal.k_kontrak_nomor) {
+    issues.push({
+      type: 'METADATA_MISMATCH',
+      severity: 'high',
+      message: `Contract Number mismatch: Local ${local.nomorKontrak} vs Portal ${portal.k_kontrak_nomor}`,
+      localValue: local.nomorKontrak,
+      portalValue: portal.k_kontrak_nomor
+    });
+  }
+
+  const localTotalValue = new Decimal(local.totalPembayaran?.replace(/[^0-9]/g, '') || '0');
+  const portalTotalValue = new Decimal(portal.k_kontrak_nilai);
+
+  if (!localTotalValue.equals(portalTotalValue)) {
+    issues.push({
+      type: 'METADATA_MISMATCH',
+      severity: 'medium',
+      message: `Total Value mismatch: Local ${localTotalValue.toString()} vs Portal ${portalTotalValue.toString()}`,
+      localValue: localTotalValue.toString(),
+      portalValue: portalTotalValue.toString()
+    });
+  }
+
+  // 2. Recipient Reconciliation (NIK based)
+  const portalNikMap = new Map<string, PortalRecipientData>();
+  portal.recipients.forEach(r => portalNikMap.set(r.pn_nik, r));
+
+  local.recipients.forEach(row => {
+    const portalData = portalNikMap.get(row.nik);
+    
+    if (!portalData) {
+      issues.push({
+        type: 'MISSING_DATA',
+        severity: 'high',
+        message: `Recipient "${row.name}" (NIK: ${row.nik}) missing on Portal`,
+        localValue: row.nik,
+        portalValue: 'NOT_FOUND'
+      });
+    } else {
+      // Check Qty
+      if (Math.abs(row.financials.qty - portalData.pn_qty_disalurkan) > 0.01) {
+        issues.push({
+          type: 'QUANTITY_MISMATCH',
+          severity: 'medium',
+          message: `Qty mismatch for ${row.name} on Portal`,
+          localValue: row.financials.qty.toString(),
+          portalValue: portalData.pn_qty_disalurkan.toString()
+        });
+      }
+    }
+  });
+
+  // Check for recipients on portal but NOT in local
+  const localNikSet = new Set(local.recipients.map(r => r.nik));
+  portal.recipients.forEach(pr => {
+    if (!localNikSet.has(pr.pn_nik)) {
+      issues.push({
+        type: 'MISSING_DATA',
+        severity: 'medium',
+        message: `Portal recipient "${pr.penerima}" (NIK: ${pr.pn_nik}) not found in Local Excel`,
+        localValue: 'NOT_FOUND',
+        portalValue: pr.pn_nik
+      });
     }
   });
 

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { ContractData } from '../lib/contractStore';
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Server, FileText, ImageIcon, Scissors, Save, FileUp, ShieldCheck, Printer, FileCheck } from 'lucide-react';
+import { ArrowLeft, Server, FileText, ImageIcon, Scissors, Save, FileUp, ShieldCheck, Printer, FileCheck, RefreshCw } from 'lucide-react';
 import { ExcelWorkbench } from './ExcelWorkbench';
 import { ImageTaggerWorkspace } from './ImageTaggerWorkspace';
 import { SlicerWorkspace } from './SlicerWorkspace';
 import { PdfSyncModule } from './PdfSyncModule';
 import { DocumentManager } from './DocumentManager';
 import { ReconciliationTab } from './ReconciliationTab';
+import { PortalSyncModule } from './PortalSyncModule';
 import { ContractSummary } from './ContractSummary';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
@@ -111,6 +112,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
           <NavButton icon={Server} label="Workbench" target="sec-excel" />
           <NavButton icon={ShieldCheck} label="Audit" target="sec-audit" className="bg-indigo-50 border-indigo-100 text-indigo-700" />
           <NavButton icon={ImageIcon} label="Evidence" target="sec-ktp" />
+          <NavButton icon={RefreshCw} label="Portal Sync" target="sec-portal" className="bg-emerald-50 border-emerald-100 text-emerald-700" />
           <div className="w-px h-6 bg-slate-200 mx-2" />
           <Button className="gap-2 bg-black hover:bg-zinc-800 text-white font-bold h-8 px-4 rounded-full shadow-lg text-[10px] uppercase tracking-widest">
             <Server className="h-3.5 w-3.5" /> Portal Injection
@@ -240,6 +242,19 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
                 </div>
              </div>
           </div>
+        </DashboardSection>
+
+        <DashboardSection 
+          id="sec-portal"
+          icon={RefreshCw}
+          title="7. Portal Intelligence & Sync"
+          subtitle="Bidirectional Government Data Reconciliation"
+          viewportClassName="min-h-[600px]"
+        >
+          <PortalSyncModule 
+            contract={contract} 
+            onUpdate={(updates) => onUpdate(contract.id, updates)} 
+          />
         </DashboardSection>
       </div>
     </div>

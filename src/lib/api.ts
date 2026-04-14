@@ -77,4 +77,36 @@ export const extractCpcl = async (path: string) => {
   return data;
 };
 
+// --- Portal Synchronization & Intelligence [EXPERT-002] ---
+
+export const fetchPortalContractsList = async () => {
+  const { data } = await api.get('/portal/contracts');
+  return data;
+};
+
+export const fetchPortalContractDetails = async (idkontrak: string) => {
+  const { data } = await api.get(`/portal/contracts/${idkontrak}`);
+  return data;
+};
+
+export const syncRecipientToPortal = async (idkontrak: string, recipientData: any) => {
+  const { data } = await api.post(`/portal/contracts/${idkontrak}/sync-recipient`, recipientData);
+  return data;
+};
+
+export const registerMasterRecipient = async (recipientData: any) => {
+  const { data } = await api.post('/portal/recipients/register', recipientData);
+  return data;
+};
+
+export const uploadPortalProof = async (idkontrak: string, idpenerima: string, file: File, type: 'bastb' | 'sj' | 'photo') => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', type);
+  const { data } = await api.post(`/portal/contracts/${idkontrak}/recipients/${idpenerima}/upload`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+};
+
 export default api;

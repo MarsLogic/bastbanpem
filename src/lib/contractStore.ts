@@ -34,6 +34,24 @@ export interface DeliveryBlock {
   pageSource?: number;
 }
 
+export interface PortalMetadata {
+  portalId: string;         // idkontrak from portal
+  nomorDipa?: string;       // k_dipa
+  kodeKegiatan?: string;    // k_kode_kegiatan
+  kodeOutput?: string;      // k_kode_output
+  kodeAkun?: string;        // k_kode_akun
+  syncTimestamp: number;
+  lastPortalStatus?: 'selesai' | 'proses' | 'draft';
+}
+
+export interface RecipientSyncState {
+  isRegistered: boolean;    // Exists in master_penerima
+  isLinkedToContract: boolean; // Exists in rpb for this contract
+  portalQty?: number;
+  portalValue?: number;
+  mismatchFields?: string[]; // e.g., ['qty', 'name']
+}
+
 export interface ExcelRow {
   id: string;
   nik: string;
@@ -59,18 +77,12 @@ export interface ExcelRow {
   page_source: number;
   column_data: Record<string, any>;
   original_row: Record<string, any>;
+  // Portal Sync State
+  syncState?: RecipientSyncState;
   // UI-only temporary fields
   isDuplicate?: boolean;
   isGlobalDouble?: boolean;
   otherContracts?: { id: string, name: string }[];
-}
-
-export interface GlobalConfig {
-  nomor_sertifikat: string;
-  tanggal_sertifikat: string;
-  lembaga_penguji: string;
-  ktpDir?: string;
-  proofDir?: string;
 }
 
 export interface ContractData {
@@ -89,6 +101,9 @@ export interface ContractData {
   totalPembayaran?: string;
 
   deliveryBlocks?: any[];
+  
+  // Portal Metadata
+  portalMetadata?: PortalMetadata;
   
   // Expanded PDF Extraction
   sskkText?: string;
