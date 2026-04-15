@@ -245,6 +245,19 @@ async def cancel_portal_batch(batch_id: str):
     batch_worker.cancel_batch(batch_id)
     return {"status": "success", "message": "Cancellation signal sent"}
 
+# --- License Intelligence Endpoints ---
+
+from backend.services.license_service import LicenseService
+license_svc = LicenseService()
+
+@router.get("/license/status")
+async def get_license_status():
+    return license_svc.validate_license()
+
+@router.get("/license/hwid")
+async def get_license_hwid():
+    return {"hwid": license_svc.get_machine_id()}
+
 # --------------------------------------------------
 
 from backend.services.vault_service import vault_service
