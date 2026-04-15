@@ -8,6 +8,7 @@ Every code module and UI component is mapped to a unique ID. Use these for surgi
 - **`[CORE-003]`**: `backend/services/diagnostics.py` - Forensic Logging & Diagnostics
 - **`[CORE-004]`**: `backend/exceptions.py` - Custom Exception Framework
 - **`[CORE-005]`**: `backend/services/hardware_orchestrator.py` - ONNX/RAM Auto-Detection
+- **`[CORE-007]`**: `docs/internal/` - Persistence & Mapping Engine [MAP-001]
 
 ## 📊 [DATA] Data Engine & Excel Pipeline
 - **`[DATA-001]`**: `backend/services/data_engine.py` - Polars Excel Ingestion & Logic
