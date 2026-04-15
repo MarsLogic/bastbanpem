@@ -67,7 +67,7 @@ export const parsePdf = async (path: string) => {
   return data;
 };
 
-export const splitPdf = async (path: string, pages: number[], outputDir: string, prefix: str) => {
+export const splitPdf = async (path: string, pages: number[], outputDir: string, prefix: string) => {
   const { data } = await api.post('/pdf/split', { path, pages, output_dir: outputDir, prefix });
   return data;
 };
@@ -106,6 +106,16 @@ export const uploadPortalProof = async (idkontrak: string, idpenerima: string, f
   const { data } = await api.post(`/portal/contracts/${idkontrak}/recipients/${idpenerima}/upload`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+  return data;
+};
+
+export const startPortalBatch = async (idkontrak: string, recipients: any[]) => {
+  const { data } = await api.post('/portal/batch/start', { idkontrak, recipients });
+  return data;
+};
+
+export const fetchBatchStatus = async (batchId: string) => {
+  const { data } = await api.get(`/portal/batch/status/${batchId}`);
   return data;
 };
 

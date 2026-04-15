@@ -1,10 +1,29 @@
 # [DATA-003] SQLite Contract Storage
 import json
 from typing import List, Optional
+from datetime import datetime
 from backend.db import db
-from backend.models import PipelineRow, ReconciliationResult
+from backend.models import PipelineRow, ReconciliationResult, BatchTaskStatus, BatchSummary
 
 class VaultService:
+    def __init__(self):
+        self._init_batch_table()
+
+    @staticmethod
+    def _init_batch_table():
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS batch_tasks (
+                    batch_id TEXT,
+                    idkontrak TEXT,
+                    nik TEXT,
+                    status TEXT,
+                    error TEXT,
+                    timestamp TEXT,
+                    PRIMARY KEY (batch_id, nik)
+                )
+            """)
+
     @staticmethod
     def save_contract(id: str, name: str, target_value: float):
         with db.get_cursor() as cursor:
@@ -22,15 +41,80 @@ class VaultService:
                     row.id, 
                     contract_id, 
                     row.nik, 
-                    json.dumps(row.raw_values), 
-                    json.dumps(row.balanced_values), 
-                    1 if row.is_balanced else 0
+                    json.dumps(row.original_row) if hasattr(row, 'original_row') else "{}", 
+                    json.dumps(row.column_data) if hasattr(row, 'column_data') else "{}", 
+                    1 if getattr(row, 'is_synced', False) else 0
                 )
                 for row in rows
             ]
             cursor.executemany(
                 "INSERT OR REPLACE INTO recipients (id, contract_id, nik, raw_data, balanced_data, is_balanced) VALUES (?, ?, ?, ?, ?, ?)",
                 data
+            )
+
+    @staticmethod
+    def save_batch_task(batch_id: str, nik: str, status: str, error: Optional[str] = None, idkontrak: Optional[str] = None):
+        timestamp = datetime.now().isoformat()
+        with db.get_cursor() as cursor:
+            # Ensure idkontrak is preserved if already set for this batch
+            if not idkontrak:
+                cursor.execute("SELECT idkontrak FROM batch_tasks WHERE batch_id = ? LIMIT 1", (batch_id,))
+                row = cursor.fetchone()
+                if row:
+                    idkontrak = row['idkontrak']
+
+            cursor.execute("""
+                INSERT INTO batch_tasks (batch_id, idkontrak, nik, status, error, timestamp)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(batch_id, nik) DO UPDATE SET
+                    status=excluded.status,
+                    error=excluded.error,
+                    timestamp=excluded.timestamp,
+                    idkontrak=COALESCE(excluded.idkontrak, batch_tasks.idkontrak)
+            """, (batch_id, idkontrak, nik, status, error, timestamp))
+
+    @staticmethod
+    def get_batch_summary(batch_id: str) -> Optional[BatchSummary]:
+        with db.get_cursor() as cursor:
+            cursor.execute("SELECT * FROM batch_tasks WHERE batch_id = ?", (batch_id,))
+            rows = cursor.fetchall()
+            if not rows:
+                return None
+            
+            tasks = []
+            completed = 0
+            failed = 0
+            idkontrak = rows[0]['idkontrak'] or "UNKNOWN"
+            
+            for row in rows:
+                tasks.append(BatchTaskStatus(
+                    nik=row['nik'],
+                    status=row['status'],
+                    error=row['error'],
+                    timestamp=row['timestamp']
+                ))
+                if row['status'] == 'SYNCED':
+                    completed += 1
+                elif row['status'] == 'FAILED':
+                    failed += 1
+            
+            # Determine overall batch status
+            total = len(rows)
+            if completed + failed == total:
+                status = "COMPLETED"
+            elif any(r['status'] == 'PROCESSING' for r in rows):
+                status = "PROCESSING"
+            else:
+                status = "PENDING"
+            
+            return BatchSummary(
+                batch_id=batch_id,
+                idkontrak=idkontrak,
+                total=total,
+                completed=completed,
+                failed=failed,
+                status=status,
+                tasks=tasks
             )
 
     @staticmethod

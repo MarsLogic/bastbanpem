@@ -160,3 +160,18 @@ class PdfParseResult(BaseModel):
 
 class PdfParseRequest(BaseModel):
     path: str
+
+class BatchTaskStatus(BaseModel):
+    nik: str
+    status: str
+    error: Optional[str] = None
+    timestamp: str
+
+class BatchSummary(BaseModel):
+    batch_id: str
+    idkontrak: str
+    total: int
+    completed: int
+    failed: int
+    status: str
+    tasks: List[BatchTaskStatus] = []
