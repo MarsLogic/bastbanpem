@@ -30,29 +30,6 @@
 - Modify: `.gitignore` (ensure .geminiignore is tracked if needed)
 - Create: `.geminiignore`
 
-- [ ] **Step 1: Create .geminiignore**
-Aggressively filter out token-wasting noise.
-```text
-node_modules/
-.venv/
-dist/
-artifacts/archive/
-output/
-__pycache__/
-*.db
-*.db-shm
-*.db-wal
-.git/
-```
-
-- [ ] **Step 2: Verify Search Efficiency**
-Run a `grep_search` and verify it respects the ignore list.
-```bash
-rtk grep "NIK" --names-only
-```
-
-- [ ] **Step 3: Commit Configs**
-```bash
-git add .geminiignore
-git commit -m "perf: [CORE-001] optimize search filters for token efficiency"
-```
+- [x] **Step 1: Create .geminiignore**
+- [x] **Step 2: Verify Search Efficiency**
+- [x] **Step 3: Commit Configs**
