@@ -119,4 +119,9 @@ export const fetchBatchStatus = async (batchId: string) => {
   return data;
 };
 
+export const cancelPortalBatch = async (batchId: string) => {
+  const { data } = await api.post(`/portal/batch/cancel/${batchId}`);
+  return data;
+};
+
 export default api;

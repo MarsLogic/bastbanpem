@@ -12,7 +12,9 @@ import {
   Loader2,
   Play,
   XCircle,
-  Clock
+  Clock,
+  StopCircle,
+  FileCheck
 } from 'lucide-react';
 import {
   fetchPortalContractsList,
@@ -21,7 +23,8 @@ import {
   registerMasterRecipient,
   uploadPortalProof,
   startPortalBatch,
-  fetchBatchStatus
+  fetchBatchStatus,
+  cancelPortalBatch
 } from '../lib/api';
 import { performPortalReconciliation, PortalContractData, AuditIssue } from '../lib/auditEngine';
 import { Badge } from "@/components/ui/badge";
@@ -156,6 +159,16 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
     }
   };
 
+  const handleCancelBatch = async () => {
+    if (!activeBatchId) return;
+    try {
+        await cancelPortalBatch(activeBatchId);
+        toast.info('Cancellation signal sent to worker');
+    } catch (e) {
+        toast.error('Failed to send cancellation signal');
+    }
+  };
+
   const startPolling = (batchId: string) => {
     if (pollingRef.current) clearInterval(pollingRef.current);
     
@@ -166,11 +179,13 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
             
             if (status.status === 'COMPLETED' || status.status === 'FAILED') {
                 clearInterval(pollingRef.current);
-                toast.success(`Batch execution ${status.status.toLowerCase()}`);
+                setActiveBatchId(null);
+                toast.success(`Batch execution finished: ${status.status}`);
                 if (selectedPortalId) runFullAudit(selectedPortalId);
             }
         } catch (e) {
             clearInterval(pollingRef.current);
+            setActiveBatchId(null);
         }
     }, 2000);
   };
@@ -191,44 +206,80 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
   return (
     <div className="flex flex-col h-full bg-white relative">
       {/* Batch Progress Overlay */}
-      {batchSummary && batchSummary.status !== 'IDLE' && (
-        <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center p-8 animate-in fade-in duration-300">
-            <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl p-6">
-                <div className="flex justify-between items-center mb-6">
+      {batchSummary && (
+        <div className="absolute inset-0 z-50 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center p-8 animate-in fade-in duration-300">
+            <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-3xl shadow-2xl flex flex-col max-h-full overflow-hidden">
+                <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
                     <div>
                         <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">Batch Submission Status</h4>
                         <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{batchSummary.status}</p>
                     </div>
-                    <Badge variant={batchSummary.status === 'COMPLETED' ? 'success' : 'outline'} className="h-6 rounded-full font-black uppercase text-[10px]">
-                        {batchSummary.completed} / {batchSummary.total}
-                    </Badge>
+                    <div className="flex items-center gap-3">
+                        <Badge variant={batchSummary.status === 'COMPLETED' ? 'success' : 'outline'} className="h-6 rounded-full font-black uppercase text-[10px] px-3">
+                            {batchSummary.completed} / {batchSummary.total}
+                        </Badge>
+                        {activeBatchId && (
+                            <Button variant="ghost" size="sm" onClick={handleCancelBatch} className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 rounded-full font-black uppercase text-[9px]">
+                                <StopCircle className="size-3 mr-1.5" /> Stop Batch
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
-                <div className="space-y-4">
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="p-6 space-y-6 flex-1 overflow-hidden flex flex-col">
+                    <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div 
-                            className="h-full bg-indigo-600 transition-all duration-500 ease-out"
+                            className="h-full bg-indigo-600 transition-all duration-1000 ease-in-out shadow-[0_0_12px_rgba(79,70,229,0.4)]"
                             style={{ width: `${(batchSummary.completed / batchSummary.total) * 100}%` }}
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Completed</div>
-                            <div className="text-xl font-black text-slate-900">{batchSummary.completed}</div>
-                        </div>
-                        <div className="p-3 bg-red-50 rounded-xl border border-red-100">
-                            <div className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1">Errors</div>
-                            <div className="text-xl font-black text-red-600">{batchSummary.failed}</div>
-                        </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <StatusMetric label="Success" value={batchSummary.completed} color="text-green-600" bg="bg-green-50" />
+                        <StatusMetric label="Failed" value={batchSummary.failed} color="text-red-600" bg="bg-red-50" />
+                        <StatusMetric label="Pending" value={batchSummary.total - batchSummary.completed - batchSummary.failed} color="text-slate-400" bg="bg-slate-50" />
                     </div>
 
-                    {batchSummary.status === 'COMPLETED' && (
+                    <div className="flex-1 overflow-auto border rounded-2xl bg-slate-50/30">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="sticky top-0 bg-white border-b z-10">
+                                <tr>
+                                    <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">NIK</th>
+                                    <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                    <th className="px-4 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {batchSummary.tasks.map((task: any, idx: number) => (
+                                    <tr key={idx} className="hover:bg-white transition-colors">
+                                        <td className="px-4 py-2.5 font-mono text-[10px] font-bold text-slate-600">{task.nik}</td>
+                                        <td className="px-4 py-2.5">
+                                            <div className="flex flex-col">
+                                                <Badge variant="outline" className={cn(
+                                                    "text-[8px] font-black uppercase h-4 px-1.5 w-fit",
+                                                    task.status === 'SYNCED' || task.status === 'UPLOADED' ? "bg-green-50 text-green-600 border-green-100" :
+                                                    task.status === 'FAILED' ? "bg-red-50 text-red-600 border-red-100" : "text-slate-400"
+                                                )}>
+                                                    {task.status}
+                                                </Badge>
+                                                {task.error && <span className="text-[8px] text-red-400 font-medium mt-0.5 truncate max-w-[200px]">{task.error}</span>}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-2.5 text-[9px] font-bold text-slate-400 text-right">
+                                            {task.timestamp ? new Date(task.timestamp).toLocaleTimeString() : '--:--'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {!activeBatchId && (
                         <Button 
-                            className="w-full bg-slate-900 text-white font-black uppercase text-[10px] rounded-xl h-10"
+                            className="w-full bg-slate-900 hover:bg-black text-white font-black uppercase text-[10px] rounded-2xl h-12 shadow-xl shadow-slate-200"
                             onClick={() => setBatchSummary(null)}
                         >
-                            Close Progress Monitor
+                            Complete & Dismiss
                         </Button>
                     )}
                 </div>
@@ -239,7 +290,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
       <div className="p-6 border-b bg-slate-50/50 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <div className="p-2 bg-indigo-600 rounded-lg shadow-md shadow-indigo-200">
-            <RefreshCw className={cn("size-5 text-white", isLoading && "animate-spin")} />
+            <RefreshCw className={cn("size-5 text-white", (isLoading || !!activeBatchId) && "animate-spin")} />
           </div>
           <div>
             <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Portal Intelligence Sync</h3>
@@ -251,7 +302,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
           <select 
             value={selectedPortalId} 
             onChange={(e) => setSelectedPortalId(e.target.value)}
-            className="text-[10px] font-bold uppercase border-slate-200 rounded-full h-8 px-4 bg-white"
+            className="text-[10px] font-bold uppercase border-slate-200 rounded-full h-8 px-4 bg-white focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
           >
             <option value="">-- Bind Portal Contract --</option>
             {portalList.map(p => (
@@ -265,7 +316,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
           </Button>
           <Button 
             onClick={() => selectedPortalId && runFullAudit(selectedPortalId)} 
-            disabled={!selectedPortalId || isLoading}
+            disabled={!selectedPortalId || isLoading || !!activeBatchId}
             className="h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase px-6 shadow-md shadow-indigo-100"
           >
             Run Integrity Audit
@@ -302,7 +353,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
                     variant="outline" 
                     size="sm" 
                     onClick={handleBulkUploadProofs}
-                    disabled={isUploading || !!batchSummary}
+                    disabled={isUploading || !!activeBatchId}
                     className="h-8 rounded-full text-[10px] font-black uppercase gap-2 border-slate-200"
                 >
                     {isUploading ? <Loader2 className="size-3 animate-spin" /> : <UploadCloud className="size-3" />}
@@ -311,7 +362,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
                 <Button 
                     size="sm" 
                     onClick={handleBatchSync}
-                    disabled={isLoading || !!batchSummary}
+                    disabled={isLoading || !!activeBatchId || reconciliation.issues.length === 0}
                     className="h-8 rounded-full text-[10px] font-black uppercase gap-2 bg-slate-900 text-white hover:bg-black shadow-lg"
                 >
                     <Play className="size-3" />
@@ -351,7 +402,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
                         <Button 
                             size="sm" 
                             variant="outline" 
-                            disabled={syncingIssueIdx !== null}
+                            disabled={syncingIssueIdx !== null || !!activeBatchId}
                             onClick={() => handleFixIssue(issue, idx)}
                             className="h-7 text-[9px] font-black uppercase rounded-full hover:bg-indigo-50 hover:text-indigo-600 border-slate-200 shadow-sm"
                         >
@@ -382,6 +433,13 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
     </div>
   );
 };
+
+const StatusMetric = ({ label, value, color, bg }: any) => (
+    <div className={cn("p-3 rounded-2xl border border-transparent", bg)}>
+        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</div>
+        <div className={cn("text-xl font-black", color)}>{value}</div>
+    </div>
+);
 
 const MetricCard = ({ label, value, status }: any) => (
   <div className="p-4 border rounded-xl bg-white shadow-sm border-slate-100">

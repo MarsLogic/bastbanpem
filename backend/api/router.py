@@ -240,6 +240,11 @@ async def get_portal_batch_status(batch_id: str):
         raise HTTPException(status_code=404, detail="Batch not found")
     return summary
 
+@router.post("/portal/batch/cancel/{batch_id}")
+async def cancel_portal_batch(batch_id: str):
+    batch_worker.cancel_batch(batch_id)
+    return {"status": "success", "message": "Cancellation signal sent"}
+
 # --------------------------------------------------
 
 from backend.services.vault_service import vault_service

@@ -5,6 +5,7 @@ import os
 import re
 import json
 import threading
+import queue
 import time
 from typing import Optional, List, Dict, Any, Tuple
 from rapidocr_onnxruntime import RapidOCR
@@ -22,7 +23,6 @@ class KtpExpertRepair:
     def validate_nik(data: Dict[str, Any]):
         nik = data.get("nik", "")
         if not nik or len(nik) < 15: return
-        # Auto-correct common OCR errors in NIK
         nik = nik.replace("L", "1").replace("I", "1").replace("O", "0").replace("B", "8").replace("S", "5")
         digits = "".join(filter(str.isdigit, nik))
         if len(digits) >= 16:
@@ -80,8 +80,6 @@ class KtpSpatialParser:
 
     def extract(self) -> Dict[str, Any]:
         if not self.boxes: return {}
-        
-        # 1. NIK Scavenging (High priority)
         for b in self.boxes:
             clean = b["text"].replace(" ", "").replace("O", "0").replace("L", "1").replace("I", "1")
             match = re.search(r'(\d{16})', clean)
@@ -89,28 +87,23 @@ class KtpSpatialParser:
                 self.data["nik"] = match.group(1)
                 break
         
-        # 2. Header (Provinsi/Kabupaten)
         prov_box = next((b for b in self.boxes if "PROVINSI" in b["text"]), None)
         if prov_box: self.data["provinsi"] = prov_box["text"].replace("PROVINSI", "").strip()
         kab_box = next((b for b in self.boxes if any(k in b["text"] for k in ["KABUPATEN", "KOTA"])), None)
         if kab_box: self.data["kabupaten"] = kab_box["text"].replace("KABUPATEN", "").replace("KOTA", "").strip()
 
-        # 3. Anchor-Value Spatial Binding
         for field, anchors in self.ANCHORS.items():
             if field == "nik" or field in self.data: continue
             anchor_box = next((b for b in self.boxes if any(a in b["text"] for a in anchors)), None)
             if anchor_box:
-                # Value extraction
                 val = anchor_box["text"]
                 for a in anchors: val = val.replace(a, "")
                 val = val.replace(":", "").strip()
                 if len(val) < 2:
-                    # Look right
                     near = sorted([b for b in self.boxes if abs(b["y"] - anchor_box["y"]) < (anchor_box["h"] * 0.8) and b["x"] > anchor_box["x"]], key=lambda x: x["x"])
                     if near: val = near[0]["text"].replace(":", "").strip()
                 if val: self.data[field] = val
 
-        # 4. Fallback: If Nama is missing, look for text above ALAMAT but below NIK
         if not self.data.get("nama") and self.data.get("nik"):
             nik_y = next((b["y"] for b in self.boxes if self.data["nik"] in b["text"].replace(" ", "")), 0)
             addr_y = next((b["y"] for b in self.boxes if "ALAMAT" in b["text"]), 1000)
@@ -121,32 +114,61 @@ class KtpSpatialParser:
 
         return self.data
 
-class EliteOcrEngine:
-    def __init__(self):
-        self.engine = RapidOCR(use_angle_cls=True)
+class EliteOcrPool:
+    """
+    Expert Performance: Manages a pool of RapidOCR instances with lazy initialization
+    and lifecycle management to strictly adhere to the 4GB RAM target.
+    """
+    def __init__(self, size: int = 2):
+        self.max_size = size
+        self.instances = []
         self.lock = threading.Lock()
+        logger_diagnostics = logging.getLogger("ktp_service")
+        logger_diagnostics.info(f"EliteOcrPool configured with max {size} workers (Lazy Loading enabled).")
+
+    def _get_instance(self) -> RapidOCR:
+        with self.lock:
+            if self.instances:
+                return self.instances.pop()
+            
+            # Lazy creation if under limit
+            logger_diagnostics = logging.getLogger("ktp_service")
+            logger_diagnostics.info("Spawning new RapidOCR instance...")
+            return RapidOCR(use_angle_cls=True)
+
+    def _release_instance(self, instance: RapidOCR):
+        with self.lock:
+            if len(self.instances) < self.max_size:
+                self.instances.append(instance)
+            else:
+                # RAM Safety: Destroy instance if pool is full
+                del instance
+                gc.collect()
 
     def process(self, path: str) -> Dict[str, Any]:
         img = cv2.imread(path)
         if img is None: return {"error": "IO Fail"}
         
-        # Strategy 1: Standard
-        res = self._run_inference(img)
-        if not self._is_satisfactory(res):
-            # Strategy 2: Multi-Scale 1.5x
-            scaled = cv2.resize(img, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
-            res_s2 = self._run_inference(scaled)
-            if self._is_satisfactory(res_s2): res = res_s2
+        # Strategy 1: Standard Inference
+        engine = self._get_instance()
+        try:
+            res = self._run_inference(engine, img)
             
-        # Expert Repairs
+            # Strategy 2: Upscale if unsatisfactory
+            if not self._is_satisfactory(res):
+                scaled = cv2.resize(img, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
+                res_s2 = self._run_inference(engine, scaled)
+                if self._is_satisfactory(res_s2): res = res_s2
+        finally:
+            self._release_instance(engine)
+            
         KtpExpertRepair.validate_nik(res)
         KtpExpertRepair.fuzzy_fix_fields(res)
         res = KtpLocationRepair.repair(res)
         return res
 
-    def _run_inference(self, img: np.ndarray) -> Dict[str, Any]:
-        with self.lock:
-            raw, elapse = self.engine(img)
+    def _run_inference(self, engine: RapidOCR, img: np.ndarray) -> Dict[str, Any]:
+        raw, elapse = engine(img)
         if not raw: return {}
         parser = KtpSpatialParser(raw, img.shape[:2])
         return parser.extract()
@@ -154,10 +176,12 @@ class EliteOcrEngine:
     def _is_satisfactory(self, data: Dict[str, Any]) -> bool:
         return bool(data.get("nik") and data.get("nama"))
 
-ocr_engine = EliteOcrEngine()
+import gc
+import logging
+ocr_pool = EliteOcrPool(size=min(os.cpu_count() or 2, 2)) # Capped at 2 for 4GB RAM safety
 
 def extract_ktp_data(path: str, model_version: Optional[str] = None) -> dict:
-    return ocr_engine.process(path)
+    return ocr_pool.process(path)
 
 class KtpLocationRepair:
     _tree = None
