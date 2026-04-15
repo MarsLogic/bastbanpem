@@ -209,33 +209,55 @@ def ingest_excel_to_models(excel_content: bytes) -> ExcelIngestResult:
         raise e
 
 def apply_magic_balance(rows: List[PipelineRow], target_total: float) -> List[PipelineRow]:
+    """
+    Expert Proportional Balancing Engine.
+    Distributes the contract value delta across all recipients proportionally
+    based on their quantity, ensuring high-integrity rounding.
+    """
     target_dec = Decimal(str(target_total))
-    current_sum = sum([Decimal(str(r.financials.calculated_value)) for r in rows if not r.is_excluded])
-    diff = target_dec - current_sum
-    if diff == 0: return rows
     
-    target_row = None
-    max_val = Decimal('-1')
-    for r in rows:
-        if r.is_excluded or r.financials.qty <= 0: continue
-        val = Decimal(str(r.financials.calculated_value))
-        if val > max_val:
-            max_val = val
-            target_row = r
-            
-    if not target_row: return rows
+    # 1. Identify active rows for balancing
+    active_rows = [r for r in rows if not r.is_excluded and r.financials.qty > 0]
+    if not active_rows: return rows
     
-    qty = Decimal(str(target_row.financials.qty))
-    price = Decimal(str(target_row.financials.unit_price))
-    old_ship = Decimal(str(target_row.financials.shipping))
+    # 2. Calculate current sum and total quantity
+    current_sum = sum([Decimal(str(r.financials.calculated_value)) for r in active_rows])
+    total_qty = sum([Decimal(str(r.financials.qty)) for r in active_rows])
     
-    new_ship = old_ship + (diff / qty)
-    new_calc = (price + new_ship) * qty
+    delta = target_dec - current_sum
+    if delta == 0: return rows
     
-    target_row.financials.shipping = float(new_ship)
-    target_row.financials.calculated_value = float(new_calc)
-    target_row.financials.gap = float(new_calc - Decimal(str(target_row.financials.target_value)))
-    target_row.is_synced = abs(Decimal(str(target_row.financials.gap))) < Decimal('1.0')
+    # 3. Proportional Distribution
+    # Formula: new_shipping = old_shipping + (delta / total_qty)
+    # This ensures the delta is perfectly absorbed across all rows weighted by Qty.
+    adjustment_per_unit = delta / total_qty
+    
+    for r in active_rows:
+        qty = Decimal(str(r.financials.qty))
+        price = Decimal(str(r.financials.unit_price))
+        old_ship = Decimal(str(r.financials.shipping))
+        
+        # Calculate new values
+        new_ship = (old_ship + adjustment_per_unit).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        new_calc = (price + new_ship) * qty
+        
+        # Update row
+        r.financials.shipping = float(new_ship)
+        r.financials.calculated_value = float(new_calc)
+        r.financials.gap = float(new_calc - Decimal(str(r.financials.target_value)))
+        r.is_synced = abs(Decimal(str(r.financials.gap))) < Decimal('1.0')
+        
+    # 4. Final Cleanup: Check for micro-rounding residual
+    final_sum = sum([Decimal(str(r.financials.calculated_value)) for r in active_rows])
+    residual = target_dec - final_sum
+    
+    if residual != 0 and active_rows:
+        # Dump any remaining cents into the largest row to ensure 100% target match
+        largest = max(active_rows, key=lambda x: x.financials.qty)
+        qty_l = Decimal(str(largest.financials.qty))
+        largest.financials.shipping = float(Decimal(str(largest.financials.shipping)) + (residual / qty_l))
+        largest.financials.calculated_value = float((Decimal(str(largest.financials.unit_price)) + Decimal(str(largest.financials.shipping))) * qty_l)
+        
     return rows
 
 def fuzzy_repair_nik(nik_list: List[str], target_niks: List[str], threshold=85) -> List[str]:

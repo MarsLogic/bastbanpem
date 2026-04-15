@@ -2,7 +2,7 @@
 
 Welcome to the **BAST-Automator 2025**. This tool is designed to simplify the BAST (Berita Acara Serah Terima) process for the BANPEM program, ensuring 100% data accuracy and zero-conflict file injection into the government portal.
 
-## 🌟 The "Golden Workflow" (5-Step Checklist)
+## The "Golden Workflow" (5-Step Checklist)
 
 Follow these steps to complete a batch transmission:
 
@@ -23,19 +23,19 @@ Follow these steps to complete a batch transmission:
    - Ensure all recipients show the green `READY` indicator (SJ, Photo, Global, and Math are all green).
 
 5. **Magic Auto-Fill:** 
-   - Click **🚀 Launch Portal**.
+   - Click **Launch Portal**.
    - Navigate to the specific recipient's detail page.
-   - The **🚀 VENDOR ASSIST** panel will appear. Click **Inject Data** to automatically fill forms and upload sliced files from your `App_Data` folder.
+   - The **VENDOR ASSIST** panel will appear. Click **Inject Data** to automatically fill forms and upload sliced files from your `App_Data` folder.
 
 ---
 
-## 🛠️ Maintenance & Portability
+## Maintenance & Portability
 
 - **Zero Dependency:** This app is a standalone `.exe`. Just move the folder anywhere.
 - **Data Persistence:** All your work is saved in the `App_Data` folder. Do **not** delete this folder if you want to resume work later.
 - **Port Conflict:** If the default port `59876` is used by another app, the system will automatically find the next available port. No configuration required.
 
-## 🚀 Troubleshooting
+## Troubleshooting
 
 - **Portal not detecting data?** Ensure the government portal URL is exactly `https://bastbanpem.pertanian.go.id`.
 - **Files failing to upload?** Check if the files still exist in the `App_Data` folder. The app requires these files to be present during injection.

@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import localforage from 'localforage';
 
 localforage.config({
   name: 'BASTAutomator',
-  storeName: 'contracts'
+  storeName: 'contracts_v2'
 });
 
 export interface ContractMetadata {
@@ -52,6 +53,13 @@ export interface RecipientSyncState {
   mismatchFields?: string[]; // e.g., ['qty', 'name']
 }
 
+export interface RecipientProxyData {
+  nik: string;
+  name: string;
+  relation: string; // e.g., 'Suami', 'Istri', 'Anak'
+  ktpPath?: string;
+}
+
 export interface ExcelRow {
   id: string;
   nik: string;
@@ -79,6 +87,8 @@ export interface ExcelRow {
   original_row: Record<string, any>;
   // Portal Sync State
   syncState?: RecipientSyncState;
+  // Proxy Info
+  proxy?: RecipientProxyData;
   // UI-only temporary fields
   isDuplicate?: boolean;
   isGlobalDouble?: boolean;
@@ -130,20 +140,75 @@ export interface ContractData {
   lastModified: number;
 }
 
-const STORAGE_KEY = 'bast-automator-contracts';
+interface ContractStore {
+  contracts: ContractData[];
+  createContract: (name: string, initialData?: any) => string;
+  updateContract: (id: string, updates: Partial<ContractData>) => void;
+  deleteContract: (id: string) => void;
+  setContracts: (contracts: ContractData[]) => void;
+}
 
+export const useContractStore = create<ContractStore>()(
+  persist(
+    (set, get) => ({
+      contracts: [],
+      
+      setContracts: (contracts) => set({ contracts }),
+
+      createContract: (name, initialData) => {
+        const id = crypto.randomUUID();
+        const newContract: ContractData = {
+          id,
+          name,
+          contractPdfPath: initialData?.master_pdf_path || null,
+          nomorKontrak: initialData?.contract_no || '',
+          tanggalKontrak: initialData?.contract_date || '',
+          namaPemesan: initialData?.nama_pemesan || '',
+          namaPenyedia: initialData?.nama_penyedia || '',
+          namaProduk: initialData?.nama_produk || '',
+          kuantitasProduk: initialData?.kuantitas_produk || '',
+          totalPembayaran: initialData?.total_pembayaran || '',
+          sskkText: '',
+          specsTable: [],
+          excelPath: null,
+          recipients: initialData?.rows || [],
+          bastbPath: null,
+          suratJalanPath: null,
+          invoiceOngkirPath: null,
+          sertifikatLabPath: null,
+          lastModified: Date.now()
+        };
+        set((state) => ({ contracts: [...state.contracts, newContract] }));
+        return id;
+      },
+
+      updateContract: (id, updates) => {
+        set((state) => ({
+          contracts: state.contracts.map((c) =>
+            c.id === id ? { ...c, ...updates, lastModified: Date.now() } : c
+          ),
+        }));
+      },
+
+      deleteContract: (id) => {
+        set((state) => ({
+          contracts: state.contracts.filter((c) => c.id !== id),
+        }));
+      },
+    }),
+    {
+      name: 'bast-automator-storage',
+      storage: createJSONStorage(() => localforage as any),
+    }
+  )
+);
+
+// Legacy hook bridge to avoid breaking existing components
 export function useContracts() {
-  const [contracts, setContracts] = useState<ContractData[]>([]);
-
-  useEffect(() => {
-    localforage.getItem<ContractData[]>(STORAGE_KEY).then(data => {
-      if (data) {
-        setContracts(data);
-      }
-    }).catch(e => {
-        console.error("Failed to parse contracts from local storage", e);
-    });
-  }, []);
+  const contracts = useContractStore((state) => state.contracts);
+  const createContract = useContractStore((state) => state.createContract);
+  const updateContract = useContractStore((state) => state.updateContract);
+  const deleteContract = useContractStore((state) => state.deleteContract);
 
   const globalNIKRegistry = useMemo(() => {
     const map = new Map<string, { id: string, name: string }[]>();
@@ -159,48 +224,6 @@ export function useContracts() {
     });
     return map;
   }, [contracts]);
-
-  const saveContracts = (newContracts: ContractData[]) => {
-    setContracts(newContracts);
-    localforage.setItem(STORAGE_KEY, newContracts).catch(e => console.error("Failed to save to localforage", e));
-  };
-
-  const createContract = (name: string, initialData?: any) => {
-    const newContract: ContractData = {
-      id: crypto.randomUUID(),
-      name,
-      contractPdfPath: initialData?.master_pdf_path || null,
-      nomorKontrak: initialData?.contract_no || '',
-      tanggalKontrak: initialData?.contract_date || '',
-      namaPemesan: initialData?.nama_pemesan || '',
-      namaPenyedia: initialData?.nama_penyedia || '',
-      namaProduk: initialData?.nama_produk || '',
-      kuantitasProduk: initialData?.kuantitas_produk || '',
-      totalPembayaran: initialData?.total_pembayaran || '',
-      sskkText: '',
-      specsTable: [],
-      excelPath: null,
-      recipients: initialData?.rows || [],
-      bastbPath: null,
-      suratJalanPath: null,
-      invoiceOngkirPath: null,
-      sertifikatLabPath: null,
-      lastModified: Date.now()
-    };
-    const updated = [...contracts, newContract];
-    saveContracts(updated);
-    return newContract.id;
-  };
-
-  const updateContract = (id: string, updates: Partial<ContractData>) => {
-    saveContracts(contracts.map(c => 
-      c.id === id ? { ...c, ...updates, lastModified: Date.now() } : c
-    ));
-  };
-
-  const deleteContract = (id: string) => {
-    saveContracts(contracts.filter(c => c.id !== id));
-  };
 
   return { contracts, globalNIKRegistry, createContract, updateContract, deleteContract };
 }

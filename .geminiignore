@@ -2,9 +2,15 @@ node_modules/
 .venv/
 dist/
 artifacts/archive/
+artifacts/debug/
 output/
 __pycache__/
 *.db
 *.db-shm
 *.db-wal
 .git/
+temp_images/
+sitemap-bastbanpem/
+portal_session.json
+license.lic
+tools/archive/

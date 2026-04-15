@@ -2,3 +2,13 @@ node_modules
 __pycache__
 .venv
 *.log
+*.db-shm
+*.db-wal
+portal_session.json
+license.lic
+artifacts/debug/
+temp_images/
+sitemap-bastbanpem/
+output/
+dist/
+tools/archive/

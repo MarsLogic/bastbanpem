@@ -14,6 +14,7 @@ echo    BASTBANPEM AUTOMATOR - ELITE WORKBENCH
 echo ====================================================
 echo  [1] RUN PRODUCTION MODE (Recommended)
 echo  [2] RUN DEVELOPER MODE (Vite + FastAPI)
+echo  [3] RUN DEBUG MODE (Bypass License)
 echo  --------------------------------------------------
 echo  [L] LICENSE MANAGEMENT
 echo  [P] FORENSIC SYSTEM PURGE (Factory Reset)
@@ -25,6 +26,7 @@ set /p choice="Select Option: "
 
 if "%choice%"=="1" goto run_prod
 if "%choice%"=="2" goto run_dev
+if "%choice%"=="3" goto run_debug
 if "%choice%"=="L" goto license_menu
 if "%choice%"=="l" goto license_menu
 if "%choice%"=="P" goto purge_confirm
@@ -57,6 +59,22 @@ echo [1/2] Launching Elite Backend...
 start /B "Bastbanpem Backend" cmd /c "set PYTHONPATH=.&& .venv\Scripts\python.exe -m backend.main"
 echo [2/2] Launching Vite Frontend...
 npm run dev:frontend
+goto menu
+
+:run_debug
+echo [1/3] Verifying Environment...
+call :verify_env
+echo [2/3] Checking Static Assets...
+if not exist "dist\index.html" (
+    echo [INFO] dist folder missing. Triggering manual build...
+    call npm run build
+)
+echo [3/3] Starting Elite Backend Service (DEBUG MODE)...
+echo Access Application at: http://127.0.0.1:8000
+set PYTHONPATH=.
+set ELITE_DEBUG=True
+.venv\Scripts\python.exe -m backend.main
+pause
 goto menu
 
 :license_menu
@@ -125,7 +143,7 @@ goto menu
 
 :diagnostics
 echo Running Elite Health Check...
-.venv\Scripts\python.exe scripts\health_check.py
+.venv\Scripts\python.exe tools\health_check.py
 pause
 goto menu
 

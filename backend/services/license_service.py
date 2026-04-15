@@ -5,6 +5,7 @@ import hashlib
 from datetime import datetime
 from cryptography.fernet import Fernet
 from backend.services.hardware_orchestrator import HardwareOrchestrator
+from backend.config import settings
 
 class LicenseService:
     def __init__(self):
@@ -25,6 +26,13 @@ class LicenseService:
         """
         Elite Validation: Checks file existence, decryption, HWID, and expiry.
         """
+        if settings.ELITE_DEBUG:
+            return {
+                "status": "active", 
+                "message": "DEBUG MODE: License validation bypassed",
+                "data": {"owner": "DEBUG_USER", "expiry": "9999-12-31", "hwid": "UNIVERSAL"}
+            }
+
         if not os.path.exists(self.license_path):
             return {"status": "unlicensed", "message": "License file missing"}
 

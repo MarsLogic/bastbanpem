@@ -13,8 +13,8 @@ class Settings(BaseSettings):
     MODELS_DIR: str = os.path.join(BASE_DIR, "models")
     LOG_FILE: str = os.path.join(BASE_DIR, "forensic_diagnostics.log")
     
-    # OCR Settings
-    DEFAULT_OCR_VERSION: str = "v4"
+    # Debug Settings
+    ELITE_DEBUG: bool = os.getenv("ELITE_DEBUG", "False").lower() == "true"
     
     class Config:
         env_file = ".env"

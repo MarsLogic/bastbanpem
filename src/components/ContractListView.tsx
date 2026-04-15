@@ -162,27 +162,43 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 {/* PDF Upload */}
-                <div 
-                  className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${selectedPdf ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
-                  onClick={() => pdfInputRef.current?.click()}
-                >
-                  <input type="file" ref={pdfInputRef} onChange={(e) => setSelectedPdf(e.target.files?.[0] || null)} accept=".pdf" className="hidden" />
-                  <FileText className={`h-6 w-6 ${selectedPdf ? 'text-white' : 'text-slate-400'}`} />
-                  <span className="text-[10px] font-black uppercase tracking-tight text-center">
-                    {selectedPdf ? selectedPdf.name : 'Attach PDF'}
-                  </span>
+                <div>
+                  <input 
+                    type="file" 
+                    ref={pdfInputRef} 
+                    onChange={(e) => setSelectedPdf(e.target.files?.[0] || null)} 
+                    accept=".pdf" 
+                    className="hidden" 
+                  />
+                  <div 
+                    className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors h-32 ${selectedPdf ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
+                    onClick={() => pdfInputRef.current?.click()}
+                  >
+                    <FileText className={`h-6 w-6 ${selectedPdf ? 'text-white' : 'text-slate-400'}`} />
+                    <span className="text-[10px] font-black uppercase tracking-tight text-center">
+                      {selectedPdf ? selectedPdf.name : 'Attach PDF'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Excel Upload */}
-                <div 
-                  className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${selectedExcel ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
-                  onClick={() => excelInputRef.current?.click()}
-                >
-                  <input type="file" ref={excelInputRef} onChange={(e) => setSelectedExcel(e.target.files?.[0] || null)} accept=".xlsx,.xls" className="hidden" />
-                  <FileUp className={`h-6 w-6 ${selectedExcel ? 'text-white' : 'text-slate-400'}`} />
-                  <span className="text-[10px] font-black uppercase tracking-tight text-center">
-                    {selectedExcel ? selectedExcel.name : 'Attach Excel'}
-                  </span>
+                <div>
+                  <input 
+                    type="file" 
+                    ref={excelInputRef} 
+                    onChange={(e) => setSelectedExcel(e.target.files?.[0] || null)} 
+                    accept=".xlsx,.xls" 
+                    className="hidden" 
+                  />
+                  <div 
+                    className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors h-32 ${selectedExcel ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
+                    onClick={() => excelInputRef.current?.click()}
+                  >
+                    <FileUp className={`h-6 w-6 ${selectedExcel ? 'text-white' : 'text-slate-400'}`} />
+                    <span className="text-[10px] font-black uppercase tracking-tight text-center">
+                      {selectedExcel ? selectedExcel.name : 'Attach Excel'}
+                    </span>
+                  </div>
                 </div>
               </div>
 
