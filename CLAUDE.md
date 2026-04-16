@@ -13,11 +13,13 @@ You MUST activate these skills immediately after the Pulse Check:
 - `activate_skill("superpowers")` - For design/plan workflows.
 - `activate_skill("caveman")` - If the session context exceeds 50k tokens.
 - **ALWAYS** prefix shell commands with `rtk` (e.g., `rtk git status`).
+- **Ripgrep Integration:** Use `rg` instead of grep for all file searching (100x faster, saves token budget).
 
 ## 3. Surgical Strategy (Token Saving)
-- **Search First:** Use `grep_search` for Logical IDs (e.g., `[DATA-001]`) before reading files.
+- **Search First:** Use `rg` (ripgrep) for Logical IDs (e.g., `rg "\[DATA-001\]"`) before reading files.
+- **Ripgrep Over Grep:** Always use `rg` instead of grep/find — 100x faster, minimizes AI context reading.
 - **Read by Range:** Never read a whole file. Use `start_line` and `end_line` for 20-50 line chunks.
-- **Dependency Audit:** If you modify a Logical ID, you MUST search for all references to that ID to prevent breaking related modules.
+- **Dependency Audit:** If you modify a Logical ID, use `rg "\[LOGICAL-ID\]"` to find all references before changing code.
 
 ## 4. Tech Stack & Mandates
 - **Memory:** 4GB RAM Target. Use Polars (Lazy), PyMuPDF (with statements), explicit `gc.collect()`.
