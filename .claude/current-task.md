@@ -1,69 +1,33 @@
-# Current Task (Active Development)
-
-Edit this file when starting a new feature, bugfix, or task. Every new AI session will read this first.
-
-**Example format below — replace with your actual task:**
-
----
-
-## Task Template (Copy & Fill In)
-
-```markdown
-# Task: [Feature/Bugfix Name]
+# Task: Fix PDF Auto-Fill Not Working
 
 ## Context
-**What:** [Brief description]
-**Why:** [Why this matters]
-**Related to:** [Previous task or feature]
+**Issue:** User uploaded PDF in Master PDF Sync section (red), but fields in blue section (Administrative/Contract Info/Financials) not auto-filling
 
-## Relevant Modules (Logical IDs)
-- [CORE-###] — [reason]
-- [DATA-###] — [reason]
-- [UIUX-###] — [reason]
+**Expected:** Click "Run AI Scan" → PDF analyzed → Fields populate with extracted data
 
-## Files to Read (Specific Ranges!)
-- `backend/services/file.py` (lines 10-50)
-- `src/components/Component.tsx` (lines 1-100)
+**What's happening:** PDF uploaded but no auto-population
 
-## Context from Previous Sessions
-- [What was done last session]
-- [What decisions were made]
-- [What to avoid]
+## Investigation Questions
+1. Is "Run AI Scan" button being clicked?
+2. Is backend PDF parsing working? (parsePdf API endpoint)
+3. Are extracted fields being returned from backend?
+4. Are React state updates working properly?
 
-## Success Criteria
-1. [Testable requirement 1]
-2. [Testable requirement 2]
-3. [Quality metric 3]
+## Blue Section (Data Source)
+The blue section shows contract metadata that should be populated by:
+1. PDF upload → user selects file
+2. "Run AI Scan" button → calls `parsePdf()` API
+3. Backend extracts: nomorKontrak, tanggalKontrak, namaPemesan, namaPenyedia, namaProduk, totalPembayaran
+4. Data returns and updates Master Metadata fields
 
-## Commands to Run
-```bash
-# Before starting:
-rtk rg "\[MODULE-ID\]"  # Find what depends on this
+## Current Flow (Post-Refactor)
+- ✅ File upload works (replaced Tauri with HTML input)
+- ❓ "Run AI Scan" button behavior unknown
+- ❓ Backend PDF parsing status unclear
+- ❓ State updates working?
 
-# After implementation:
-npm test
-pytest tests/
-rtk git diff
-```
-```
-
----
-
-## How to Use This File
-
-1. **Before starting work:** Fill in the template above with your actual task
-2. **Save the file:** `.claude/current-task.md`
-3. **Start new AI session:** It automatically reads this
-4. **After completing task:** Delete this file (or rename with date)
-
----
-
-## Active Tasks (Current)
-
-*None currently. Fill in your first task!*
-
----
-
-## Completed Tasks (Archive)
-
-*Move completed tasks here with their results*
+## To Debug
+1. Check if "Run AI Scan" button is clickable/functional
+2. Check browser console for errors when clicking "Run AI Scan"
+3. Verify backend parsePdf endpoint is running
+4. Check if API response contains extracted data
