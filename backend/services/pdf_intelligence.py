@@ -41,27 +41,38 @@ class PDFIntelligence:
         """
         Parse INAPROC address format:
         '[Poktan] [Desa] [Kec] [Kab] [Prov], [Desa], [Kec], Kab. [Kab], [Prov], [Kodepos]'
+        Poktan is extracted by stripping the location suffix (kecamatan onwards) from the prefix.
         """
         addr_clean = addr_raw.strip().replace('\n', ' ')
         result = {"alamat_lengkap": addr_clean}
 
-        # Structured part after first comma: Desa, Kec, Kab. X, Prov, Kodepos
+        # Structured CSV part after first comma: Desa, Kec, Kab. X, Prov, Kodepos
         csv_m = re.search(
             r',\s*([^,]+),\s*([^,]+),\s*Kab\.\s*([^,]+),\s*([^,]+),\s*(\d{5})',
             addr_clean
         )
         if csv_m:
-            result["desa"]      = csv_m.group(1).strip()
-            result["kecamatan"] = csv_m.group(2).strip()
-            result["kabupaten"] = f"Kab. {csv_m.group(3).strip()}"
-            result["provinsi"]  = csv_m.group(4).strip()
+            desa      = csv_m.group(1).strip()
+            kecamatan = csv_m.group(2).strip()
+            kabupaten = csv_m.group(3).strip()
+            provinsi  = csv_m.group(4).strip()
+
+            result["desa"]      = desa
+            result["kecamatan"] = kecamatan
+            result["kabupaten"] = f"Kab. {kabupaten}"
+            result["provinsi"]  = provinsi.replace('- ', '').replace('-\n', '')
             result["kode_pos"]  = csv_m.group(5).strip()
-            # Poktan = everything before the first structured desa occurrence
+
+            # Poktan = prefix before the location suffix in the informal part
+            # Strategy: find kecamatan in prefix → take everything before it
             prefix = addr_clean[:addr_clean.find(',')].strip()
-            desa = result["desa"]
-            if desa.lower() in prefix.lower():
-                prefix = prefix[:prefix.lower().find(desa.lower())].strip()
-            result["nama_poktan"] = prefix
+            kec_m = re.search(r'\b' + re.escape(kecamatan) + r'\b', prefix, re.IGNORECASE)
+            if kec_m and kec_m.start() > 0:
+                result["nama_poktan"] = prefix[:kec_m.start()].strip()
+            else:
+                # Fallback: try kabupaten
+                kab_m = re.search(r'\b' + re.escape(kabupaten) + r'\b', prefix, re.IGNORECASE)
+                result["nama_poktan"] = prefix[:kab_m.start()].strip() if kab_m and kab_m.start() > 0 else prefix
 
         return result
 
