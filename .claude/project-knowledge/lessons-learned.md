@@ -71,6 +71,25 @@ This document captures what works and what doesn't. AI uses this to make better 
 **Action:** Created [UIUX-001] as single source of truth. All calls go through there.  
 **Date:** 2026-04-15
 
+### Lesson: Three-Layer Pattern for Blob Persistence Across Page Reloads
+**Category:** Architecture / Bug Prevention
+**Context:** PDFs disappeared from viewer after page reload (same contract metadata persisted)
+**Insight:** 
+- Zustand's persist middleware uses JSON serialization by default
+- JSON cannot serialize Blob objects (converts to `{}`)
+- IndexedDB stores Blobs natively (no serialization needed)
+
+**Action:** Implemented three-layer pattern:
+1. Zustand store strips pdfBlob before saving (custom storage adapter)
+2. IndexedDB stores Blobs separately (`pdfStorage.ts`)
+3. Component hydrates from IndexedDB on mount (graceful fallback if missing)
+
+Result: PDFs persist across page reloads, browser restarts, new tabs. ✅
+
+See: `pdf_blob_persistence_pattern.md` memory file + commit 140f46ac
+
+**Date:** 2026-04-16
+
 ---
 
 ## Token Efficiency Insights
