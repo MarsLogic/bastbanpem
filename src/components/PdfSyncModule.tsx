@@ -45,37 +45,56 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [panelHeight, setPanelHeight] = useState<number>(750);
+  const [pdfLoadStatus, setPdfLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [pdfLoadError, setPdfLoadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Persistence: Hydrate blobUrl from contract.pdfBlob or IndexedDB
   // [UIUX-005] Multi-layer PDF persistence:
   // 1. In-memory Blob (during same session) ✓
   // 2. IndexedDB fallback (across page reloads) ✓
-  // 3. Prompt to re-upload if both are missing
+  // 3. User can re-upload if loading fails
   React.useEffect(() => {
     const hydratePdf = async () => {
+      if (blobUrl) return; // Already loaded
+
+      setPdfLoadStatus('loading');
+      setPdfLoadError(null);
+
       // Try 1: In-memory Blob
-      if (contract.pdfBlob instanceof Blob && !blobUrl) {
-        const url = URL.createObjectURL(contract.pdfBlob);
-        setBlobUrl(url);
-        return;
+      if (contract.pdfBlob instanceof Blob) {
+        try {
+          const url = URL.createObjectURL(contract.pdfBlob);
+          setBlobUrl(url);
+          setPdfLoadStatus('success');
+          return;
+        } catch (err) {
+          console.error('[UIUX-005] Failed to create URL from in-memory blob:', err);
+        }
       }
 
       // Try 2: Recover from IndexedDB (page reload scenario)
-      if (!contract.pdfBlob && contract.contractPdfPath && !blobUrl) {
+      if (contract.contractPdfPath) {
         try {
           const storedBlob = await getPdfBlob(contract.id);
           if (storedBlob instanceof Blob) {
             const url = URL.createObjectURL(storedBlob);
             setBlobUrl(url);
+            setPdfLoadStatus('success');
             return;
           }
         } catch (err) {
-          console.warn(`[UIUX-005] Failed to retrieve PDF from IndexedDB for contract ${contract.id}:`, err);
+          console.error(`[UIUX-005] Failed to retrieve PDF from IndexedDB (ID: ${contract.id}):`, err);
+          setPdfLoadError(`Failed to load saved PDF: ${err instanceof Error ? err.message : String(err)}`);
         }
+      }
 
-        // If we get here, PDF is truly missing
-        toast.info("PDF was cleared on page reload. Re-upload the PDF to continue.");
+      // PDF not found
+      if (contract.contractPdfPath) {
+        setPdfLoadStatus('error');
+        setPdfLoadError('PDF not found. Please re-upload to continue.');
+      } else {
+        setPdfLoadStatus('idle');
       }
     };
 
@@ -83,7 +102,13 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
     // Cleanup URL on unmount to prevent memory leaks
     return () => {
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      if (blobUrl) {
+        try {
+          URL.revokeObjectURL(blobUrl);
+        } catch (e) {
+          // Ignore if already revoked
+        }
+      }
     };
   }, [contract.id, contract.pdfBlob, contract.contractPdfPath, blobUrl]);
 
@@ -234,8 +259,26 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
            </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 flex justify-center p-4">
-        {blobUrl && (
+      <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 flex justify-center items-center p-4">
+        {pdfLoadStatus === 'loading' && (
+          <div className="flex flex-col items-center justify-center gap-3 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+            <p className="text-sm text-slate-600">Loading PDF...</p>
+          </div>
+        )}
+        {pdfLoadStatus === 'error' && pdfLoadError && (
+          <div className="flex flex-col items-center justify-center gap-4 text-center max-w-sm">
+            <FileText className="h-12 w-12 text-red-300" />
+            <div>
+              <p className="text-sm text-slate-600 mb-2">{pdfLoadError}</p>
+              <Button onClick={() => fileInputRef.current?.click()} className="bg-blue-600 hover:bg-blue-700 text-white">
+                <FileUp className="mr-2 h-4 w-4" />
+                Re-upload PDF
+              </Button>
+            </div>
+          </div>
+        )}
+        {blobUrl && pdfLoadStatus === 'success' && (
           <Document file={blobUrl} onLoadSuccess={onDocumentLoadSuccess}>
             <Page pageNumber={pageNumber} scale={scale} renderAnnotationLayer={false} className="shadow-xl" />
           </Document>
