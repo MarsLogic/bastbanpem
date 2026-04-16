@@ -67,6 +67,10 @@ class ContractMetadata(BaseModel):
     # === Contract Identity ===
     nomor_kontrak: Optional[str] = None       # No. Surat Pesanan
     tanggal_kontrak: Optional[str] = None     # Tanggal Surat Pesanan
+    full_text: Optional[str] = None           # Holistic PDF text
+    sections: Dict[str, str] = Field(default_factory=dict) # PDF Sections
+    extracted_at: Optional[str] = None        # Extraction Timestamp
+    source_file: Optional[str] = None         # Source PDF Path
 
     # === Pemesan (Purchaser) ===
     nama_pemesan: Optional[str] = None        # Org name (Direktorat/Dinas etc)
