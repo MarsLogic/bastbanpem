@@ -11,30 +11,31 @@ def test_holistic_pdf_extraction():
         return
         
     analysis = pdf_intel.analyze_document(PDF_PATH)
-    
+
     metadata = analysis["metadata"]
-    print(f"\nFull text length: {len(metadata.get('full_text', ''))}")
-    print(f"Sections found: {list(metadata.get('sections', {}).keys())}")
-    
+    full_text = metadata.full_text or ""
+    sections = metadata.sections or {}
+
+    print(f"\nFull text length: {len(full_text)}")
+    print(f"Sections found: {list(sections.keys())}")
+
     # Check if SSUK pattern might be split
-    full_text = metadata.get("full_text", "")
     if "UMUM" in full_text:
         index = full_text.find("UMUM")
         print(f"Found 'UMUM' at index {index}: '{full_text[index-20:index+30]}'")
-    
+
     # Check for found sections
-    sections = metadata.get("sections", {})
     assert "HEADER" in sections
-    
+
     # Flexible check for SSUK or SSKK
     found_any_terms = "SSUK" in sections or "SSKK" in sections
     print(f"Terms found: {'Yes' if found_any_terms else 'No'}")
-    
+
     if "SSKK" in sections:
         assert "SYARAT-SYARAT KHUSUS KONTRAK" in sections["SSKK"]
-    
-    assert "full_text" in metadata
-    assert "sections" in metadata
+
+    assert metadata.full_text is not None
+    assert metadata.sections is not None
     
     print(f"\nExtracted {len(sections)} sections")
     for sec in sections:
