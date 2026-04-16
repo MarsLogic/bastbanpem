@@ -1,17 +1,15 @@
 // [UIUX-005] Ground Truth vs Excel Sync
-import React, { useState } from 'react';
-import { open } from '@tauri-apps/plugin-dialog';
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-    FileText, ZoomIn, ZoomOut, Maximize2, Minimize2, 
-    ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2
+import {
+    FileText, ZoomIn, ZoomOut, Maximize2, Minimize2,
+    ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, FileUp
 } from 'lucide-react';
 import { ContractData } from '../lib/contractStore';
 import { toast } from "sonner";
 import { Document, Page, pdfjs } from 'react-pdf';
-import { readFile } from '@tauri-apps/plugin-fs';
 import { parsePdf } from '../lib/api';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -29,38 +27,26 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [scale, setScale] = useState(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    if (contract.contractPdfPath) {
-      readFile(contract.contractPdfPath).then(bytes => {
-        const blob = new Blob([bytes], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        setBlobUrl(url);
-      }).catch(err => {
-        console.error("Failed to read PDF bytes natively:", err);
-        toast.error("Failed to read PDF file.");
+  const handlePdfFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      const url = URL.createObjectURL(file);
+      setBlobUrl(url);
+      onUpdate({
+        contractPdfPath: file.name,
+        deliveryBlocks: [],
+        recipients: []
       });
+      toast.info(`PDF Linked: ${file.name}`);
+    } else if (file) {
+      toast.error("Please select a PDF file.");
     }
-  }, [contract.contractPdfPath]);
+  };
 
-  const handleBrowsePdf = async () => {
-    try {
-      const selected = await open({
-        multiple: false,
-        filters: [{ name: 'PDF', extensions: ['pdf'] }]
-      });
-      if (selected && typeof selected === 'string') {
-        onUpdate({ 
-          contractPdfPath: selected,
-          deliveryBlocks: [],
-          recipients: [] 
-        });
-        toast.info("PDF Linked.");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to open file dialog.");
-    }
+  const handleBrowsePdf = () => {
+    fileInputRef.current?.click();
   };
 
   const handleAutoExtract = async () => {
@@ -137,9 +123,19 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     <div className="flex flex-col gap-6 w-full p-6 bg-slate-50/20">
       {!contract.contractPdfPath ? (
         <div className="p-12 text-center border-dashed border-2 border-slate-200 rounded-xl bg-white shadow-sm">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePdfFileSelect}
+            accept=".pdf"
+            className="hidden"
+          />
           <FileText className="h-10 w-10 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-500 mb-4 font-medium">No Master PDF Linked. Select the main contract PDF to begin.</p>
-          <Button onClick={handleBrowsePdf} className="bg-slate-900 text-white hover:bg-black">Browse Contract PDF</Button>
+          <Button onClick={handleBrowsePdf} className="bg-slate-900 text-white hover:bg-black">
+            <FileUp className="mr-2 h-4 w-4" />
+            Browse Contract PDF
+          </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-8">
