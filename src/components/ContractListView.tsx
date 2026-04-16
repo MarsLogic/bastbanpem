@@ -156,41 +156,39 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
             
             <div className="p-6 space-y-6">
               <div className="space-y-4">
-                {/* PDF Upload */}
+                {/* Browse File Button */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Master Contract PDF</label>
-                  <input 
-                    type="file" 
-                    ref={pdfInputRef} 
-                    onChange={handlePdfChange} 
-                    accept=".pdf" 
-                    className="hidden" 
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Select Contract File</label>
+                  <input
+                    type="file"
+                    ref={pdfInputRef}
+                    onChange={handlePdfChange}
+                    accept=".pdf,.xlsx,.xls"
+                    className="hidden"
                   />
-                  <div 
-                    className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all h-40 ${selectedPdf ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02]' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'}`}
+                  <Button
                     onClick={() => pdfInputRef.current?.click()}
+                    disabled={isProcessing}
+                    className={`w-full h-11 font-bold uppercase tracking-widest text-xs transition-all ${selectedPdf ? 'bg-slate-900 text-white hover:bg-black' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
+                    variant={selectedPdf ? "default" : "outline"}
                   >
-                    <div className={`p-3 rounded-full ${selectedPdf ? 'bg-white/10' : 'bg-white shadow-sm'}`}>
-                      <FileText className={`h-6 w-6 ${selectedPdf ? 'text-white' : 'text-indigo-600'}`} />
-                    </div>
-                    <div className="flex flex-col items-center gap-1">
-                      <span className="text-[11px] font-black uppercase tracking-tight text-center">
-                        {selectedPdf ? selectedPdf.name : 'Select PDF Source'}
-                      </span>
-                      {!selectedPdf && <span className="text-[9px] font-bold text-slate-400 uppercase">Mandatory for Pipeline Intelligence</span>}
-                    </div>
-                  </div>
+                    <FileUp className="mr-2 h-4 w-4" />
+                    {selectedPdf ? selectedPdf.name : 'Browse File (PDF or Excel)'}
+                  </Button>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-widest text-slate-400">Pipeline Identity</label>
-                  <Input 
-                    placeholder="e.g. Surat Pesanan 123..." 
+                  <Input
+                    placeholder="e.g. Surat Pesanan 123..."
                     value={newName}
                     onChange={e => setNewName(e.target.value)}
                     disabled={isProcessing}
                     className="h-11 font-bold"
                   />
+                  <p className="text-[9px] text-slate-400 font-medium">
+                    {selectedPdf ? '✓ File name auto-filled above. Edit manually if needed.' : 'Select a file to auto-populate this field'}
+                  </p>
                 </div>
               </div>
             </div>
