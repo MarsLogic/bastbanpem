@@ -216,7 +216,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   }
 
   const renderPdfViewer = (isFull: boolean) => (
-    <div className={`flex flex-col relative bg-muted/30 ${isFull ? 'w-full h-full' : 'w-full border-b h-[500px]'}`}>
+    <div className={`flex flex-col relative bg-muted/30 ${isFull ? 'w-full h-full' : 'w-full border-b h-[700px]'}`}>
       <div className="p-3 border-b flex justify-between items-center bg-background/50 backdrop-blur z-10">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-blue-500" />
@@ -249,19 +249,14 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
             type="text"
             inputMode="numeric"
             value={pageNumber.toString()}
-            onChange={(e) => {
-              const val = e.target.value.replace(/\D/g, '');
-              if (val === '') {
-                e.target.value = pageNumber.toString();
-              } else {
-                const num = Math.max(1, Math.min(numPages, parseInt(val, 10) || pageNumber));
-                e.target.value = num.toString();
-              }
-            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                const num = Math.max(1, Math.min(numPages, parseInt(e.currentTarget.value, 10) || pageNumber));
-                setPageNumber(num);
+                const num = parseInt(e.currentTarget.value, 10);
+                if (!isNaN(num) && num >= 1 && num <= numPages) {
+                  setPageNumber(num);
+                } else {
+                  e.currentTarget.value = pageNumber.toString();
+                }
                 e.currentTarget.blur();
               } else if (e.key === 'Escape') {
                 e.currentTarget.value = pageNumber.toString();
@@ -269,11 +264,13 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
               }
             }}
             onBlur={(e) => {
-              const num = Math.max(1, Math.min(numPages, parseInt(e.currentTarget.value, 10) || pageNumber));
-              setPageNumber(num);
-              e.currentTarget.value = num.toString();
+              const num = parseInt(e.currentTarget.value, 10);
+              if (!isNaN(num) && num >= 1 && num <= numPages) {
+                setPageNumber(num);
+              }
+              e.currentTarget.value = pageNumber.toString();
             }}
-            className="text-sm font-medium tabular-nums px-2 min-w-[50px] text-center border border-slate-300 rounded bg-white hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="text-sm font-medium tabular-nums px-2 min-w-[45px] text-center border border-slate-300 rounded bg-white hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           />
           <span className="text-sm font-medium text-slate-400">/ {numPages}</span>
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}><ChevronRight className="h-4 w-4" /></Button>
