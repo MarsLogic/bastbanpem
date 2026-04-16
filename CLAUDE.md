@@ -89,5 +89,56 @@ Every module has a Logical ID. Use them in your plans and commits.
 - `[DOCS-###]` - PDF/Image Intel
 - `[UIUX-###]` - React Workbench
 
+## 6. Session Closure (Always Do This)
+
+**Before ending the session, if code is working:**
+
+1. **Run tests:**
+   ```bash
+   npm test          # Frontend
+   pytest            # Backend
+   ```
+
+2. **Check git status:**
+   ```bash
+   rtk git status
+   rtk git diff
+   ```
+
+3. **If tests pass + code is clean:**
+   ```
+   REMINDER: Push to GitHub!
+   
+   Should I push these changes to GitHub? 
+   - Review the changes above
+   - Confirm they're correct
+   - Say "yes" or "approve" to push
+   ```
+
+4. **Wait for user approval, then:**
+   ```bash
+   rtk git push origin main
+   ```
+
+**Why?** 
+- Keeps GitHub in sync with development
+- Prevents lost work
+- Creates backup of stable code
+- Helps track project progress
+
+**Token Impact:** Pushing (1 command) = negligible. Losing work = catastrophic.
+
 ---
+
 **GOAL:** Minimal Tokens. Maximum Stability. Expert Quality.
+
+---
+
+## 📍 Key Reminders for Every Session
+
+✅ Load project knowledge first (architecture, patterns, decisions)  
+✅ Use task templates for context (not whole codebase)  
+✅ Always ripgrep before reading files  
+✅ Test before closing session  
+✅ **Push to GitHub if user approves** ← Important!  
+✅ Update lessons-learned.md if you discover something new

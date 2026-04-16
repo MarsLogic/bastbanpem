@@ -113,6 +113,15 @@ This document captures what works and what doesn't. AI uses this to make better 
 - ✅ Config-driven design (config.py)
 - ✅ API bridge ([UIUX-001]) for frontend/backend
 - ✅ Memory management (gc.collect() after large ops)
+- ✅ **Always push to GitHub after tests pass** (prevents lost work)
+- ✅ Test before closing session (catch bugs early)
+
+### Lesson: Push to GitHub After Each Working Session
+**Category:** Workflow / Risk Management  
+**Context:** Developed feature locally, lost work when system crashed  
+**Insight:** GitHub is backup + collaboration tool. Don't wait to push.  
+**Action:** Every session now: test → review → **push to GitHub** (with user approval)  
+**Date:** 2026-04-16
 
 ---
 
