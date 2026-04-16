@@ -11,10 +11,37 @@ class PDFIntelligence:
             "eselon1": [r"Eselon\s*1\s*[:\-\s]*([A-Z\s]+)"],
             "satker": [r"Satker\s*[:\-\s]*([A-Z0-9\s\-]+)"],
             "nomor_dipa": [r"Nomor\s*Dipa\s*[:\-\s]*([A-Z0-9\/\.\-]+)"],
-            "nomor_kontrak": [r"No\.\s*Surat\s*Pesanan\s*[:\-\s]*([A-Z0-9\-\/]+)", r"SPK\s*No\.?\s*([A-Z0-9\-\/]+)"],
-            "tanggal_kontrak": [r"Tanggal\s*Surat\s*Pesanan\s*[:\-\s]*(\d{1,2}\s+\w+\s+\d{4})", r"(\d{1,2}-\d{1,2}-\d{4})"],
-            "nama_penyedia": [r"Penyedia\s*([A-Z\s]+)", r"CV\.\s*([A-Z\s]+)"],
-            "nilai_kontrak": [r"Estimasi\s*Total\s*Pembayaran\s*Rp\.?\s*([\d\.,]+)", r"Nilai\s*Kontrak\s*[:\-\s]*Rp\.?\s*([\d\.,]+)"],
+            # Contract number — Surat Pesanan IDs can include spaces, so allow word chars + hyphens
+            "nomor_kontrak": [
+                r"No\.\s*Surat\s*Pesanan\s*[:\s]*([A-Z0-9][A-Z0-9\-\s]{4,50}?)(?:\n|,|\s{2,}|$)",
+                r"SPK\s*No\.?\s*([A-Z0-9\-\/]+)"
+            ],
+            "tanggal_kontrak": [
+                r"Tanggal\s*Surat\s*Pesanan\s*[:\s]*(\d{1,2}\s+\w+\s+\d{4})",
+                r"(\d{1,2}\s+\w+\s+\d{4})",
+                r"(\d{1,2}-\d{1,2}-\d{4})"
+            ],
+            # Pemesan = purchaser organization (line after "Pemesan" header)
+            "nama_pemesan": [
+                r"Pemesan\s*\n([A-Z][A-Z\s]+(?:PERTANIAN|KEHUTANAN|KELAUTAN|PERIKANAN|KEMENTERIAN|DIREKTORAT|DINAS|BADAN|KOTA|KABUPATEN)[A-Z\s]*)",
+                r"Pemesan\s*\n([^\n]{10,80})"
+            ],
+            # Penyedia = vendor/supplier name
+            "nama_penyedia": [
+                r"Penyedia\s*\n([A-Z][A-Z\s\.]+?)(?:\n|$)",
+                r"(?:CV|PT|UD|KOPERASI|FIRMA)\.\s*([A-Z][A-Z\s]+)",
+                r"Penyedia\s+([A-Z][A-Z\s]{3,50})"
+            ],
+            # Product name from Ringkasan Pesanan table
+            "nama_produk": [
+                r"Nama\s*Produk\s*\n([^\n]{5,80})",
+                r"(?:Insektisida|Pupuk|Benih|Obat|Alat)\s+([A-Z0-9\s]+\d+\s*(?:SL|WP|EC|GR|L|Kg|ml))",
+            ],
+            "nilai_kontrak": [
+                r"Estimasi\s*Total\s*Pembayaran\s*Rp\.?\s*([\d\.,]+)",
+                r"Total\s*Harga\s*Rp\.?\s*([\d\.,]+)",
+                r"Nilai\s*Kontrak\s*[:\-\s]*Rp\.?\s*([\d\.,]+)"
+            ],
             "kegiatan_output_akun": [r"Kegiatan/Output/Akun\s*[:\-\s]*([0-9\.]+)"],
             "vendor_npwp": [r"NPWP\s*Penyedia\s*[:\-\s]*([0-9\.\-]+)"]
         }

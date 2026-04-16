@@ -66,15 +66,15 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
       // The backend returns: { metadata: {...}, tables: [...], total_pages: N }
       const metadata = result.metadata || {};
 
-      onUpdate({
-        nomorKontrak: metadata.nomor_kontrak || contract.nomorKontrak,
-        tanggalKontrak: metadata.tanggal_kontrak || contract.tanggalKontrak,
-        namaPenyedia: metadata.nama_penyedia || contract.namaPenyedia,
-        // Note: namaPemesan and namaProduk are not automatically extracted from PDF
-        // These fields require manual entry or additional OCR/ML processing
-        // totalPembayaran mapped from nilai_kontrak field
-        totalPembayaran: metadata.nilai_kontrak || contract.totalPembayaran,
-      });
+      const updates: Record<string, any> = {};
+      if (metadata.nomor_kontrak)  updates.nomorKontrak   = metadata.nomor_kontrak.trim();
+      if (metadata.tanggal_kontrak) updates.tanggalKontrak = metadata.tanggal_kontrak.trim();
+      if (metadata.nama_pemesan)   updates.namaPemesan    = metadata.nama_pemesan.trim();
+      if (metadata.nama_penyedia)  updates.namaPenyedia   = metadata.nama_penyedia.trim();
+      if (metadata.nama_produk)    updates.namaProduk     = metadata.nama_produk.trim();
+      if (metadata.nilai_kontrak)  updates.totalPembayaran = metadata.nilai_kontrak.trim();
+
+      onUpdate(updates);
 
       toast.success(`Elite AI Scan complete. Extracted data from ${result.total_pages} pages.`);
     } catch (err) {

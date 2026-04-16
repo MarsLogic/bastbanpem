@@ -67,18 +67,24 @@ class ContractMetadata(BaseModel):
     # Administrative
     eselon1: Optional[str] = None
     satker: Optional[str] = None
+    nomor_kontrak: Optional[str] = None      # No. Surat Pesanan
     tanggal_kontrak: Optional[str] = None
     nilai_kontrak: Optional[str] = None
     nomor_dipa: Optional[str] = None
     kegiatan_output_akun: Optional[str] = None
     judul_kegiatan: Optional[str] = None
-    
+
+    # Parties
+    nama_pemesan: Optional[str] = None       # Pihak Pertama / Pemesan
+    nama_penyedia: Optional[str] = None      # Pihak Kedua / Penyedia
+    nama_produk: Optional[str] = None        # Product name from Ringkasan Pesanan
+
     # Recipient Config
     titik_bagi: Optional[str] = None
     desa: Optional[str] = None
     tipe_penerima: Optional[str] = None
     jenis_kontrak: Optional[str] = None
-    
+
     # Vendor
     vendor_name: Optional[str] = None
     vendor_npwp: Optional[str] = None
