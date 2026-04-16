@@ -248,6 +248,12 @@ class PdfParseResult(BaseModel):
     tables: List[Dict[str, Any]] = []
     total_pages: int = 0
 
+class ContractSaveRequest(BaseModel):
+    rows: List[Any] = []
+    metadata: Optional["ContractMetadata"] = None
+    ultra_robust: Optional[Dict[str, Any]] = None
+    tables: List[Dict[str, Any]] = []
+
 class PdfParseRequest(BaseModel):
     path: str
 

@@ -12,9 +12,10 @@ from backend.services.data_engine import reconcile_files, ingest_excel_to_models
 from backend.services.location_service import location_service
 from backend.services.pdf_intelligence import pdf_intel
 from backend.models import (
-    KtpResult, ReconciliationResult, AutomationRequest, 
+    KtpResult, ReconciliationResult, AutomationRequest,
     BundleRequest, PipelineRow, ExcelIngestResult, LocationData,
-    PdfParseResult, PdfParseRequest, BatchSummary, ContractMetadata
+    PdfParseResult, PdfParseRequest, BatchSummary, ContractMetadata,
+    ContractSaveRequest,
 )
 
 from backend.services.cpcl_extractor import cpcl_extractor
@@ -286,29 +287,58 @@ from backend.services.vault_service import vault_service
 
 @router.post("/contracts/save")
 async def save_contract_data(
-    id: str, 
-    name: str, 
-    target_value: float, 
-    rows: List[PipelineRow],
-    metadata: Optional[ContractMetadata] = Body(None)
+    id: str,
+    name: str,
+    target_value: float,
+    request: ContractSaveRequest,
 ):
     try:
-        vault_service.save_contract(id, name, target_value, metadata)
-        vault_service.save_recipients(id, rows)
-        return {"status": "success", "message": f"Saved {len(rows)} recipients and full metadata."}
+        vault_service.save_contract(
+            id=id,
+            name=name,
+            target_value=target_value,
+            metadata=request.metadata,
+            ultra_robust=request.ultra_robust,
+            tables=request.tables,
+        )
+        if request.rows:
+            pipeline_rows = [
+                PipelineRow(**r) if isinstance(r, dict) else r
+                for r in request.rows
+            ]
+            vault_service.save_recipients(id, pipeline_rows)
+        return {
+            "status": "success",
+            "message": f"Saved contract '{name}' with {len(request.rows)} recipients.",
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/contracts/load/{contract_id}")
 async def load_contract_data(contract_id: str):
-    """Retrieve previously saved contract metadata from SQLite vault."""
+    """Retrieve saved contract intelligence (metadata + ultra_robust + tables) from SQLite vault."""
     try:
         contract = vault_service.get_contract(contract_id)
         if not contract:
-            raise HTTPException(status_code=404, detail=f"Contract '{contract_id}' not found in vault")
+            raise HTTPException(
+                status_code=404,
+                detail=f"Contract '{contract_id}' not found in vault",
+            )
+
+        # Parse stored metadata JSON back into typed model for clean response
+        metadata_obj = None
+        raw_metadata = contract.get("metadata")
+        if raw_metadata and raw_metadata != "{}":
+            try:
+                metadata_obj = ContractMetadata.model_validate_json(raw_metadata)
+            except Exception:
+                pass
+
         return {
             "status": "success",
-            "contract": dict(contract)
+            "metadata": metadata_obj.model_dump() if metadata_obj else None,
+            "ultra_robust": contract.get("ultra_robust"),
+            "tables": contract.get("tables", []),
         }
     except HTTPException:
         raise

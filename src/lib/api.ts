@@ -80,17 +80,43 @@ export const saveContract = async (
   id: string,
   name: string,
   targetValue: number,
-  metadata: Record<string, any>
+  metadata: Record<string, any> | null,
+  ultraRobust?: Record<string, any> | null,
+  tables?: any[],
 ): Promise<void> => {
   await api.post(
     `/contracts/save?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&target_value=${targetValue}`,
-    { rows: [], metadata }
+    {
+      rows: [],
+      metadata: metadata ?? null,
+      ultra_robust: ultraRobust ?? null,
+      tables: tables ?? [],
+    },
   );
 };
 
-export const loadContract = async (contractId: string): Promise<Record<string, any>> => {
-  const { data } = await api.get(`/contracts/load/${encodeURIComponent(contractId)}`);
-  return data.contract;
+/**
+ * Load saved AI extraction results (metadata + ultra_robust + tables) for a contract.
+ * Returns null if the contract has never been scanned (404).
+ */
+export const loadContractIntelligence = async (
+  contractId: string,
+): Promise<{
+  metadata: Record<string, any> | null;
+  ultraRobust: Record<string, any> | null;
+  tables: any[];
+} | null> => {
+  try {
+    const { data } = await api.get(`/contracts/load/${encodeURIComponent(contractId)}`);
+    return {
+      metadata:     data.metadata     ?? null,
+      ultraRobust:  data.ultra_robust ?? null,
+      tables:       data.tables       ?? [],
+    };
+  } catch (err: any) {
+    if (err?.response?.status === 404) return null; // never scanned — silent
+    throw err;
+  }
 };
 
 export const splitPdf = async (path: string, pages: number[], outputDir: string, prefix: string) => {

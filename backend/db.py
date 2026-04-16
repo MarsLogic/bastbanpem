@@ -53,6 +53,17 @@ class Database:
         """)
         self.conn.commit()
 
+        # Additive migrations — safe to run on existing DBs (SQLite ignores duplicate columns)
+        for ddl in [
+            "ALTER TABLE contracts ADD COLUMN ultra_robust_json TEXT",
+            "ALTER TABLE contracts ADD COLUMN tables_json TEXT",
+        ]:
+            try:
+                self.conn.execute(ddl)
+                self.conn.commit()
+            except Exception:
+                pass  # Column already exists — safe to ignore
+
     @contextmanager
     def get_cursor(self):
         cursor = self.conn.cursor()

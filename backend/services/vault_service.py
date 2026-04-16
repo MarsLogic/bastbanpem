@@ -25,12 +25,23 @@ class VaultService:
             """)
 
     @staticmethod
-    def save_contract(id: str, name: str, target_value: float, metadata: Optional[ContractMetadata] = None):
-        meta_json = metadata.model_dump_json() if metadata else "{}"
+    def save_contract(
+        id: str,
+        name: str,
+        target_value: float,
+        metadata: Optional[ContractMetadata] = None,
+        ultra_robust: Optional[dict] = None,
+        tables: Optional[list] = None,
+    ):
+        meta_json   = metadata.model_dump_json() if metadata else "{}"
+        ultra_json  = json.dumps(ultra_robust,  ensure_ascii=False) if ultra_robust  is not None else None
+        tables_json = json.dumps(tables,        ensure_ascii=False) if tables        is not None else None
         with db.get_cursor() as cursor:
             cursor.execute(
-                "INSERT OR REPLACE INTO contracts (id, name, target_value, status, metadata) VALUES (?, ?, ?, ?, ?)",
-                (id, name, target_value, "ACTIVE", meta_json)
+                """INSERT OR REPLACE INTO contracts
+                   (id, name, target_value, status, metadata, ultra_robust_json, tables_json)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (id, name, target_value, "ACTIVE", meta_json, ultra_json, tables_json),
             )
 
     @staticmethod
@@ -38,7 +49,29 @@ class VaultService:
         with db.get_cursor() as cursor:
             cursor.execute("SELECT * FROM contracts WHERE id = ?", (id,))
             row = cursor.fetchone()
-            return dict(row) if row else None
+            if not row:
+                return None
+            result = dict(row)
+
+            # Parse ultra_robust JSON column
+            ultra_raw = result.pop("ultra_robust_json", None)
+            result["ultra_robust"] = None
+            if ultra_raw:
+                try:
+                    result["ultra_robust"] = json.loads(ultra_raw)
+                except Exception:
+                    pass
+
+            # Parse tables JSON column
+            tables_raw = result.pop("tables_json", None)
+            result["tables"] = []
+            if tables_raw:
+                try:
+                    result["tables"] = json.loads(tables_raw)
+                except Exception:
+                    pass
+
+            return result
 
     @staticmethod
     def save_recipients(contract_id: str, rows: List[PipelineRow]):
