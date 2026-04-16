@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
 import {
     FileText, ZoomIn, ZoomOut, Maximize2, Minimize2,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, FileUp,
-    LayoutDashboard, BookOpen, UserCheck, Table as TableIcon, FileSearch
+    LayoutDashboard, BookOpen, UserCheck, Table as TableIcon
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -24,6 +25,9 @@ import { toast } from "sonner";
 import { Document, Page, pdfjs } from 'react-pdf';
 import { parsePdfFile, saveContract } from '../lib/api';
 import { getPdfBlob, savePdfBlob, deletePdfBlob } from '../lib/pdfStorage';
+import { SectionViewer } from './pdf-sync/SectionViewer';
+import { TableViewer } from './pdf-sync/TableViewer';
+import { RecipientCards } from './pdf-sync/RecipientCards';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -300,26 +304,38 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
                   </div>
 
                   <Tabs defaultValue="metadata" className="flex-1 flex flex-col min-h-0">
-                    <div className="px-6 py-2 border-b bg-white">
-                      <TabsList className="bg-slate-100/50 p-1 h-9 w-full justify-start" variant="default">
+                    <div className="px-4 py-2 border-b bg-white shrink-0">
+                      <TabsList className="bg-slate-100/50 p-1 h-9 w-full justify-start">
                         <TabsTrigger value="metadata" className="text-[11px] gap-1.5 flex-1">
                           <LayoutDashboard className="h-3 w-3" />
                           Fields
                         </TabsTrigger>
                         <TabsTrigger value="sections" className="text-[11px] gap-1.5 flex-1">
                           <BookOpen className="h-3 w-3" />
-                          Text
+                          Sections
                         </TabsTrigger>
                         <TabsTrigger value="tables" className="text-[11px] gap-1.5 flex-1">
                           <TableIcon className="h-3 w-3" />
                           Tables
+                          {(contract.tables?.length ?? 0) > 0 && (
+                            <Badge className="ml-1 h-4 px-1.5 text-[9px] bg-slate-600 hover:bg-slate-600">
+                              {contract.tables!.length}
+                            </Badge>
+                          )}
                         </TabsTrigger>
                         <TabsTrigger value="recipients" className="text-[11px] gap-1.5 flex-1">
                           <UserCheck className="h-3 w-3" />
-                          RPB ({contract.deliveryBlocks?.length || 0})
+                          RPB
+                          {(contract.deliveryBlocks?.length ?? 0) > 0 && (
+                            <Badge className="ml-1 h-4 px-1.5 text-[9px] bg-slate-600 hover:bg-slate-600">
+                              {contract.deliveryBlocks!.length}
+                            </Badge>
+                          )}
                         </TabsTrigger>
                       </TabsList>
                     </div>
+
+                    <div className="flex-1 min-h-0 overflow-hidden">
 
                     <ScrollArea className="flex-1">
                       <TabsContent value="metadata" className="p-6 m-0 space-y-6">
@@ -415,116 +431,19 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
                           </div>
                       </TabsContent>
 
-                      <TabsContent value="sections" className="p-0 m-0 flex flex-col h-full min-h-0">
-                        <ScrollArea className="flex-1">
-                          <div className="p-6 space-y-6">
-                            {contract.sections ? (
-                              Object.entries(contract.sections).map(([name, text]) => (
-                                <div key={name} className="space-y-2">
-                                  <div className="flex items-center justify-between border-b pb-1 border-slate-200">
-                                    <Label className="text-[11px] font-bold text-blue-600 uppercase tracking-widest">{name.replace(/_/g, ' ')}</Label>
-                                    <span className="text-[9px] text-slate-400 font-mono">{(text as string).length} chars</span>
-                                  </div>
-                                  <div className="bg-white border rounded-md p-4 text-[11px] text-slate-600 font-serif leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto">
-                                    {text as string}
-                                  </div>
-                                </div>
-                              ))
-                            ) : (
-                              <div className="h-full flex flex-col items-center justify-center p-12 text-center space-y-4">
-                                <BookOpen className="h-12 w-12 text-slate-200" />
-                                <p className="text-sm text-slate-400">No sections extracted yet.</p>
-                              </div>
-                            )}
-                            {contract.fullText && (
-                              <div className="mt-8 border-t pt-8">
-                                <div className="flex items-center gap-2 mb-4">
-                                  <FileSearch className="h-4 w-4 text-slate-400" />
-                                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full Raw Content</span>
-                                </div>
-                                <div className="bg-slate-900 text-slate-300 border rounded-md p-4 text-[10px] font-mono leading-tight h-[400px] overflow-y-auto">
-                                  {contract.fullText}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </ScrollArea>
+                      <TabsContent value="sections" className="p-0 m-0">
+                        <SectionViewer sections={contract.sections ?? {}} fullText={contract.fullText} />
                       </TabsContent>
 
                       <TabsContent value="tables" className="p-0 m-0">
-                        {contract.tables && contract.tables.length > 0 ? (
-                          <div className="p-4 space-y-8">
-                            {contract.tables.map((table, tIdx) => (
-                              <div key={tIdx} className="space-y-3">
-                                <div className="flex items-center justify-between bg-slate-100 p-2 rounded-md border border-slate-200">
-                                  <span className="text-[10px] font-bold text-slate-700 uppercase">Lampiran Table #{tIdx + 1} (Page {table.page})</span>
-                                  <span className="text-[9px] bg-white px-2 py-0.5 rounded border font-mono text-slate-500">{table.method}</span>
-                                </div>
-                                <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
-                                  <Table>
-                                    <TableHeader className="bg-slate-50">
-                                      <TableRow>
-                                        {table.headers.map((h: string, hIdx: number) => (
-                                          <TableHead key={hIdx} className="text-[9px] font-bold py-2">{h}</TableHead>
-                                        ))}
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {table.rows.slice(0, 100).map((row: any, rIdx: number) => (
-                                        <TableRow key={rIdx}>
-                                          {table.headers.map((h: string, cIdx: number) => (
-                                            <TableCell key={cIdx} className="text-[9px] py-1 font-mono">
-                                              {row[h] || (row.fields && row.fields[cIdx]) || '-'}
-                                            </TableCell>
-                                          ))}
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                  {table.rows.length > 100 && (
-                                    <div className="p-2 text-center text-[9px] bg-slate-50 text-slate-400 italic">
-                                      Showing first 100 of {table.rows.length} rows...
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="h-full flex flex-col items-center justify-center p-24 text-center space-y-4">
-                            <TableIcon className="h-12 w-12 text-slate-200" />
-                            <p className="text-sm text-slate-400">No Lampiran tables detected. Tables from PDFs are extracted automatically during the AI Scan.</p>
-                          </div>
-                        )}
+                        <TableViewer tables={contract.tables ?? []} />
                       </TabsContent>
 
                       <TabsContent value="recipients" className="p-0 m-0">
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center justify-between mb-2 px-1">
-                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Delivery RPB Blocks</span>
-                            <span className="text-[10px] font-mono text-slate-400">Total: {contract.deliveryBlocks?.length || 0}</span>
-                          </div>
-                          {contract.deliveryBlocks?.map((block, idx) => (
-                            <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-blue-300 transition-colors">
-                              <div className="flex justify-between items-start mb-1">
-                                <div className="font-bold text-xs text-slate-800">{block.namaPenerima}</div>
-                                <div className="text-[10px] font-bold text-blue-600">{block.jumlah}</div>
-                              </div>
-                              <div className="text-[10px] text-slate-500 line-clamp-1">{block.desa}, {block.kecamatan}</div>
-                              <div className="mt-2 flex justify-between items-center">
-                                <span className="text-[9px] text-slate-400 italic">Poktan: {block.namaPoktan || 'N/A'}</span>
-                                <span className="text-[9px] font-mono text-slate-400">{block.permintaanTiba}</span>
-                              </div>
-                            </div>
-                          ))}
-                          {!contract.deliveryBlocks?.length && (
-                            <div className="p-12 text-center text-slate-400 text-sm">
-                              No recipients extracted.
-                            </div>
-                          )}
-                        </div>
+                        <RecipientCards blocks={contract.deliveryBlocks ?? []} />
                       </TabsContent>
                     </ScrollArea>
+                    </div>
                   </Tabs>
                </div>
              )}

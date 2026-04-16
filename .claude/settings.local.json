@@ -29,7 +29,17 @@
       "Bash(npm install:*)",
       "Bash(2>&1)",
       "Bash(npx tsx:*)",
-      "Bash(choco install:*)"
+      "Bash(choco install:*)",
+      "mcp__plugin_serena_serena__find_symbol",
+      "mcp__plugin_serena_serena__find_file",
+      "mcp__plugin_serena_serena__activate_project",
+      "mcp__plugin_serena_serena__initial_instructions",
+      "mcp__plugin_serena_serena__search_for_pattern",
+      "mcp__plugin_serena_serena__get_symbols_overview",
+      "Bash(npm run:*)",
+      "Bash(ls -la .rtk*)",
+      "Bash(ls backend/requirements*.txt)",
+      "Bash(npx shadcn-ui@latest add slider --yes)"
     ]
   }
 }
