@@ -10,7 +10,7 @@ import {
 import { ContractData } from '../lib/contractStore';
 import { toast } from "sonner";
 import { Document, Page, pdfjs } from 'react-pdf';
-import { parsePdf } from '../lib/api';
+import { parsePdfFile } from '../lib/api';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -27,6 +27,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [scale, setScale] = useState(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePdfFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,6 +35,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     if (file && file.type === 'application/pdf') {
       const url = URL.createObjectURL(file);
       setBlobUrl(url);
+      setPdfFile(file);
       onUpdate({
         contractPdfPath: file.name,
         deliveryBlocks: [],
@@ -50,26 +52,35 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   };
 
   const handleAutoExtract = async () => {
-    if (!contract.contractPdfPath) return;
+    if (!pdfFile) {
+      toast.error("No PDF file selected. Please upload a PDF first.");
+      return;
+    }
     setIsExtracting(true);
     try {
       toast.info("AI Engine Scanning PDF via Python Backend...");
-      const result = await parsePdf(contract.contractPdfPath);
-      
+
+      const result = await parsePdfFile(pdfFile);
+
+      // Map extracted metadata to contract fields
+      // The backend returns: { metadata: {...}, tables: [...], total_pages: N }
+      const metadata = result.metadata || {};
+
       onUpdate({
-        nomorKontrak: result.nomorKontrak || contract.nomorKontrak,
-        tanggalKontrak: result.tanggalKontrak || contract.tanggalKontrak,
-        namaPemesan: result.namaPemesan || contract.namaPemesan,
-        namaPenyedia: result.namaPenyedia || contract.namaPenyedia,
-        namaProduk: result.namaProduk || contract.namaProduk,
-        totalPembayaran: result.totalPembayaran || contract.totalPembayaran,
+        nomorKontrak: metadata.nomor_kontrak || contract.nomorKontrak,
+        tanggalKontrak: metadata.tanggal_kontrak || contract.tanggalKontrak,
+        namaPenyedia: metadata.nama_penyedia || contract.namaPenyedia,
+        // Note: namaPemesan and namaProduk are not automatically extracted from PDF
+        // These fields require manual entry or additional OCR/ML processing
+        // totalPembayaran mapped from nilai_kontrak field
+        totalPembayaran: metadata.nilai_kontrak || contract.totalPembayaran,
       });
 
       toast.success(`Elite AI Scan complete. Extracted data from ${result.total_pages} pages.`);
-      setIsExtracting(false);
     } catch (err) {
       console.error(err);
-      toast.error("Extraction failed.");
+      toast.error("Extraction failed. Ensure PDF is valid and backend is running.");
+    } finally {
       setIsExtracting(false);
     }
   };

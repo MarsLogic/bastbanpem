@@ -67,6 +67,15 @@ export const parsePdf = async (path: string) => {
   return data;
 };
 
+export const parsePdfFile = async (file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  const { data } = await api.post('/pdf/parse', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+};
+
 export const splitPdf = async (path: string, pages: number[], outputDir: string, prefix: string) => {
   const { data } = await api.post('/pdf/split', { path, pages, output_dir: outputDir, prefix });
   return data;

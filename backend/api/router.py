@@ -61,17 +61,31 @@ async def reconcile(
         raise HTTPException(status_code=500, detail=f"Reconciliation error: {str(e)}")
 
 @router.post("/pdf/parse", response_model=PdfParseResult)
-async def pdf_parse(request: PdfParseRequest):
+async def pdf_parse(file: UploadFile = File(...)):
+    """Parse PDF file and extract metadata, tables, and page count."""
+    temp_path = f"temp_pdf_{file.filename}"
     try:
-        analysis = pdf_intel.analyze_document(request.path)
+        # Write uploaded file to temp location
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        # Analyze document
+        analysis = pdf_intel.analyze_document(temp_path)
+
+        # Extract metadata with proper field mapping
         metadata = analysis["metadata"]
+
         return PdfParseResult(
             metadata=metadata,
             tables=analysis["tables"],
             total_pages=analysis["total_pages"]
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"PDF parse error: {str(e)}")
+    finally:
+        # Clean up temp file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 @router.post("/excel/ingest", response_model=ExcelIngestResult)
 async def excel_ingest(file: UploadFile = File(...)):
