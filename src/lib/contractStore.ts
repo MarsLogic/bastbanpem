@@ -191,11 +191,48 @@ interface ContractStore {
   setContracts: (contracts: ContractData[]) => void;
 }
 
+// [UIUX-005] Custom storage adapter that strips Blobs before persistence
+// Blobs are stored separately in IndexedDB via pdfStorage.ts
+const createBlobSafeStorage = () => {
+  const baseStorage = localforage;
+
+  return {
+    getItem: async (name: string) => {
+      const item = await baseStorage.getItem(name);
+      if (!item) return null;
+
+      // Parse and strip pdfBlobs
+      const parsed = typeof item === 'string' ? JSON.parse(item) : item;
+      return {
+        ...parsed,
+        contracts: (parsed.contracts || []).map((c: any) => ({
+          ...c,
+          pdfBlob: null // PdfSyncModule will restore from IndexedDB
+        }))
+      };
+    },
+    setItem: async (name: string, value: any) => {
+      // Strip Blobs from value before storing
+      const cleaned = {
+        ...value,
+        contracts: (value.contracts || []).map((c: any) => ({
+          ...c,
+          pdfBlob: null // Don't persist Blobs in JSON storage
+        }))
+      };
+      await baseStorage.setItem(name, JSON.stringify(cleaned));
+    },
+    removeItem: async (name: string) => {
+      await baseStorage.removeItem(name);
+    }
+  };
+};
+
 export const useContractStore = create<ContractStore>()(
   persist(
     (set, get) => ({
       contracts: [],
-      
+
       setContracts: (contracts) => set({ contracts }),
 
       createContract: (name, initialData) => {
@@ -243,7 +280,7 @@ export const useContractStore = create<ContractStore>()(
     }),
     {
       name: 'bast-automator-storage',
-      storage: createJSONStorage(() => localforage as any),
+      storage: createBlobSafeStorage()
     }
   )
 );

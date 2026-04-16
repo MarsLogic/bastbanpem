@@ -22,6 +22,7 @@ import { ContractData } from '../lib/contractStore';
 import { toast } from "sonner";
 import { Document, Page, pdfjs } from 'react-pdf';
 import { parsePdfFile, saveContract } from '../lib/api';
+import { getPdfBlob, savePdfBlob, deletePdfBlob } from '../lib/pdfStorage';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -40,32 +41,68 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Persistence: Hydrate blobUrl from contract.pdfBlob if it exists
-  // Guard with instanceof Blob — JSON serialization turns Blob into {} on reload
+  // Persistence: Hydrate blobUrl from contract.pdfBlob or IndexedDB
+  // [UIUX-005] Multi-layer PDF persistence:
+  // 1. In-memory Blob (during same session) ✓
+  // 2. IndexedDB fallback (across page reloads) ✓
+  // 3. Prompt to re-upload if both are missing
   React.useEffect(() => {
-    if (contract.pdfBlob instanceof Blob && !blobUrl) {
-      const url = URL.createObjectURL(contract.pdfBlob);
-      setBlobUrl(url);
-    }
-    
+    const hydratePdf = async () => {
+      // Try 1: In-memory Blob
+      if (contract.pdfBlob instanceof Blob && !blobUrl) {
+        const url = URL.createObjectURL(contract.pdfBlob);
+        setBlobUrl(url);
+        return;
+      }
+
+      // Try 2: Recover from IndexedDB (page reload scenario)
+      if (!contract.pdfBlob && contract.contractPdfPath && !blobUrl) {
+        try {
+          const storedBlob = await getPdfBlob(contract.id);
+          if (storedBlob instanceof Blob) {
+            const url = URL.createObjectURL(storedBlob);
+            setBlobUrl(url);
+            return;
+          }
+        } catch (err) {
+          console.warn(`[UIUX-005] Failed to retrieve PDF from IndexedDB for contract ${contract.id}:`, err);
+        }
+
+        // If we get here, PDF is truly missing
+        toast.info("PDF was cleared on page reload. Re-upload the PDF to continue.");
+      }
+    };
+
+    hydratePdf();
+
     // Cleanup URL on unmount to prevent memory leaks
     return () => {
       if (blobUrl) URL.revokeObjectURL(blobUrl);
     };
-  }, [contract.pdfBlob]);
+  }, [contract.id, contract.pdfBlob, contract.contractPdfPath, blobUrl]);
 
-  const handlePdfFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePdfFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type === 'application/pdf') {
       const url = URL.createObjectURL(file);
       setBlobUrl(url);
-      
+
+      // Update contract state
       onUpdate({
         contractPdfPath: file.name,
         pdfBlob: file, // Store the file/blob in the global state
         deliveryBlocks: [],
         recipients: []
       });
+
+      // [UIUX-005] Persist PDF to IndexedDB for recovery after page reload
+      try {
+        await savePdfBlob(contract.id, file, file.name);
+      } catch (err) {
+        console.warn(`[UIUX-005] Failed to save PDF to IndexedDB:`, err);
+        // Don't fail the upload if IndexedDB save fails
+      }
+
       toast.info(`PDF Linked: ${file.name}`);
     } else if (file) {
       toast.error("Please select a PDF file.");
