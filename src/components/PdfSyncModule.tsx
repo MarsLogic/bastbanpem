@@ -1,12 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge }  from '@/components/ui/badge';
 import {
   FileUp, Loader2, ZoomIn, ZoomOut,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Zap, LayoutDashboard, Users, BookOpen, Table as TableIcon,
-  FileText, AlertCircle, RefreshCw,
+  Zap, LayoutDashboard, FileText, AlertCircle, RefreshCw,
 } from 'lucide-react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { toast } from 'sonner';
@@ -19,6 +17,14 @@ import { OverviewPanel }   from './pdf-sync/OverviewPanel';
 import { RecipientTable }  from './pdf-sync/RecipientTable';
 import { SectionViewer }   from './pdf-sync/SectionViewer';
 import { TableViewer }     from './pdf-sync/TableViewer';
+import {
+  InspectorSidebar,
+  SidebarSection,
+  SidebarTable,
+  NavItemIdString,
+  parseNavId,
+  serializeId,
+} from './pdf-sync/InspectorSidebar';
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -95,19 +101,19 @@ const UploadDropzone: React.FC<{ onFile: (f: File) => void }> = ({ onFile }) => 
   );
 };
 
-// ─── PDF Viewer Pane ──────────────────────────────────────────────────────────
+// ─── PDF Viewer (natural height) ──────────────────────────────────────────────
 
-const PdfViewerPane: React.FC<{
-  blobUrl: string;
-  pdfName: string;
+const PdfViewer: React.FC<{
+  blobUrl:   string;
+  pdfName:   string;
   loadError: string | null;
 }> = ({ blobUrl, pdfName, loadError }) => {
-  const [numPages, setNumPages]     = useState(0);
-  const [page, setPage]             = useState(1);
-  const [scale, setScale]           = useState(1.0);
-  const [editingPage, setEditing]   = useState(false);
-  const [editVal, setEditVal]       = useState('');
-  const inputRef                    = useRef<HTMLInputElement>(null);
+  const [numPages, setNumPages]   = useState(0);
+  const [page, setPage]           = useState(1);
+  const [scale, setScale]         = useState(1.0);
+  const [editingPage, setEditing] = useState(false);
+  const [editVal, setEditVal]     = useState('');
+  const inputRef                  = useRef<HTMLInputElement>(null);
 
   const goTo = (n: number) => setPage(Math.max(1, Math.min(numPages || 1, n)));
 
@@ -119,7 +125,7 @@ const PdfViewerPane: React.FC<{
 
   if (loadError) {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 p-8 text-center bg-slate-950">
+      <div className="flex flex-col items-center justify-center py-16 gap-4 text-center bg-slate-950">
         <AlertCircle className="h-10 w-10 text-red-400" />
         <div>
           <p className="text-sm font-bold text-white">PDF Load Error</p>
@@ -130,9 +136,9 @@ const PdfViewerPane: React.FC<{
   }
 
   return (
-    <div className="flex flex-col h-full bg-slate-950">
+    <div className="bg-slate-950">
       {/* Toolbar */}
-      <div className="px-3 py-2 bg-slate-900 border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
+      <div className="px-3 py-2 bg-slate-900 border-b border-white/10 flex items-center justify-between gap-2 sticky top-0 z-10">
         <div className="flex items-center gap-2 min-w-0">
           <Badge
             variant="outline"
@@ -140,9 +146,7 @@ const PdfViewerPane: React.FC<{
           >
             PDF
           </Badge>
-          <span className="text-[10px] text-slate-400 truncate" title={pdfName}>
-            {pdfName}
-          </span>
+          <span className="text-[10px] text-slate-400 truncate" title={pdfName}>{pdfName}</span>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
           <button
@@ -165,13 +169,13 @@ const PdfViewerPane: React.FC<{
         </div>
       </div>
 
-      {/* PDF canvas */}
-      <div className="flex-1 overflow-auto flex justify-center p-4">
+      {/* PDF canvas — natural height */}
+      <div className="overflow-x-auto flex justify-center py-6 px-4 min-h-[400px]">
         <Document
           file={blobUrl}
           onLoadSuccess={pdf => { setNumPages(pdf.numPages); setPage(1); }}
           loading={
-            <div className="flex items-center justify-center h-64">
+            <div className="flex items-center justify-center min-h-[400px]">
               <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
             </div>
           }
@@ -188,23 +192,20 @@ const PdfViewerPane: React.FC<{
 
       {/* Page navigation */}
       {numPages > 1 && (
-        <div className="bg-slate-900/95 border-t border-white/5 flex justify-center items-center gap-1 py-2 shrink-0">
+        <div className="bg-slate-900/95 border-t border-white/5 flex justify-center items-center gap-1 py-2 sticky bottom-0">
           <button
-            onClick={() => goTo(1)}
-            disabled={page <= 1}
+            onClick={() => goTo(1)} disabled={page <= 1}
             className="p-1.5 text-slate-500 hover:text-blue-400 disabled:opacity-30 rounded hover:bg-blue-500/10 transition-colors"
           >
             <ChevronsLeft className="h-4 w-4" />
           </button>
           <button
-            onClick={() => goTo(page - 1)}
-            disabled={page <= 1}
+            onClick={() => goTo(page - 1)} disabled={page <= 1}
             className="p-1.5 text-slate-500 hover:text-blue-400 disabled:opacity-30 rounded hover:bg-blue-500/10 transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
 
-          {/* Inline editable page pill */}
           {editingPage ? (
             <input
               ref={inputRef}
@@ -233,15 +234,13 @@ const PdfViewerPane: React.FC<{
           )}
 
           <button
-            onClick={() => goTo(page + 1)}
-            disabled={page >= numPages}
+            onClick={() => goTo(page + 1)} disabled={page >= numPages}
             className="p-1.5 text-slate-500 hover:text-blue-400 disabled:opacity-30 rounded hover:bg-blue-500/10 transition-colors"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
           <button
-            onClick={() => goTo(numPages)}
-            disabled={page >= numPages}
+            onClick={() => goTo(numPages)} disabled={page >= numPages}
             className="p-1.5 text-slate-500 hover:text-blue-400 disabled:opacity-30 rounded hover:bg-blue-500/10 transition-colors"
           >
             <ChevronsRight className="h-4 w-4" />
@@ -268,28 +267,21 @@ const ContractHeaderStrip: React.FC<{
   const hasIntel   = !!contract.ultraRobust;
 
   return (
-    <div className="px-5 py-3 border-b bg-white flex items-center gap-4 shrink-0 flex-wrap">
-      {/* Identity block */}
+    <div className="px-5 py-3 border-b bg-white flex items-center gap-4 shrink-0 flex-wrap z-20">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="p-2 bg-blue-600 rounded-xl shadow-md shadow-blue-100 shrink-0">
           <LayoutDashboard className="h-5 w-5 text-white" />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span
-              className="text-[13px] font-black text-slate-900 truncate max-w-[280px]"
-              title={orderId}
-            >
+            <span className="text-[13px] font-black text-slate-900 truncate max-w-[280px]" title={orderId}>
               {orderId}
             </span>
             <Badge className="bg-emerald-500 hover:bg-emerald-500 text-white font-black text-[8px] h-4 tracking-tighter uppercase px-1.5 shrink-0">
               v2.5-ULTRA
             </Badge>
             {hasIntel && (
-              <Badge
-                variant="outline"
-                className="text-[8px] h-4 text-emerald-600 border-emerald-200 bg-emerald-50 shrink-0"
-              >
+              <Badge variant="outline" className="text-[8px] h-4 text-emerald-600 border-emerald-200 bg-emerald-50 shrink-0">
                 Intel Loaded
               </Badge>
             )}
@@ -308,7 +300,6 @@ const ContractHeaderStrip: React.FC<{
         </div>
       </div>
 
-      {/* Actions */}
       <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={onChangePdf}
@@ -329,11 +320,10 @@ const ContractHeaderStrip: React.FC<{
             className="bg-blue-600 hover:bg-blue-700 text-white h-10 px-5 rounded-xl font-black
                        text-[11px] shadow-lg shadow-blue-100 transition-all active:scale-95"
           >
-            {isExtracting ? (
-              <><Loader2 className="animate-spin h-3.5 w-3.5 mr-2" />Scanning...</>
-            ) : (
-              <><Zap className="h-3.5 w-3.5 mr-2" />RUN AI SCAN</>
-            )}
+            {isExtracting
+              ? <><Loader2 className="animate-spin h-3.5 w-3.5 mr-2" />Scanning...</>
+              : <><Zap className="h-3.5 w-3.5 mr-2" />RUN AI SCAN</>
+            }
           </Button>
         )}
       </div>
@@ -344,10 +334,10 @@ const ContractHeaderStrip: React.FC<{
 // ─── Offline placeholder ──────────────────────────────────────────────────────
 
 const OfflinePlaceholder: React.FC<{
-  onRunScan:    () => void;
+  onRunScan: () => void;
   isExtracting: boolean;
 }> = ({ onRunScan, isExtracting }) => (
-  <div className="flex-1 flex flex-col items-center justify-center p-12 text-center gap-5">
+  <div className="flex flex-col items-center justify-center p-12 text-center gap-5 min-h-[320px]">
     <div className="p-5 bg-slate-100 rounded-full">
       <Zap className="h-10 w-10 text-slate-300" />
     </div>
@@ -363,11 +353,10 @@ const OfflinePlaceholder: React.FC<{
       disabled={isExtracting}
       className="bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl"
     >
-      {isExtracting ? (
-        <><Loader2 className="animate-spin h-4 w-4 mr-2" />Scanning...</>
-      ) : (
-        <><Zap className="h-4 w-4 mr-2" />Run AI Scan</>
-      )}
+      {isExtracting
+        ? <><Loader2 className="animate-spin h-4 w-4 mr-2" />Scanning...</>
+        : <><Zap className="h-4 w-4 mr-2" />Run AI Scan</>
+      }
     </Button>
   </div>
 );
@@ -379,14 +368,15 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [pdfError,     setPdfError]     = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isHydrating,  setIsHydrating]  = useState(false);
+  const [activeNavId,  setActiveNavId]  = useState<NavItemIdString>('overview');
   const fileInputRef                    = useRef<HTMLInputElement>(null);
 
-  // ── Hydrate PDF blob from IndexedDB ────────────────────────────────────
+  // ── Hydrate PDF blob from IndexedDB ──────────────────────────────────────
   useEffect(() => {
     let url: string | null = null;
 
     const hydrate = async () => {
-      if (blobUrl) return; // already loaded
+      if (blobUrl) return;
       if (contract.pdfBlob instanceof Blob) {
         url = URL.createObjectURL(contract.pdfBlob);
         setBlobUrl(url);
@@ -405,11 +395,9 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     return () => { if (url) URL.revokeObjectURL(url); };
   }, [contract.id, contract.pdfBlob, contract.contractPdfPath]);
 
-  // ── Load saved intelligence from SQLite on mount ────────────────────────
-  // Runs only when ultraRobust isn't already in the Zustand store,
-  // and the contract has a nomor_kontrak to look up.
+  // ── Load saved intelligence from SQLite on mount ──────────────────────────
   useEffect(() => {
-    if (contract.ultraRobust) return; // already in store
+    if (contract.ultraRobust) return;
 
     const sqliteId = contract.nomorKontrak?.replace(/\s+/g, '_');
     if (!sqliteId) return;
@@ -418,7 +406,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
     loadContractIntelligence(sqliteId)
       .then(saved => {
-        if (!saved) return; // 404 → not yet scanned, silently skip
+        if (!saved) return;
 
         const updates: Partial<ContractData> = {};
         if (saved.ultraRobust)             updates.ultraRobust  = saved.ultraRobust  as any;
@@ -435,15 +423,13 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         }
       })
       .catch(err => {
-        // Network errors should not crash the UI — backend may be offline
         console.warn('[PdfSyncModule] Failed to load saved intelligence:', err);
       })
       .finally(() => setIsHydrating(false));
-  // Intentionally depend only on contract.id + nomorKontrak to run once per contract
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contract.id, contract.nomorKontrak]);
 
-  // ── Handle PDF file selection ─────────────────────────────────────────
+  // ── Handle PDF file selection ─────────────────────────────────────────────
   const handleFileSelect = useCallback(async (file: File) => {
     if (blobUrl) URL.revokeObjectURL(blobUrl);
     const url = URL.createObjectURL(file);
@@ -452,7 +438,6 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     onUpdate({
       contractPdfPath: file.name,
       pdfBlob:         file,
-      // Clear stale extraction data when a new PDF is attached
       ultraRobust:     undefined,
       sections:        {},
       fullText:        '',
@@ -464,7 +449,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     toast.info(`Engine Linked: ${file.name}`);
   }, [blobUrl, contract.id, onUpdate]);
 
-  // ── AI Scan ───────────────────────────────────────────────────────────
+  // ── AI Scan ───────────────────────────────────────────────────────────────
   const handleAutoExtract = useCallback(async () => {
     const file = contract.pdfBlob instanceof Blob ? (contract.pdfBlob as File) : null;
     if (!file) {
@@ -477,7 +462,6 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
       toast.info('Activating Ultra-Robust AI Scanning Protocol...');
       const result = await parsePdfFile(file);
 
-      // Update store immediately so UI reflects new data
       const updates: Partial<ContractData> = {
         ultraRobust: result.ultra_robust   ?? undefined,
         tables:      result.tables         ?? [],
@@ -489,7 +473,6 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
       if (result.metadata?.nama_pemesan)  updates.namaPemesan  = result.metadata.nama_pemesan;
       onUpdate(updates);
 
-      // Persist to SQLite so data survives page refresh
       const sqliteId = (result.metadata?.nomor_kontrak || 'UNK').replace(/\s+/g, '_');
       await saveContract(
         sqliteId,
@@ -510,17 +493,89 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     }
   }, [contract.pdfBlob, onUpdate]);
 
-  // ── Derived state ─────────────────────────────────────────────────────
+  // ── Derived state ─────────────────────────────────────────────────────────
   const hasPdf   = !!contract.contractPdfPath;
   const hasIntel = !!contract.ultraRobust;
 
-  // Net total for reconciliation (gross minus tax)
   const netForReconciliation = hasIntel
     ? contract.ultraRobust!.financials.grand_total -
       (contract.ultraRobust!.financials.tax_logic.total_tax || 0)
     : undefined;
 
-  // ── No PDF attached → show upload dropzone ────────────────────────────
+  // ── Sidebar data ──────────────────────────────────────────────────────────
+  const sidebarSections = useMemo<SidebarSection[]>(() => {
+    const raw = contract.sections ?? {};
+    return Object.entries(raw)
+      .filter(([, text]) => (text as string).trim().length > 0)
+      .map(([key, text]) => ({
+        key,
+        label: SECTION_LABELS[key] ?? key.replace(/_/g, ' '),
+        chars: (text as string).length,
+      }));
+  }, [contract.sections]);
+
+  const sidebarTables = useMemo<SidebarTable[]>(() => {
+    return (contract.tables ?? []).map((t, i) => ({
+      index:  i,
+      page:   t.page,
+      method: t.method ?? 'unknown',
+      rows:   t.rows?.length ?? 0,
+    }));
+  }, [contract.tables]);
+
+  const recipientCount = contract.ultraRobust?.shipment_ledger?.length ?? 0;
+
+  // ── Active content ────────────────────────────────────────────────────────
+  const renderContent = () => {
+    const navId = parseNavId(activeNavId);
+
+    if (navId === 'overview') {
+      return hasIntel
+        ? <OverviewPanel
+            data={contract.ultraRobust!}
+            nomorKontrak={contract.nomorKontrak}
+            namaPenyedia={contract.namaPenyedia}
+            namaPemesan={contract.namaPemesan}
+          />
+        : <OfflinePlaceholder onRunScan={handleAutoExtract} isExtracting={isExtracting} />;
+    }
+
+    if (navId === 'recipients') {
+      return hasIntel
+        ? <RecipientTable
+            ledger={contract.ultraRobust!.shipment_ledger ?? []}
+            grandTotal={netForReconciliation}
+          />
+        : <OfflinePlaceholder onRunScan={handleAutoExtract} isExtracting={isExtracting} />;
+    }
+
+    if (typeof navId === 'object' && navId.type === 'section') {
+      const text = (contract.sections ?? {})[navId.key] as string ?? '';
+      return (
+        <div className="p-5">
+          <SectionViewer sectionKey={navId.key} text={text} />
+        </div>
+      );
+    }
+
+    if (typeof navId === 'object' && navId.type === 'table') {
+      const table = (contract.tables ?? [])[navId.index];
+      if (!table) {
+        return (
+          <div className="p-5 text-sm text-slate-400 italic">Table not found.</div>
+        );
+      }
+      return (
+        <div className="p-5">
+          <TableViewer table={table} />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // ── No PDF attached → upload dropzone ────────────────────────────────────
   if (!hasPdf) {
     return (
       <div className="flex flex-col h-full">
@@ -536,7 +591,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     );
   }
 
-  // ── PDF attached → show split layout ──────────────────────────────────
+  // ── PDF attached → vertical scroll layout ────────────────────────────────
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Hidden input for changing PDF */}
@@ -548,7 +603,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); }}
       />
 
-      {/* Top: contract identity strip + scan button */}
+      {/* Contract identity strip — always visible at top */}
       <ContractHeaderStrip
         contract={contract}
         isExtracting={isExtracting}
@@ -557,141 +612,78 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         onChangePdf={() => fileInputRef.current?.click()}
       />
 
-      {/* Bottom: split pane */}
-      <div className="flex flex-1 overflow-hidden">
+      {/* Main scrollable content */}
+      <div className="flex-1 overflow-y-auto">
 
-        {/* ── Left: PDF Viewer (45%) ── */}
-        <div className="w-[45%] min-w-[260px] max-w-[580px] border-r shrink-0 flex flex-col overflow-hidden">
-          {blobUrl ? (
-            <PdfViewerPane
-              blobUrl={blobUrl}
-              pdfName={contract.contractPdfPath?.split(/[\\/]/).pop() || ''}
-              loadError={pdfError}
+        {/* ── PDF section: full width, natural height ── */}
+        {blobUrl ? (
+          <PdfViewer
+            blobUrl={blobUrl}
+            pdfName={contract.contractPdfPath?.split(/[\\/]/).pop() || ''}
+            loadError={pdfError}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-3 bg-slate-950 min-h-[320px]">
+            {pdfError ? (
+              <>
+                <AlertCircle className="h-8 w-8 text-red-400" />
+                <p className="text-[11px] text-slate-400 text-center px-6 leading-relaxed">{pdfError}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-white border-white/20 hover:bg-white/10"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <FileUp className="h-3.5 w-3.5 mr-2" /> Re-upload PDF
+                </Button>
+              </>
+            ) : (
+              <>
+                <Loader2 className="h-6 w-6 animate-spin text-slate-600" />
+                <p className="text-[10px] text-slate-600">Loading PDF…</p>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Intelligence section: sidebar + content ── */}
+        <div className="flex border-t border-slate-200 bg-white min-h-[600px]">
+
+          {/* Sidebar — sticky within the scroll container */}
+          <div
+            className="w-56 shrink-0 border-r sticky top-0 self-start overflow-y-auto bg-white"
+            style={{ maxHeight: '100vh' }}
+          >
+            <InspectorSidebar
+              activeId={activeNavId}
+              onSelect={setActiveNavId}
+              sections={sidebarSections}
+              tables={sidebarTables}
+              recipientCount={recipientCount}
+              hasIntel={hasIntel}
             />
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 bg-slate-950">
-              {pdfError ? (
-                <>
-                  <AlertCircle className="h-8 w-8 text-red-400" />
-                  <p className="text-[11px] text-slate-400 text-center px-6 leading-relaxed">
-                    {pdfError}
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-white border-white/20 hover:bg-white/10"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <FileUp className="h-3.5 w-3.5 mr-2" /> Re-upload PDF
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Loader2 className="h-6 w-6 animate-spin text-slate-600" />
-                  <p className="text-[10px] text-slate-600">Loading PDF…</p>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+          </div>
 
-        {/* ── Right: Intelligence Panel (55%) ── */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-white">
-          <Tabs defaultValue="overview" className="flex flex-col h-full">
+          {/* Content panel */}
+          <div className="flex-1 min-w-0 bg-white">
+            {renderContent()}
+          </div>
 
-            {/* Tab bar */}
-            <div className="px-4 py-2 border-b bg-slate-50/50 shrink-0">
-              <TabsList className="bg-slate-200/60 p-1 h-10 w-full rounded-xl">
-                <TabsTrigger
-                  value="overview"
-                  className="text-[10px] font-bold gap-1.5 flex-1 rounded-lg
-                             data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                >
-                  <LayoutDashboard className="h-3.5 w-3.5" />
-                  OVERVIEW
-                </TabsTrigger>
-
-                <TabsTrigger
-                  value="recipients"
-                  className="text-[10px] font-bold gap-1.5 flex-1 rounded-lg
-                             data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                >
-                  <Users className="h-3.5 w-3.5" />
-                  RECIPIENTS
-                  {(contract.ultraRobust?.shipment_ledger?.length ?? 0) > 0 && (
-                    <Badge className="ml-0.5 h-4 px-1 text-[8px] bg-blue-500 hover:bg-blue-500">
-                      {contract.ultraRobust!.shipment_ledger.length}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-
-                <TabsTrigger
-                  value="sections"
-                  className="text-[10px] font-bold gap-1.5 flex-1 rounded-lg
-                             data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                >
-                  <BookOpen className="h-3.5 w-3.5" />
-                  SECTIONS
-                </TabsTrigger>
-
-                <TabsTrigger
-                  value="tables"
-                  className="text-[10px] font-bold gap-1.5 flex-1 rounded-lg
-                             data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                >
-                  <TableIcon className="h-3.5 w-3.5" />
-                  TABLES
-                  {(contract.tables?.length ?? 0) > 0 && (
-                    <Badge className="ml-0.5 h-4 px-1 text-[8px] bg-slate-500 hover:bg-slate-500">
-                      {contract.tables!.length}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            {/* Tab contents */}
-            <div className="flex-1 min-h-0 overflow-hidden">
-
-              <TabsContent value="overview" className="h-full m-0 overflow-hidden flex flex-col">
-                {hasIntel ? (
-                  <OverviewPanel
-                    data={contract.ultraRobust!}
-                    nomorKontrak={contract.nomorKontrak}
-                    namaPenyedia={contract.namaPenyedia}
-                    namaPemesan={contract.namaPemesan}
-                  />
-                ) : (
-                  <OfflinePlaceholder onRunScan={handleAutoExtract} isExtracting={isExtracting} />
-                )}
-              </TabsContent>
-
-              <TabsContent value="recipients" className="h-full m-0 overflow-hidden flex flex-col">
-                {hasIntel ? (
-                  <RecipientTable
-                    ledger={contract.ultraRobust!.shipment_ledger ?? []}
-                    grandTotal={netForReconciliation}
-                  />
-                ) : (
-                  <OfflinePlaceholder onRunScan={handleAutoExtract} isExtracting={isExtracting} />
-                )}
-              </TabsContent>
-
-              <TabsContent value="sections" className="h-full m-0 bg-slate-50/30 overflow-hidden">
-                <SectionViewer
-                  sections={contract.sections ?? {}}
-                  fullText={contract.fullText}
-                />
-              </TabsContent>
-
-              <TabsContent value="tables" className="h-full m-0 overflow-hidden">
-                <TableViewer tables={contract.tables ?? []} />
-              </TabsContent>
-
-            </div>
-          </Tabs>
         </div>
       </div>
     </div>
   );
+};
+
+// ─── Section label map ────────────────────────────────────────────────────────
+
+const SECTION_LABELS: Record<string, string> = {
+  HEADER:               'Header',
+  PEMESAN:              'Pemesan',
+  PENYEDIA:             'Penyedia',
+  RINGKASAN_PESANAN:    'Ringkasan Pesanan',
+  RINGKASAN_PEMBAYARAN: 'Ringkasan Pembayaran',
+  SSUK:                 'SSUK',
+  SSKK:                 'SSKK',
+  LAMPIRAN:             'Lampiran',
 };
