@@ -45,7 +45,12 @@ call :verify_env
 echo [2/3] Building Latest 'Expert' UI...
 call npm run build
 echo [3/3] Starting Elite Backend Service...
-echo Access Application at: http://127.0.0.1:8000
+echo.
+echo ====================================================
+echo  ACCESS APPLICATION AT: http://127.0.0.1:8000
+echo  (If UI looks old, press CTRL+F5 to hard refresh)
+echo ====================================================
+echo.
 set PYTHONPATH=.
 .venv\Scripts\python.exe -m backend.main
 pause
@@ -55,6 +60,11 @@ goto menu
 echo [1/2] Launching Elite Backend...
 start /B "Bastbanpem Backend" cmd /c "set PYTHONPATH=.&& .venv\Scripts\python.exe -m backend.main"
 echo [2/2] Launching Vite Frontend...
+echo.
+echo ====================================================
+echo  ACCESS APPLICATION AT: http://localhost:59876
+echo ====================================================
+echo.
 npm run dev:frontend
 goto menu
 
@@ -62,12 +72,15 @@ goto menu
 echo [1/3] Verifying Environment...
 call :verify_env
 echo [2/3] Checking Static Assets...
-if not exist "dist\index.html" (
-    echo [INFO] dist folder missing. Triggering manual build...
-    call npm run build
-)
+call npm run build
 echo [3/3] Starting Elite Backend Service (DEBUG MODE)...
-echo Access Application at: http://127.0.0.1:8000
+echo.
+echo ====================================================
+echo  ACCESS APPLICATION AT: http://127.0.0.1:8000
+echo  (DEBUG MODE ACTIVE - License Bypassed)
+echo  (If UI looks old, press CTRL+F5 to hard refresh)
+echo ====================================================
+echo.
 set PYTHONPATH=.
 set ELITE_DEBUG=True
 .venv\Scripts\python.exe -m backend.main

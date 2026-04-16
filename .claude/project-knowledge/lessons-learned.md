@@ -17,6 +17,13 @@ This document captures what works and what doesn't. AI uses this to make better 
 
 ## Performance Insights
 
+### Lesson: Holistic PDF Sectioning via Sequential Anchors
+**Category:** Performance / Architecture
+**Context:** Needed to extract huge sections (50k+ chars like SSUK) and disparate tables from INAPROC PDFs.
+**Insight:** Instead of complex regex for every field, first split the whole `full_text` into large chunks using "Section Anchors" (HEADER, PEMESAN, SSUK, etc.). This makes specialist extraction (like table finding) much more reliable as you only scan the relevant chunk.
+**Action:** Updated [DOCS-003] to use `extract_sections` first, then specialized parsers on those sections. Persisted result to [DATA-003] metadata column.
+**Date:** 2026-04-16
+
 ### Lesson: Polars Lazy Evaluation is a Game-Changer
 **Category:** Performance  
 **Context:** First Excel import with 50k rows was slow (5+ seconds)  

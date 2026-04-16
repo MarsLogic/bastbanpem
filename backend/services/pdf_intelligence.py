@@ -225,7 +225,7 @@ class PDFIntelligence:
     def extract_sections(self, full_text: str) -> Dict[str, str]:
         positions = []
         for name, pattern in self.SECTION_ANCHORS.items():
-            match = re.search(pattern, full_text)
+            match = re.search(pattern, full_text, re.IGNORECASE)
             if match:
                 positions.append((name, match.start()))
         

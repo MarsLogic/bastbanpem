@@ -12,12 +12,22 @@ export interface ContractMetadata {
   nomorKontrak?: string;
   tanggalKontrak?: string;
   namaPemesan?: string;
+  namaPpk?: string;
+  npwpPemesan?: string;
   namaPenyedia?: string;
+  npwpPenyedia?: string;
   namaProduk?: string;
   kuantitasProduk?: string;
+  hargaSatuan?: string;
   totalPembayaran?: string;
-  jumlahTermin?: number;
-  jumlahTahap?: number;
+  jumlahTahap?: string;
+  nomorDipa?: string;
+  kegiatanOutputAkun?: string;
+  isOngkirTerpisah?: boolean;
+  isSwakelola?: boolean;
+  isMenggunakanTermin?: boolean;
+  extractedAt?: string;
+  sourceFile?: string;
 }
 
 export interface DeliveryBlock {
@@ -118,14 +128,26 @@ export interface ContractData {
   
   // PDF Data
   contractPdfPath: string | null;
+  pdfBlob?: Blob | null;
   nomorKontrak: string;
   tanggalKontrak: string;
   contractYear?: number;
   namaPemesan?: string;
+  namaPpk?: string;
+  npwpPemesan?: string;
   namaPenyedia?: string;
+  npwpPenyedia?: string;
   namaProduk?: string;
   kuantitasProduk?: string;
+  hargaSatuan?: string;
   totalPembayaran?: string;
+  jumlahTahap?: string;
+  nomorDipa?: string;
+  kegiatanOutputAkun?: string;
+
+  isOngkirTerpisah?: boolean;
+  isSwakelola?: boolean;
+  isMenggunakanTermin?: boolean;
 
   deliveryBlocks?: DeliveryBlock[];
   
@@ -133,6 +155,9 @@ export interface ContractData {
   portalMetadata?: PortalMetadata;
   
   // Expanded PDF Extraction
+  sections?: Record<string, string>;
+  tables?: any[];
+  fullText?: string;
   sskkText?: string;
   sskkPageRange?: [number, number];
   specsTable?: any[];
@@ -186,6 +211,8 @@ export const useContractStore = create<ContractStore>()(
           namaProduk: initialData?.nama_produk || '',
           kuantitasProduk: initialData?.kuantitas_produk || '',
           totalPembayaran: initialData?.total_pembayaran || '',
+          sections: {},
+          fullText: '',
           sskkText: '',
           specsTable: [],
           excelPath: null,
