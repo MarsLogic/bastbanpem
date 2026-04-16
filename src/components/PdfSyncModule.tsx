@@ -47,7 +47,10 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [panelHeight, setPanelHeight] = useState<number>(750);
   const [pdfLoadStatus, setPdfLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [pdfLoadError, setPdfLoadError] = useState<string | null>(null);
+  const [isEditingPage, setIsEditingPage] = useState(false);
+  const [editPageValue, setEditPageValue] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pageInputRef = useRef<HTMLInputElement>(null);
 
   // Persistence: Hydrate blobUrl from contract.pdfBlob or IndexedDB
   // [UIUX-005] Multi-layer PDF persistence:
@@ -291,21 +294,46 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
           <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber <= 1} onClick={() => setPageNumber(1)} title="First page"><ChevronsLeft className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber <= 1} onClick={() => setPageNumber(p => Math.max(1, p - 1))} title="Previous page"><ChevronLeft className="h-4 w-4" /></Button>
 
-          <div
-            className="px-3 py-1 text-xs font-medium text-slate-700 bg-slate-100 rounded cursor-pointer hover:bg-slate-200 transition-colors"
-            onClick={(e) => {
-              const newVal = prompt(`Jump to page (1-${numPages}):`, pageNumber.toString());
-              if (newVal) {
-                const num = parseInt(newVal, 10);
+          {isEditingPage ? (
+            <input
+              ref={pageInputRef}
+              type="text"
+              value={editPageValue}
+              onChange={(e) => setEditPageValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const num = parseInt(editPageValue, 10);
+                  if (!isNaN(num) && num >= 1 && num <= numPages) {
+                    setPageNumber(num);
+                    setIsEditingPage(false);
+                  }
+                } else if (e.key === 'Escape') {
+                  setIsEditingPage(false);
+                }
+              }}
+              onBlur={() => {
+                const num = parseInt(editPageValue, 10);
                 if (!isNaN(num) && num >= 1 && num <= numPages) {
                   setPageNumber(num);
                 }
-              }
-            }}
-            title="Click to jump to a page"
-          >
-            {pageNumber} / {numPages}
-          </div>
+                setIsEditingPage(false);
+              }}
+              autoFocus
+              className="w-12 px-2 py-1 text-xs font-medium text-center text-slate-900 bg-white border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={pageNumber.toString()}
+            />
+          ) : (
+            <button
+              onClick={() => {
+                setEditPageValue(pageNumber.toString());
+                setIsEditingPage(true);
+              }}
+              className="px-3 py-1 text-xs font-medium text-slate-700 bg-slate-100 rounded cursor-pointer hover:bg-slate-200 transition-colors"
+              title="Click to jump to a page"
+            >
+              {pageNumber} / {numPages}
+            </button>
+          )}
 
           <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))} title="Next page"><ChevronRight className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber >= numPages} onClick={() => setPageNumber(numPages)} title="Last page"><ChevronsRight className="h-4 w-4" /></Button>
