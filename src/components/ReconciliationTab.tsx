@@ -6,8 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { save } from '@tauri-apps/plugin-dialog';
-import { writeFile } from '@tauri-apps/plugin-fs';
 import { toast } from 'sonner';
 import { 
     CheckCircle2, AlertTriangle, XCircle, FileText, 
@@ -102,16 +100,18 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
 
         const zipBlob = await bundleContract(payload);
 
-        const savePath = await save({
-            defaultPath: `${contract.name.replace(/[^a-z0-9]/gi, '_')}_Audit_Bundle.zip`,
-            filters: [{ name: 'ZIP', extensions: ['zip'] }]
-        });
+        // Browser download API (no Tauri needed)
+        const fileName = `${contract.name.replace(/[^a-z0-9]/gi, '_')}_Audit_Bundle.zip`;
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
 
-        if (savePath) {
-            const arrayBuffer = await zipBlob.arrayBuffer();
-            await writeFile(savePath, new Uint8Array(arrayBuffer));
-            toast.success("Audit Bundle exported successfully via Python Engine!");
-        }
+        toast.success("Audit Bundle exported successfully via Python Engine!");
     } catch (e) {
         console.error(e);
         toast.error("Failed to generate Audit Bundle via Python Engine.");
