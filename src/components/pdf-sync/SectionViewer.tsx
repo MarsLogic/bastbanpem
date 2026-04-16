@@ -46,7 +46,7 @@ export const SectionViewer: React.FC<SectionViewerProps> = ({ sections, fullText
 
   return (
     <div className="flex h-full min-h-0">
-      {/* Left sidebar */}
+      {/* ── Left sidebar ── */}
       <div className="w-44 shrink-0 border-r bg-slate-50/80 flex flex-col">
         <div className="px-3 py-2 border-b">
           <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sections</span>
@@ -94,7 +94,7 @@ export const SectionViewer: React.FC<SectionViewerProps> = ({ sections, fullText
         )}
       </div>
 
-      {/* Right content pane */}
+      {/* ── Right content pane ── */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Search bar */}
         <div className="px-4 py-2 border-b bg-white flex items-center gap-2 shrink-0">

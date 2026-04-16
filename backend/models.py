@@ -184,8 +184,66 @@ class BundleRequest(BaseModel):
     proof_bindings: Dict[str, str] = {} # imageName -> nik
     recipients: List[PipelineRow]
 
+class ContractHeader(BaseModel):
+    order_id: str
+    timestamp: str
+    duration_days: Optional[int] = None
+    expiry_date: Optional[str] = None
+
+class FinancialTaxLogic(BaseModel):
+    ppn_rate: float = 0.12
+    total_tax: float = 0.0
+    tax_exempt: bool = False
+
+class BankDisbursement(BaseModel):
+    account_name: Optional[str] = None
+    account_number: Optional[str] = None
+    bank_name: Optional[str] = None
+
+class Financials(BaseModel):
+    currency: str = "IDR"
+    grand_total: float = 0.0
+    tax_logic: FinancialTaxLogic = Field(default_factory=FinancialTaxLogic)
+    bank_disbursement: BankDisbursement = Field(default_factory=BankDisbursement)
+
+class ComplianceFlags(BaseModel):
+    sampling_required: bool = False
+    penalty_rate: float = 0.001
+    mandatory_label: Optional[str] = None
+
+class ShipmentRecipient(BaseModel):
+    name: str
+    phone: Optional[str] = None
+    group: Optional[str] = None
+
+class ShipmentDestination(BaseModel):
+    desa: Optional[str] = None
+    kabupaten: Optional[str] = None
+    provinsi: Optional[str] = None
+
+class ShipmentCosts(BaseModel):
+    product_total: float = 0.0
+    shipping_total: float = 0.0
+    is_at_cost: bool = True
+
+class ShipmentLedgerItem(BaseModel):
+    shipment_id: int
+    recipient: ShipmentRecipient
+    destination: ShipmentDestination
+    costs: ShipmentCosts
+
+class UltraRobustContract(BaseModel):
+    contract_header: ContractHeader
+    financials: Financials
+    compliance_flags: ComplianceFlags
+    shipment_ledger: List[ShipmentLedgerItem] = []
+    technical_specifications: Dict[str, str] = Field(default_factory=dict)
+    full_text: Optional[str] = None
+    sections: Dict[str, str] = Field(default_factory=dict)
+
 class PdfParseResult(BaseModel):
     metadata: ContractMetadata = Field(default_factory=ContractMetadata)
+    ultra_robust: Optional[UltraRobustContract] = None
     delivery_blocks: List[Dict[str, Any]] = []   # Parsed pengiriman blocks (recipients)
     tables: List[Dict[str, Any]] = []
     total_pages: int = 0

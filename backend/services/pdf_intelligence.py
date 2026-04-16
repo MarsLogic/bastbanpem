@@ -1,9 +1,14 @@
-# [DOCS-003] Advanced Pattern Learning for PDFs
 import fitz  # PyMuPDF
-import polars as pl
 import re
+import datetime
+import json
 from typing import List, Dict, Any, Optional
 from backend.services.address_parser import address_parser
+from backend.models import (
+    UltraRobustContract, ContractHeader, Financials, FinancialTaxLogic,
+    BankDisbursement, ComplianceFlags, ShipmentLedgerItem, ShipmentRecipient,
+    ShipmentDestination, ShipmentCosts, ContractMetadata
+)
 
 class PDFIntelligence:
     SECTION_ANCHORS = {
@@ -18,209 +23,143 @@ class PDFIntelligence:
     }
 
     def __init__(self):
-        # [DOCS-003] Validated against real Surat Pesanan INAPROC PDFs
-        # All patterns tested against EP-01K7NM3AVZA3Z6QQXRQN3QEPTV.pdf
-        self.header_anchors = {
-            # Contract number — exact newline structure from INAPROC export
-            "nomor_kontrak":   r"No\.\s*Surat\s*Pesanan\n:\s*([A-Z0-9][A-Z0-9\-]+)",
-            # Date — take only the date part, not timestamp
-            "tanggal_kontrak": r"Tanggal\s*Surat\s*Pesanan\n:\s*(\d{1,2}\s+\w+\s+\d{4})",
-            # Purchaser org is on the line immediately after "Pemesan\n"
-            "nama_pemesan":    r"Pemesan\n([A-Z][^\n]+)\nKementerian",
-            # PPK = first "Nama Penanggung Jawab" whose jabatan is PPK
-            "nama_ppk":        r"Nama Penanggung Jawab\n:\s*([^\n]+)\nJabatan Penanggung Jawab\n:\s*Pejabat Pembuat Komitmen",
-            # NPWP sections are labelled distinctly
-            "npwp_pemesan":    r"NPWP Pemesan\n:\s*([0-9\.\-]+)",
-            # Vendor name — line after "Penyedia\n"; handles UMKK and non-UMKK vendors
-            "nama_penyedia":   r"Penyedia\n([A-Z][^\n]+)\n(?:UMKK|Nama Penanggung)",
-            "npwp_penyedia":   r"NPWP Penyedia\n:\s*([0-9\.\-]+)",
-            # Product = line after "Barang\nPDN\n" in Ringkasan Pesanan
-            "nama_produk":     r"Barang\nPDN\n([^\n]+)",
-            # Unit price = Rp value after PPN label, before the quantity line
-            "harga_satuan":    r"Golongan PPN[^\n]*\nRp([\d\.,]+)\n",
-            # Total quantity from "X liter" in Ringkasan Pesanan
-            "total_kuantitas": r"([\d\.,]+)\s*liter",
-            # Total payment
-            "nilai_kontrak":   r"Estimasi Total Pembayaran\nRp([\d\.,]+)",
-            # Number of delivery stages
-            "jumlah_tahap":    r"Pengiriman\n:\s*(\d+)\s*Tahap",
-            # Legacy/other contract types
-            "nomor_dipa":          r"Nomor\s*Dipa\s*[:\-\s]*([A-Z0-9\/\.\-]+)",
-            "kegiatan_output_akun": r"Kegiatan/Output/Akun\s*[:\-\s]*([0-9\.]+)",
+        # Patterns for Ultra-Robust Extraction
+        self.patterns = {
+            "order_id": r"No\.\s*Surat\s*Pesanan\n:\s*([A-Z0-9][A-Z0-9\-]+)",
+            "timestamp": r"Tanggal\s*Surat\s*Pesanan\n:\s*(\d{1,2}\s+\w+\s+\d{4},\s*\d{2}:\d{2}:\d{2}\s*WIB)",
+            "grand_total": r"Estimasi Total Pembayaran\nRp([\d\.,]+)",
+            "total_tax": r"Total PPN\nRp([\d\.,]+)",
+            "ppn_rate": r"Golongan PPN[^\n]*\n([\d\.,]+)%", # Fallback rate detection
+            "bank_account_name": r"Atas Nama\n:\s*([^\n]+)",
+            "bank_account_number": r"Nomor Rekening\n:\s*([0-9]+)",
+            "bank_name": r"Bank\n:\s*([^\n]+)",
+            "penalty_rate": r"denda sebesar ([0-9\/\.,]+) (?:per mil|permil)",
+            "mandatory_label": r"tulisan\s*\"([^\"]+)\"",
+            "duration": r"Jangka Waktu Pelaksanaan[^\d]*(\d+)\s*hari",
+            "active_ingredient": r"Bahan Aktif\n:\s*([^\n]+)",
+            "registration_number": r"Nomor Pendaftaran\n:\s*([^\n]+)",
+            "tkdn": r"TKDN[^\n]*\n([\d\.,]+)%"
         }
 
-    def _parse_address(self, addr_raw: str) -> Dict[str, str]:
-        """Delegate to the dedicated InaprocAddressParser [DOCS-004]."""
-        return address_parser.parse(addr_raw)
+    def _clean_string(self, val: Any) -> str:
+        """Ensure string is valid UTF-8 and not bytes."""
+        if val is None: return ""
+        if isinstance(val, bytes):
+            try:
+                return val.decode('utf-8', errors='ignore')
+            except:
+                return str(val)
+        s = str(val)
+        # Remove null bytes and other non-printable chars that might break JSON
+        return "".join(c for c in s if c.isprintable() or c in "\n\r\t")
 
-    def extract_header_data(self, doc: fitz.Document) -> Dict[str, Any]:
-        """
-        Elite Scan: Scans first 3 pages for all 12 contract header fields.
-        Patterns validated against INAPROC Surat Pesanan export format.
-        """
-        data = {}
-        full_text = ""
-        for i in range(min(3, len(doc))):
-            full_text += doc[i].get_text()
+    def _clean_numeric(self, val: str) -> float:
+        if not val: return 0.0
+        # Remove Rp, dots (thousands), and replace comma with dot (decimal)
+        clean = val.replace("Rp", "").replace(".", "").replace(",", ".").strip()
+        try:
+            return float(clean)
+        except ValueError:
+            return 0.0
 
-        for key, pattern in self.header_anchors.items():
-            m = re.search(pattern, full_text)
-            if m:
-                data[key] = m.group(1).strip()
+    def extract_ultra_robust(self, doc: fitz.Document, full_text: str) -> UltraRobustContract:
+        # 1. Header Extraction
+        order_id = re.search(self.patterns["order_id"], full_text)
+        timestamp = re.search(self.patterns["timestamp"], full_text)
+        duration = re.search(self.patterns["duration"], full_text)
+        
+        header = ContractHeader(
+            order_id=self._clean_string(order_id.group(1).strip() if order_id else "UNKNOWN"),
+            timestamp=self._clean_string(timestamp.group(1).strip() if timestamp else datetime.datetime.now().isoformat()),
+            duration_days=int(duration.group(1)) if duration else None
+        )
 
-        # Flag heuristics
-        data["is_ongkir_terpisah"] = "ongkir terpisah" in full_text.lower()
-        data["is_swakelola"]       = "swakelola" in full_text.lower()
-        data["is_menggunakan_termin"] = "termin" in full_text.lower()
+        # 2. Financials
+        grand_total = self._clean_numeric(re.search(self.patterns["grand_total"], full_text).group(1)) if re.search(self.patterns["grand_total"], full_text) else 0.0
+        total_tax = self._clean_numeric(re.search(self.patterns["total_tax"], full_text).group(1)) if re.search(self.patterns["total_tax"], full_text) else 0.0
+        
+        bank_name = re.search(self.patterns["bank_name"], full_text)
+        bank_acc = re.search(self.patterns["bank_account_number"], full_text)
+        bank_user = re.search(self.patterns["bank_account_name"], full_text)
 
-        return data
-
-    def extract_delivery_blocks(self, doc: fitz.Document) -> List[Dict[str, Any]]:
-        """
-        Extract all delivery/pengiriman blocks from Surat Pesanan PDF.
-        Each block = one recipient with full address, quantity, pricing.
-        Handles multi-page documents (INAPROC exports can be 32+ pages).
-        """
-        full_text = ""
-        for page in doc:
-            full_text += page.get_text()
-
-        # Split on each "Nama Penerima" header — each is one delivery block
-        sections = re.split(r'(?=Nama Penerima\s*\n:\s*)', full_text)
-        blocks = []
-
-        for section in sections[1:]:  # sections[0] is header before first block
-            block: Dict[str, Any] = {}
-
-            # Name + phone
-            m = re.match(r'Nama Penerima\s*\n:\s*(.+?)\s*\((\d+)\)', section)
-            if not m:
-                continue
-            block["nama_penerima"] = m.group(1).strip()
-            block["no_telp"]       = m.group(2).strip()
-
-            # Delivery date range
-            m = re.search(r'Permintaan Tiba\s*\n:\s*(.+)', section)
-            if m:
-                block["permintaan_tiba"] = m.group(1).strip()
-
-            # Address block — ends at "Catatan Alamat"
-            m = re.search(
-                r'Alamat Pengiriman\s*\n:\s*(.+?)\nCatatan Alamat',
-                section, re.DOTALL
+        financials = Financials(
+            grand_total=grand_total,
+            tax_logic=FinancialTaxLogic(
+                total_tax=total_tax,
+                ppn_rate=0.12 if "12%" in full_text else 0.11 # Intelligent fallback
+            ),
+            bank_disbursement=BankDisbursement(
+                account_name=self._clean_string(bank_user.group(1).strip() if bank_user else None),
+                account_number=self._clean_string(bank_acc.group(1).strip() if bank_acc else None),
+                bank_name=self._clean_string(bank_name.group(1).strip() if bank_name else None)
             )
-            if m:
-                block.update(self._parse_address(m.group(1)))
+        )
 
-            # Quantity (first number after product name line)
-            m = re.search(r'INSEKTISIDA[^\n]*\n([\d\.,]+)\n', section)
-            if not m:
-                # Generic product line — any product name capitalised
-                m = re.search(r'(?:PDN|Barang)[^\n]*\n([A-Z][^\n]+)\n([\d\.,]+)\n', section)
-                if m:
-                    block["jumlah"] = m.group(2).strip()
-            else:
-                block["jumlah"] = m.group(1).strip()
-
-            # Product line total
-            m = re.search(r'Harga Produk \([\d\.,]+\)\nRp([\d\.,]+)', section)
-            if m:
-                block["harga_produk_total"] = f"Rp{m.group(1).strip()}"
-
-            # Shipping cost
-            m = re.search(r'Ongkos Kirim \([\d\.,]+ kg\)\nRp([\d\.,]+)', section)
-            if m:
-                block["ongkos_kirim"] = f"Rp{m.group(1).strip()}"
-
-            blocks.append(block)
-
-        return blocks
-
-    def extract_lampiran_tables(self, doc: fitz.Document) -> List[Dict[str, Any]]:
-        """
-        Elite Table Extraction: Uses PyMuPDF's advanced find_tables() logic.
-        Specifically looks for rows containing NIKs or names.
-        Fallback: Uses block-based text parsing if structured tables aren't found.
-        """
-        all_tables = []
+        # 3. Compliance
+        penalty = re.search(self.patterns["penalty_rate"], full_text)
+        label = re.search(self.patterns["mandatory_label"], full_text)
         
-        for page_index, page in enumerate(doc):
-            tabs = page.find_tables()
-            if tabs:
-                for tab in tabs:
-                    df = tab.to_pandas() # PyMuPDF returns pandas-compatible list of lists
-                    
-                    # Convert to Polars for "Elite" processing
-                    try:
-                        p_df = pl.from_pandas(df)
-                        
-                        # Heuristic: Is this a 'Lampiran' data table?
-                        # Does it contain a NIK-like column or a 'No' column?
-                        cols = [str(c).lower() for c in p_df.columns]
-                        is_target = any(k in "".join(cols) for k in ["nik", "nama", "penerima", "qty", "ketua", "kecamatan"])
-                        
-                        if is_target:
-                            all_tables.append({
-                                "page": page_index + 1,
-                                "headers": p_df.columns,
-                                "rows": p_df.to_dicts(),
-                                "method": "find_tables"
-                            })
-                    except:
-                        continue
-            
-            # Fallback for "invisible" tables (only text positioned as a table)
-            if not all_tables or all_tables[-1].get("page") != page_index + 1:
-                blocks = page.get_text("blocks")
-                rows = []
-                for b in blocks:
-                    text = b[4].strip()
-                    # Heuristic for a data row: contains a 16-digit NIK or typical data structure
-                    if re.search(r"\d{16}", text):
-                        lines = [l.strip() for l in text.split("\n") if l.strip()]
-                        # We expect about 10-14 fields for these specific contract tables
-                        if len(lines) >= 8:
-                            rows.append({
-                                "raw_block": text,
-                                "fields": lines
-                            })
-                
-                if rows:
-                    all_tables.append({
-                        "page": page_index + 1,
-                        "headers": ["block_data"],
-                        "rows": rows,
-                        "method": "block_parsing"
-                    })
-                    
-        return all_tables
+        compliance = ComplianceFlags(
+            sampling_required="pengambilan sampel" in full_text.lower(),
+            penalty_rate=0.001 if penalty and "1" in penalty.group(1) else 0.0,
+            mandatory_label=self._clean_string(label.group(1).strip() if label else None)
+        )
 
-    def extract_portal_ids(self, html_content: str) -> Dict[str, str]:
-        """
-        Scrapes essential IDs from the sitemap/portal HTML for the Automation Injector.
-        """
-        ids = {
-            "idkontrak": "",
-            "idtermin": "",
-            "idbast": ""
-        }
-        
-        # ID Kontrak usually in hidden inputs
-        idkontrak_match = re.search(r'name="idkontrak"\s+value="(\d+)"', html_content)
-        if idkontrak_match:
-            ids["idkontrak"] = idkontrak_match.group(1)
+        # 4. Shipment Ledger (RPB Blocks)
+        ledger = []
+        shipment_sections = re.split(r'(?=Nama Penerima\s*\n:\s*)', full_text)
+        for i, section in enumerate(shipment_sections[1:]):
+            name_m = re.match(r'Nama Penerima\s*\n:\s*(.+?)\s*\((\d+)\)', section)
+            if not name_m: continue
             
-        # ID Termin usually in hidden inputs
-        idtermin_match = re.search(r'name="idtermin"\s+value="(\d+)"', html_content)
-        if idtermin_match:
-            ids["idtermin"] = idtermin_match.group(1)
+            addr_match = re.search(r'Alamat Pengiriman\s*\n:\s*(.+?)\nCatatan Alamat', section, re.DOTALL)
+            addr_data = address_parser.parse(addr_match.group(1)) if addr_match else {}
             
-        # ID Bast usually in mytable-bast
-        idbast_match = re.search(r'name="bp_idbast".*?value="(\d+)"', html_content, re.DOTALL)
-        if idbast_match:
-            ids["idbast"] = idbast_match.group(1)
+            prod_total_match = re.search(r'Harga Produk \([\d\.,]+\)\nRp([\d\.,]+)', section)
+            ship_total_match = re.search(r'Ongkos Kirim \([\d\.,]+ kg\)\nRp([\d\.,]+)', section)
             
-        return ids
+            prod_total = self._clean_numeric(prod_total_match.group(1)) if prod_total_match else 0.0
+            ship_total = self._clean_numeric(ship_total_match.group(1)) if ship_total_match else 0.0
+            
+            poktan_match = re.search(r'Poktan:?\s*([^\n,]+)', section)
+            
+            ledger.append(ShipmentLedgerItem(
+                shipment_id=i + 1,
+                recipient=ShipmentRecipient(
+                    name=self._clean_string(name_m.group(1).strip()),
+                    phone=f"62{name_m.group(2).strip()[-10:]}", # Standardize to 62
+                    group=self._clean_string(poktan_match.group(1).strip() if poktan_match else None)
+                ),
+                destination=ShipmentDestination(
+                    desa=self._clean_string(addr_data.get("desa")),
+                    kabupaten=self._clean_string(addr_data.get("kabupaten")),
+                    provinsi=self._clean_string(addr_data.get("provinsi"))
+                ),
+                costs=ShipmentCosts(
+                    product_total=prod_total,
+                    shipping_total=ship_total,
+                    is_at_cost=True
+                )
+            ))
+
+        # 5. Tech Specs
+        specs = {}
+        active = re.search(self.patterns["active_ingredient"], full_text)
+        reg = re.search(self.patterns["registration_number"], full_text)
+        tkdn = re.search(self.patterns["tkdn"], full_text)
+        if active: specs["active_ingredient"] = self._clean_string(active.group(1).strip())
+        if reg: specs["registration_number"] = self._clean_string(reg.group(1).strip())
+        if tkdn: specs["tkdn"] = self._clean_string(tkdn.group(1).strip())
+
+        return UltraRobustContract(
+            contract_header=header,
+            financials=financials,
+            compliance_flags=compliance,
+            shipment_ledger=ledger,
+            technical_specifications=specs,
+            full_text=self._clean_string(full_text),
+            sections={k: self._clean_string(v) for k, v in self.extract_sections(full_text).items()}
+        )
 
     def extract_sections(self, full_text: str) -> Dict[str, str]:
         positions = []
@@ -236,30 +175,54 @@ class PDFIntelligence:
             sections[name] = full_text[start:end].strip()
         return sections
 
+    def extract_lampiran_tables(self, doc: fitz.Document) -> List[Dict[str, Any]]:
+        """Ported logic to extract structured tables from Lampiran pages."""
+        tables = []
+        for page_idx, page in enumerate(doc):
+            tabs = page.find_tables()
+            for tab in tabs:
+                df = tab.to_pandas()
+                if not df.empty:
+                    # Basic cleaning of headers and rows
+                    headers = [self._clean_string(str(h)) for h in df.columns]
+                    rows = []
+                    for _, row in df.iterrows():
+                        rows.append({headers[i]: self._clean_string(str(v)) for i, v in enumerate(row)})
+                    
+                    tables.append({
+                        "page": page_idx + 1,
+                        "headers": headers,
+                        "rows": rows,
+                        "method": "find_tables"
+                    })
+        return tables
+
     def analyze_document(self, file_path: str) -> Dict[str, Any]:
-        """
-        Master Entry Point for PDF Intelligence.
-        Returns header metadata, delivery blocks, lampiran tables, and page count.
-        """
         doc = fitz.open(file_path)
         try:
             full_text = ""
             for page in doc:
                 full_text += page.get_text()
                 
-            sections = self.extract_sections(full_text)
-            metadata = self.extract_header_data(doc)
+            ultra = self.extract_ultra_robust(doc, full_text)
+            tables = self.extract_lampiran_tables(doc)
             
-            # Enrich metadata with holistic data
-            metadata["full_text"] = full_text
-            metadata["sections"] = sections
-            metadata["source_file"] = file_path
+            # Legacy mapping for compatibility
+            metadata = ContractMetadata(
+                nomor_kontrak=ultra.contract_header.order_id,
+                tanggal_kontrak=ultra.contract_header.timestamp,
+                full_text=ultra.full_text,
+                sections=ultra.sections,
+                source_file=file_path,
+                nilai_kontrak=str(ultra.financials.grand_total)
+            )
             
             return {
-                "metadata":        metadata,
-                "delivery_blocks": self.extract_delivery_blocks(doc),
-                "tables":          self.extract_lampiran_tables(doc),
-                "total_pages":     len(doc)
+                "metadata": metadata,
+                "ultra_robust": ultra,
+                "tables": tables,
+                "delivery_blocks": [], # Handled by ultra_robust shipment_ledger now
+                "total_pages": len(doc)
             }
         finally:
             doc.close()

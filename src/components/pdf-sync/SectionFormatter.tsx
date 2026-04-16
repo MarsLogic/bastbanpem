@@ -8,7 +8,8 @@ interface SectionFormatterProps {
   searchQuery: string;
 }
 
-// Parse "Pasal N" articles from SSUK/SSKK text
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function parseArticles(text: string): { title: string; body: string }[] {
   const parts = text.split(/(?=Pasal\s+\d+)/i);
   return parts
@@ -19,7 +20,6 @@ function parseArticles(text: string): { title: string; body: string }[] {
     });
 }
 
-// Parse "Label\n: Value" key-value pairs
 function parseKeyValues(text: string): { key: string; value: string }[] {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const pairs: { key: string; value: string }[] = [];
@@ -32,7 +32,8 @@ function parseKeyValues(text: string): { key: string; value: string }[] {
   return pairs;
 }
 
-// Highlight matches
+// ── Highlight ─────────────────────────────────────────────────────────────────
+
 function Highlighted({ text, query }: { text: string; query: string }) {
   if (!query.trim()) return <>{text}</>;
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -48,7 +49,8 @@ function Highlighted({ text, query }: { text: string; query: string }) {
   );
 }
 
-// Article accordion
+// ── Article Accordion ─────────────────────────────────────────────────────────
+
 function ArticleItem({ title, body, searchQuery }: { title: string; body: string; searchQuery: string }) {
   const hasMatch = !!searchQuery && body.toLowerCase().includes(searchQuery.toLowerCase());
   const [open, setOpen] = useState(false);
@@ -83,7 +85,8 @@ function ArticleItem({ title, body, searchQuery }: { title: string; body: string
   );
 }
 
-// Key-value grid
+// ── Key-Value Grid ────────────────────────────────────────────────────────────
+
 function KeyValueGrid({ pairs, searchQuery }: { pairs: { key: string; value: string }[]; searchQuery: string }) {
   const filtered = searchQuery
     ? pairs.filter(p =>
@@ -116,7 +119,8 @@ function KeyValueGrid({ pairs, searchQuery }: { pairs: { key: string; value: str
   );
 }
 
-// Main component
+// ── Main Component ────────────────────────────────────────────────────────────
+
 export const SectionFormatter: React.FC<SectionFormatterProps> = ({ name, text, searchQuery }) => {
   const isLegal = ['SSUK', 'SSKK'].includes(name);
   const isKV    = ['HEADER', 'PEMESAN', 'PENYEDIA'].includes(name);
@@ -160,7 +164,7 @@ export const SectionFormatter: React.FC<SectionFormatterProps> = ({ name, text, 
     return <KeyValueGrid pairs={kvPairs} searchQuery={searchQuery} />;
   }
 
-  // Fallback: preformatted text (truncated at 20k)
+  // Fallback: preformatted searchable text (truncated at 20k for performance)
   const display = text.length > 20000
     ? text.slice(0, 20000) + '\n\n[...truncated — switch to Full Text for complete content]'
     : text;

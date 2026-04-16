@@ -20,7 +20,7 @@ interface TableViewerProps {
 
 const PAGE_SIZE = 25;
 
-// Block parsing rows
+// Render block_parsing rows (each row has .fields string[])
 function BlockRow({ fields }: { fields: string[] }) {
   return (
     <div className="bg-white border border-slate-100 rounded-md p-3">
@@ -57,7 +57,7 @@ function PaginatedTable({ table }: { table: RawTable }) {
     </div>
   );
 
-  // block_parsing renderer
+  // block_parsing: render field arrays
   if (table.method === 'block_parsing') {
     const blockRows = pageRows as { raw_block?: string; fields: string[] }[];
     return (
@@ -70,7 +70,7 @@ function PaginatedTable({ table }: { table: RawTable }) {
     );
   }
 
-  // find_tables renderer
+  // find_tables: structured table with headers
   return (
     <div>
       <div className="overflow-auto">

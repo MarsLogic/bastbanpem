@@ -73,20 +73,27 @@ async def pdf_parse(file: UploadFile = File(...)):
         analysis = pdf_intel.analyze_document(temp_path)
 
         # Extract metadata with proper field mapping
-        metadata = analysis["metadata"]
+        metadata = analysis.get("metadata")
+        ultra = analysis.get("ultra_robust")
 
         return PdfParseResult(
             metadata=metadata,
+            ultra_robust=ultra,
             delivery_blocks=analysis.get("delivery_blocks", []),
-            tables=analysis["tables"],
-            total_pages=analysis["total_pages"]
+            tables=analysis.get("tables", []),
+            total_pages=analysis.get("total_pages", 0)
         )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"PDF parse error: {str(e)}")
     finally:
         # Clean up temp file
         if os.path.exists(temp_path):
-            os.remove(temp_path)
+            try:
+                os.remove(temp_path)
+            except:
+                pass
 
 @router.post("/excel/ingest", response_model=ExcelIngestResult)
 async def excel_ingest(file: UploadFile = File(...)):

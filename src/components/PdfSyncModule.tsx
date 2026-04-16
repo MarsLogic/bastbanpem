@@ -1,4 +1,3 @@
-// [UIUX-005] Ground Truth vs Excel Sync
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,25 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import {
     FileText, ZoomIn, ZoomOut, Maximize2, Minimize2,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, FileUp,
-    LayoutDashboard, BookOpen, UserCheck, Table as TableIcon
+    LayoutDashboard, BookOpen, UserCheck, Table as TableIcon, ShieldAlert, Zap, Globe
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { ContractData } from '../lib/contractStore';
 import { toast } from "sonner";
 import { Document, Page, pdfjs } from 'react-pdf';
-import { parsePdfFile, saveContract, loadContract } from '../lib/api';
-import { getPdfBlob, savePdfBlob, deletePdfBlob } from '../lib/pdfStorage';
+import { parsePdfFile, saveContract } from '../lib/api';
+import { getPdfBlob, savePdfBlob } from '../lib/pdfStorage';
 import { SectionViewer } from './pdf-sync/SectionViewer';
 import { TableViewer } from './pdf-sync/TableViewer';
 import { RecipientCards } from './pdf-sync/RecipientCards';
+import { ComplianceDashboard } from './pdf-sync/ComplianceDashboard';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -40,576 +32,210 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [numPages, setNumPages] = useState<number>();
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [isExtracting, setIsExtracting] = useState(false);
-  const [docInstance, setDocInstance] = useState<any>(null);
   const [scale, setScale] = useState(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
-  const [panelHeight, setPanelHeight] = useState<number>(750);
+  const [panelHeight, setPanelHeight] = useState<number>(850);
   const [pdfLoadStatus, setPdfLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [pdfLoadError, setPdfLoadError] = useState<string | null>(null);
-  const [isEditingPage, setIsEditingPage] = useState(false);
-  const [editPageValue, setEditPageValue] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const pageInputRef = useRef<HTMLInputElement>(null);
 
-  // Persistence: Hydrate blobUrl from contract.pdfBlob or IndexedDB
-  // [UIUX-005] Multi-layer PDF persistence:
-  // 1. In-memory Blob (during same session) ✓
-  // 2. IndexedDB fallback (across page reloads) ✓
-  // 3. User can re-upload if loading fails
   React.useEffect(() => {
     const hydratePdf = async () => {
-      if (blobUrl) return; // Already loaded
-
+      if (blobUrl) return; 
       setPdfLoadStatus('loading');
-      setPdfLoadError(null);
-
-      // Try 1: In-memory Blob
       if (contract.pdfBlob instanceof Blob) {
-        try {
-          const url = URL.createObjectURL(contract.pdfBlob);
-          setBlobUrl(url);
+        setBlobUrl(URL.createObjectURL(contract.pdfBlob));
+        setPdfLoadStatus('success');
+      } else if (contract.contractPdfPath) {
+        const storedBlob = await getPdfBlob(contract.id);
+        if (storedBlob instanceof Blob) {
+          setBlobUrl(URL.createObjectURL(storedBlob));
           setPdfLoadStatus('success');
-          return;
-        } catch (err) {
-          console.error('[UIUX-005] Failed to create URL from in-memory blob:', err);
+        } else {
+          setPdfLoadStatus('error');
+          setPdfLoadError('PDF not found.');
         }
-      }
-
-      // Try 2: Recover from IndexedDB (page reload scenario)
-      if (contract.contractPdfPath) {
-        try {
-          const storedBlob = await getPdfBlob(contract.id);
-          if (storedBlob instanceof Blob) {
-            const url = URL.createObjectURL(storedBlob);
-            setBlobUrl(url);
-            setPdfLoadStatus('success');
-            return;
-          }
-        } catch (err) {
-          console.error(`[UIUX-005] Failed to retrieve PDF from IndexedDB (ID: ${contract.id}):`, err);
-          setPdfLoadError(`Failed to load saved PDF: ${err instanceof Error ? err.message : String(err)}`);
-        }
-      }
-
-      // PDF not found
-      if (contract.contractPdfPath) {
-        setPdfLoadStatus('error');
-        setPdfLoadError('PDF not found. Please re-upload to continue.');
       } else {
         setPdfLoadStatus('idle');
       }
     };
-
     hydratePdf();
-
-    // Cleanup URL on unmount to prevent memory leaks
-    return () => {
-      if (blobUrl) {
-        try {
-          URL.revokeObjectURL(blobUrl);
-        } catch (e) {
-          // Ignore if already revoked
-        }
-      }
-    };
+    return () => { if (blobUrl) URL.revokeObjectURL(blobUrl); };
   }, [contract.id, contract.pdfBlob, contract.contractPdfPath, blobUrl]);
-
-  // [UIUX-005] Metadata Hydration: Restore extracted data from SQLite on page reload
-  React.useEffect(() => {
-    const hydrateMetadata = async () => {
-      // Only attempt to hydrate if:
-      // 1. Contract has been saved before (contractPdfPath indicates prior save)
-      // 2. Data hasn't already been loaded (sections check)
-      // 3. Contract has an ID (required for database lookup)
-      if (!contract.contractPdfPath || contract.sections || !contract.id) {
-        return;
-      }
-
-      try {
-        // Try multiple lookup strategies since the saved ID might not match contract.id
-        const possibleIds: string[] = [];
-        
-        // Strategy 1: Use nomorKontrak if already in store
-        if (contract.nomorKontrak) {
-          possibleIds.push(contract.nomorKontrak.replace(/\s+/g, '_'));
-        }
-        
-        // Strategy 2: Extract from contractPdfPath filename (e.g., "surat-pesanan-EP-001K7NM3..." -> "EP-001K7NM3...")
-        if (contract.contractPdfPath) {
-          const match = contract.contractPdfPath.match(/-(EP-[A-Z0-9]+)/);
-          if (match) {
-            possibleIds.push(match[1]);
-          }
-        }
-        
-        // Strategy 3: Fall back to contract.id
-        possibleIds.push(contract.id);
-        
-        // Try each ID until one succeeds
-        let savedData = null;
-        for (const id of possibleIds) {
-          try {
-            savedData = await loadContract(id);
-            if (savedData) {
-              console.log(`[UIUX-005] Successfully loaded contract data using ID: ${id}`);
-              break;
-            }
-          } catch {
-            // Try next ID
-            continue;
-          }
-        }
-        
-        if (savedData) {
-          // Map database fields back to ContractData fields
-          const updates: Record<string, any> = {};
-          
-          // Sections and full text
-          if (savedData.sections) updates.sections = typeof savedData.sections === 'string' ? JSON.parse(savedData.sections) : savedData.sections;
-          if (savedData.full_text) updates.fullText = savedData.full_text;
-          
-          // Tables
-          if (savedData.tables) updates.tables = typeof savedData.tables === 'string' ? JSON.parse(savedData.tables) : savedData.tables;
-          
-          // Metadata fields
-          if (savedData.nomor_kontrak) updates.nomorKontrak = savedData.nomor_kontrak;
-          if (savedData.tanggal_kontrak) updates.tanggalKontrak = savedData.tanggal_kontrak;
-          if (savedData.nama_pemesan) updates.namaPemesan = savedData.nama_pemesan;
-          if (savedData.nama_penyedia) updates.namaPenyedia = savedData.nama_penyedia;
-          if (savedData.nama_produk) updates.namaProduk = savedData.nama_produk;
-          
-          // Apply all updates to store
-          if (Object.keys(updates).length > 0) {
-            onUpdate(updates);
-          }
-        }
-      } catch (err) {
-        console.error('[UIUX-005] Failed to hydrate metadata from SQLite:', err);
-        // Silently fail - user can re-run AI Scan if needed
-      }
-    };
-
-    hydrateMetadata();
-  }, [contract.contractPdfPath, contract.id, contract.sections]);
 
   const handlePdfFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      const url = URL.createObjectURL(file);
-      setBlobUrl(url);
+    if (file?.type === 'application/pdf') {
+      setBlobUrl(URL.createObjectURL(file));
       setPdfLoadStatus('success');
-      setPdfLoadError(null);
-
-      // Update contract state
-      onUpdate({
-        contractPdfPath: file.name,
-        pdfBlob: file, // Store the file/blob in the global state
-        deliveryBlocks: [],
-        recipients: []
-      });
-
-      // [UIUX-005] Persist PDF to IndexedDB for recovery after page reload
-      try {
-        await savePdfBlob(contract.id, file, file.name);
-      } catch (err) {
-        console.warn(`[UIUX-005] Failed to save PDF to IndexedDB:`, err);
-        // Don't fail the upload if IndexedDB save fails
-      }
-
-      toast.info(`PDF Linked: ${file.name}`);
-    } else if (file) {
-      toast.error("Please select a PDF file.");
+      onUpdate({ contractPdfPath: file.name, pdfBlob: file, deliveryBlocks: [], recipients: [] });
+      await savePdfBlob(contract.id, file, file.name);
+      toast.info(`Engine Linked: ${file.name}`);
     }
-  };
-
-  const handleBrowsePdf = () => {
-    fileInputRef.current?.click();
   };
 
   const handleAutoExtract = async () => {
-    // Check either the local state (if just uploaded) or the persisted blob
-    const fileToExtract = contract.pdfBlob instanceof Blob ? contract.pdfBlob : null;
-
-    if (!fileToExtract) {
-      toast.error("No PDF file selected. Please upload a PDF first.");
-      return;
-    }
+    const file = contract.pdfBlob instanceof Blob ? contract.pdfBlob : null;
+    if (!file) return toast.error("Upload PDF first.");
     setIsExtracting(true);
     try {
-      toast.info("AI Engine Scanning PDF via Python Backend...");
-
-      const result = await parsePdfFile(fileToExtract as File);
-
-      // === Map All Header Metadata (12+ fields) ===
-      const m = result.metadata || {};
-      const updates: Record<string, any> = {};
-
-      // Basic Identity
-      if (m.nomor_kontrak)   updates.nomorKontrak    = m.nomor_kontrak.trim();
-      if (m.tanggal_kontrak) updates.tanggalKontrak  = m.tanggal_kontrak.trim();
-      
-      // Pemesan
-      if (m.nama_pemesan)    updates.namaPemesan     = m.nama_pemesan.trim();
-      if (m.nama_ppk)        updates.namaPpk         = m.nama_ppk.trim();
-      if (m.npwp_pemesan)    updates.npwpPemesan     = m.npwp_pemesan.trim();
-
-      // Penyedia
-      if (m.nama_penyedia)   updates.namaPenyedia    = m.nama_penyedia.trim();
-      if (m.npwp_penyedia)   updates.npwpPenyedia    = m.npwp_penyedia.trim();
-
-      // Product & Financials
-      if (m.nama_produk)     updates.namaProduk      = m.nama_produk.trim().replace(/\s+$/, '');
-      if (m.harga_satuan)    updates.hargaSatuan     = `Rp${m.harga_satuan.trim()}`;
-      if (m.nilai_kontrak)   updates.totalPembayaran = `Rp${m.nilai_kontrak.trim()}`;
-      if (m.total_kuantitas) updates.kuantitasProduk = `${m.total_kuantitas.trim()} liter`;
-      if (m.jumlah_tahap)    updates.jumlahTahap     = m.jumlah_tahap.trim();
-
-      // Technicals
-      if (m.nomor_dipa)          updates.nomorDipa          = m.nomor_dipa.trim();
-      if (m.kegiatan_output_akun) updates.kegiatanOutputAkun = m.kegiatan_output_akun.trim();
-      
-      // Flags
-      updates.isOngkirTerpisah      = !!m.is_ongkir_terpisah;
-      updates.isSwakelola           = !!m.is_swakelola;
-      updates.isMenggunakanTermin   = !!m.is_menggunakan_termin;
-
-      // === Capture Extended PDF Data ===
-      if (m.sections) updates.sections = m.sections;
-      if (m.full_text) updates.fullText = m.full_text;
-      if (result.tables) updates.tables = result.tables;
-
-      // === Map Delivery Blocks (per-recipient) ===
-      const rawBlocks: any[] = result.delivery_blocks || [];
-      if (rawBlocks.length > 0) {
-        updates.deliveryBlocks = rawBlocks.map((b: any) => ({
-          namaPenerima:    b.nama_penerima   || '',
-          nama:            b.nama_penerima   || '',   // alias for reconciliation
-          noTelp:          b.no_telp         || '',
-          permintaanTiba:  b.permintaan_tiba || '',
-          namaPoktan:      b.nama_poktan     || '',
-          alamatLengkap:   b.alamat_lengkap  || '',
-          desa:            b.desa            || '',
-          kecamatan:       b.kecamatan       || '',
-          kabupaten:       b.kabupaten       || '',
-          provinsi:        b.provinsi        || '',
-          kodePos:         b.kode_pos        || '',
-          jumlah:          b.jumlah          || '',
-          hargaProdukTotal: b.harga_produk_total || '',
-          ongkosKirim:     b.ongkos_kirim    || '',
-        }));
-      }
-
+      toast.info("Activating Ultra-Robust AI Scanning Protocol...");
+      const result = await parsePdfFile(file as File);
+      const updates: any = { ultraRobust: result.ultra_robust, sections: result.metadata?.sections, fullText: result.metadata?.full_text, tables: result.tables };
+      if (result.metadata?.nomor_kontrak) updates.nomorKontrak = result.metadata.nomor_kontrak;
       onUpdate(updates);
-
-      // Auto-persist extracted metadata to SQLite vault
-      const contractId = (m.nomor_kontrak || 'UNKNOWN').replace(/\s+/g, '_');
-      try {
-        await saveContract(contractId, m.nomor_kontrak || 'Unknown Contract', 0, m);
-        toast.success(`Elite AI Scan complete. Extracted from ${result.total_pages} pages. Saved to vault.`);
-      } catch {
-        toast.success(`Elite AI Scan complete. Extracted from ${result.total_pages} pages. (Vault save skipped)`);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Extraction failed. Ensure PDF is valid and backend is running.");
-    } finally {
-      setIsExtracting(false);
-    }
+      await saveContract((result.metadata?.nomor_kontrak || 'UNK').replace(/\s+/g, '_'), result.metadata?.nomor_kontrak || 'UNK', 0, result.metadata);
+      toast.success("Intelligence Extraction Complete.");
+    } catch (err) { toast.error("Extraction failed."); } finally { setIsExtracting(false); }
   };
 
-  function onDocumentLoadSuccess(pdf: any): void {
-    setNumPages(pdf.numPages);
-    setDocInstance(pdf);
-  }
-
   const renderPdfViewer = (isFull: boolean) => (
-    <div className={`flex flex-col relative bg-muted/30 ${isFull ? 'w-full h-full' : 'w-full border-b h-[700px]'}`}>
-      <div className="p-3 border-b flex justify-between items-center bg-background/50 backdrop-blur z-10">
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-blue-500" />
-          <span className="text-sm font-medium truncate max-w-[150px] md:max-w-[200px]">
+    <div className={`flex flex-col relative bg-slate-900 ${isFull ? 'w-full h-full' : 'w-full border-b h-[700px]'}`}>
+      <div className="p-2.5 border-b border-white/10 flex justify-between items-center bg-slate-950/80 backdrop-blur text-white z-10">
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 px-2 py-0 h-5 text-[9px] font-black uppercase tracking-tighter">PDF Engine</Badge>
+          <span className="text-[11px] font-bold truncate max-w-[200px] text-slate-300">
             {contract.contractPdfPath?.split(/[\\/]/).pop()}
           </span>
         </div>
-        <div className="flex items-center gap-1">
-           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setScale(s => Math.max(0.5, s - 0.2))}><ZoomOut className="h-4 w-4" /></Button>
-           <span className="text-xs font-mono w-10 text-center">{Math.round(scale * 100)}%</span>
-           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setScale(s => Math.min(3.0, s + 0.2))}><ZoomIn className="h-4 w-4" /></Button>
-           <div className="w-[1px] h-4 bg-slate-200 mx-1" />
-           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsFullscreen(!isFull)}>
-             {isFull ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        <div className="flex items-center gap-1.5">
+           <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-white hover:bg-white/10" onClick={() => setScale(s => Math.max(0.5, s - 0.2))}><ZoomOut className="h-3.5 w-3.5" /></Button>
+           <span className="text-[10px] font-mono w-8 text-center text-slate-500">{Math.round(scale * 100)}%</span>
+           <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-white hover:bg-white/10" onClick={() => setScale(s => Math.min(3.0, s + 0.2))}><ZoomIn className="h-3.5 w-3.5" /></Button>
+           <div className="w-[1px] h-3 bg-white/10 mx-1" />
+           <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-white hover:bg-white/10" onClick={() => setIsFullscreen(!isFull)}>
+             {isFull ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
            </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 flex justify-center p-4">
-        {pdfLoadStatus === 'loading' && (
-          <div className="flex flex-col items-center justify-center gap-3 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            <p className="text-sm text-slate-600">Loading PDF...</p>
-          </div>
-        )}
-        {pdfLoadStatus === 'error' && pdfLoadError && (
-          <div className="flex flex-col items-center justify-center gap-4 text-center max-w-sm">
-            <FileText className="h-12 w-12 text-red-300" />
-            <div>
-              <p className="text-sm text-slate-600 mb-2">{pdfLoadError}</p>
-              <Button onClick={() => fileInputRef.current?.click()} className="bg-blue-600 hover:bg-blue-700 text-white">
-                <FileUp className="mr-2 h-4 w-4" />
-                Re-upload PDF
-              </Button>
-            </div>
-          </div>
-        )}
-        {blobUrl && pdfLoadStatus === 'success' && (
-          <Document file={blobUrl} onLoadSuccess={onDocumentLoadSuccess}>
-            <Page pageNumber={pageNumber} scale={scale} renderAnnotationLayer={false} renderTextLayer={false} />
-          </Document>
-        )}
+      <div className="flex-1 overflow-auto flex justify-center p-6 custom-scrollbar">
+        {blobUrl && <Document file={blobUrl} onLoadSuccess={(pdf) => setNumPages(pdf.numPages)}><Page pageNumber={pageNumber} scale={scale} renderAnnotationLayer={false} renderTextLayer={false} className="shadow-2xl ring-1 ring-white/10" /></Document>}
       </div>
       {numPages && numPages > 1 && (
-        <div className="p-2 border-t bg-background flex justify-center items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber <= 1} onClick={() => setPageNumber(1)} title="First page"><ChevronsLeft className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber <= 1} onClick={() => setPageNumber(p => Math.max(1, p - 1))} title="Previous page"><ChevronLeft className="h-4 w-4" /></Button>
-
-          {isEditingPage ? (
-            <input
-              ref={pageInputRef}
-              type="text"
-              value={editPageValue}
-              onChange={(e) => setEditPageValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const num = parseInt(editPageValue, 10);
-                  if (!isNaN(num) && num >= 1 && num <= numPages) {
-                    setPageNumber(num);
-                    setIsEditingPage(false);
-                  }
-                } else if (e.key === 'Escape') {
-                  setIsEditingPage(false);
-                }
-              }}
-              onBlur={() => {
-                const num = parseInt(editPageValue, 10);
-                if (!isNaN(num) && num >= 1 && num <= numPages) {
-                  setPageNumber(num);
-                }
-                setIsEditingPage(false);
-              }}
-              autoFocus
-              className="w-12 px-2 py-1 text-xs font-medium text-center text-slate-900 bg-white border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={pageNumber.toString()}
-            />
-          ) : (
-            <button
-              onClick={() => {
-                setEditPageValue(pageNumber.toString());
-                setIsEditingPage(true);
-              }}
-              className="px-3 py-1 text-xs font-medium text-slate-700 bg-slate-100 rounded cursor-pointer hover:bg-slate-200 transition-colors"
-              title="Click to jump to a page"
-            >
-              {pageNumber} / {numPages}
-            </button>
-          )}
-
-          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))} title="Next page"><ChevronRight className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber >= numPages} onClick={() => setPageNumber(numPages)} title="Last page"><ChevronsRight className="h-4 w-4" /></Button>
+        <div className="p-3 border-t border-white/5 bg-slate-950/90 flex justify-center items-center gap-1.5">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10" disabled={pageNumber <= 1} onClick={() => setPageNumber(1)}><ChevronsLeft className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10" disabled={pageNumber <= 1} onClick={() => setPageNumber(p => Math.max(1, p - 1))}><ChevronLeft className="h-4 w-4" /></Button>
+          <div className="bg-slate-900 border border-white/10 rounded-md px-4 py-1 flex items-center gap-2 mx-2 shadow-inner">
+            <span className="text-[11px] font-black text-blue-500 tabular-nums">{pageNumber}</span>
+            <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">of</span>
+            <span className="text-[11px] font-black text-slate-400 tabular-nums">{numPages}</span>
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}><ChevronRight className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-400 hover:bg-blue-500/10" disabled={pageNumber >= numPages} onClick={() => setPageNumber(numPages)}><ChevronsRight className="h-4 w-4" /></Button>
         </div>
       )}
     </div>
   );
 
   return (
-    <div className="flex flex-col gap-6 w-full p-6 bg-slate-50/20">
+    <div className="flex flex-col gap-6 w-full p-6 bg-[#f8fafc]">
       {!contract.contractPdfPath ? (
-        <div className="p-12 text-center border-dashed border-2 border-slate-200 rounded-xl bg-white shadow-sm">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handlePdfFileSelect}
-            accept=".pdf"
-            className="hidden"
-          />
-          <FileText className="h-10 w-10 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500 mb-4 font-medium">No Master PDF Linked. Select the main contract PDF to begin.</p>
-          <Button onClick={handleBrowsePdf} className="bg-slate-900 text-white hover:bg-black">
-            <FileUp className="mr-2 h-4 w-4" />
-            Browse Contract PDF
+        <div className="p-16 text-center border-dashed border-2 border-slate-200 rounded-3xl bg-white shadow-xl flex flex-col items-center gap-6">
+          <div className="p-5 bg-blue-50 rounded-full"><FileText className="h-12 w-12 text-blue-600" /></div>
+          <div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Connect Master PDF</h2>
+            <p className="text-slate-500 max-w-sm">Attach the official Surat Pesanan PDF to activate the Ultra-Robust Intelligence Engine.</p>
+          </div>
+          <Button onClick={() => fileInputRef.current?.click()} size="lg" className="bg-slate-900 hover:bg-black text-white px-8 rounded-full shadow-lg transition-all hover:scale-105">
+            <FileUp className="mr-2 h-5 w-5" /> Select File
           </Button>
+          <input type="file" ref={fileInputRef} onChange={handlePdfFileSelect} accept=".pdf" className="hidden" />
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          <div className={`flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden ${isFullscreen ? 'fixed inset-4 z-[100] m-0 flex-row' : ''}`}>
+          <div className={`flex flex-col bg-white border border-slate-200 shadow-2xl rounded-[32px] overflow-hidden ${isFullscreen ? 'fixed inset-4 z-[100] m-0 flex-row ring-[20px] ring-black/10' : ''}`}>
              {renderPdfViewer(isFullscreen)}
              {!isFullscreen && (
-               <div className="w-full flex flex-col bg-slate-50/30 min-w-0" style={{ height: `${panelHeight}px` }}>
-                  <div className="p-4 border-b flex justify-between items-center bg-white/50 backdrop-blur gap-4">
-                      <div className="flex flex-col min-w-0">
-                        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                          <LayoutDashboard className="h-5 w-5 text-blue-600 shrink-0" />
-                          Contract Intelligence [v2.2-PRO]
-                        </h3>
-                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter">1. Master PDF Sync</p>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 whitespace-nowrap tabular-nums">{panelHeight}px</span>
-                          <Slider
-                            min={500}
-                            max={1200}
-                            step={50}
-                            value={[panelHeight]}
-                            onValueChange={([v]: [number]) => setPanelHeight(v)}
-                            className="w-24"
-                          />
+               <div className="w-full flex flex-col bg-white min-w-0" style={{ height: `${panelHeight}px` }}>
+                  <div className="px-6 py-5 border-b flex justify-between items-center bg-white gap-4">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="p-2.5 bg-blue-600 rounded-2xl shadow-lg shadow-blue-200"><LayoutDashboard className="h-6 w-6 text-white" /></div>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-black text-slate-900 tracking-tight">Contract Intelligence</h3>
+                            <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[9px] h-5 tracking-tighter uppercase px-1.5">v2.5-ULTRA</Badge>
+                          </div>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Ground-Truth Audit System</p>
                         </div>
-                        <Button onClick={handleAutoExtract} disabled={isExtracting} size="sm" className="bg-slate-900 hover:bg-black text-white text-[11px] font-bold h-8 whitespace-nowrap">
-                            {isExtracting ? <Loader2 className="animate-spin mr-2 h-3 w-3" /> : "Run AI Scan"}
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-end gap-1 mr-2">
+                          <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Workspace Height</span>
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-bold text-slate-400 tabular-nums">{panelHeight}px</span>
+                            <Slider min={600} max={1400} step={50} value={[panelHeight]} onValueChange={([v]) => setPanelHeight(v)} className="w-24" />
+                          </div>
+                        </div>
+                        <Button onClick={handleAutoExtract} disabled={isExtracting} className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-6 rounded-2xl font-black text-[12px] shadow-lg shadow-blue-100 transition-all active:scale-95">
+                            {isExtracting ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <><Zap className="h-4 w-4 mr-2" /> RUN AI SCAN</>}
                         </Button>
                       </div>
                   </div>
 
                   <Tabs defaultValue="metadata" className="flex-1 flex flex-col min-h-0">
-                    <div className="px-4 py-2 border-b bg-white shrink-0">
-                      <TabsList className="bg-slate-100/50 p-1 h-9 w-full justify-start">
-                        <TabsTrigger value="metadata" className="text-[11px] gap-1.5 flex-1">
-                          <LayoutDashboard className="h-3 w-3" />
-                          Fields
-                        </TabsTrigger>
-                        <TabsTrigger value="sections" className="text-[11px] gap-1.5 flex-1">
-                          <BookOpen className="h-3 w-3" />
-                          Sections
-                        </TabsTrigger>
-                        <TabsTrigger value="tables" className="text-[11px] gap-1.5 flex-1">
-                          <TableIcon className="h-3 w-3" />
-                          Tables
-                          {(contract.tables?.length ?? 0) > 0 && (
-                            <Badge className="ml-1 h-4 px-1.5 text-[9px] bg-slate-600 hover:bg-slate-600">
-                              {contract.tables!.length}
-                            </Badge>
-                          )}
-                        </TabsTrigger>
-                        <TabsTrigger value="recipients" className="text-[11px] gap-1.5 flex-1">
-                          <UserCheck className="h-3 w-3" />
-                          RPB
-                          {(contract.deliveryBlocks?.length ?? 0) > 0 && (
-                            <Badge className="ml-1 h-4 px-1.5 text-[9px] bg-slate-600 hover:bg-slate-600">
-                              {contract.deliveryBlocks!.length}
-                            </Badge>
-                          )}
-                        </TabsTrigger>
+                    <div className="px-6 py-3 border-b bg-slate-50/50">
+                      <TabsList className="bg-slate-200/50 p-1.5 h-12 w-full justify-start rounded-2xl">
+                        <TabsTrigger value="metadata" className="text-[11px] font-bold gap-2 flex-1 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm"><ShieldAlert className="h-3.5 w-3.5" /> DASHBOARD</TabsTrigger>
+                        <TabsTrigger value="sections" className="text-[11px] font-bold gap-2 flex-1 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm"><BookOpen className="h-3.5 w-3.5" /> SECTIONS</TabsTrigger>
+                        <TabsTrigger value="tables" className="text-[11px] font-bold gap-2 flex-1 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm"><TableIcon className="h-3.5 w-3.5" /> TABLES {contract.tables?.length ? <Badge className="ml-1 h-4 px-1 text-[9px] bg-slate-400">{contract.tables.length}</Badge> : null}</TabsTrigger>
+                        <TabsTrigger value="recipients" className="text-[11px] font-bold gap-2 flex-1 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-sm"><Globe className="h-3.5 w-3.5" /> RPB LEDGER {contract.ultraRobust?.shipment_ledger?.length ? <Badge className="ml-1 h-4 px-1 text-[9px] bg-blue-500">{contract.ultraRobust.shipment_ledger.length}</Badge> : null}</TabsTrigger>
                       </TabsList>
                     </div>
 
-                    <div className="flex-1 min-h-0 overflow-hidden">
-
-                    <ScrollArea className="flex-1">
-                      <TabsContent value="metadata" className="p-6 m-0 space-y-6">
-                          {/* Identitas Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 border-l-2 border-blue-500 pl-2">
-                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Identitas Kontrak</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nomor Kontrak</Label>
-                                    <Input className="h-9 bg-white text-xs" value={contract.nomorKontrak} onChange={e => onUpdate({ nomorKontrak: e.target.value })} />
+                    <div className="flex-1 min-h-0 overflow-hidden bg-white">
+                      <TabsContent value="metadata" className="h-full m-0 flex flex-col">
+                        {contract.ultraRobust ? (
+                          <>
+                            <ComplianceDashboard data={contract.ultraRobust} />
+                            <ScrollArea className="flex-1 px-6 py-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-8">
+                                <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100 space-y-4 shadow-sm">
+                                  <div className="flex items-center gap-2"><div className="w-1.5 h-4 bg-blue-500 rounded-full" /><span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Contract Identity</span></div>
+                                  <div className="space-y-3">
+                                    <div><Label className="text-[9px] font-bold text-slate-400 uppercase">Order Identifier</Label><div className="text-sm font-black text-slate-800 font-mono mt-0.5">{contract.ultraRobust.contract_header.order_id}</div></div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div><Label className="text-[9px] font-bold text-slate-400 uppercase">Timestamp</Label><div className="text-[11px] font-bold text-slate-600 mt-0.5">{contract.ultraRobust.contract_header.timestamp}</div></div>
+                                      <div><Label className="text-[9px] font-bold text-slate-400 uppercase">Duration</Label><div className="text-[11px] font-bold text-slate-600 mt-0.5">{contract.ultraRobust.contract_header.duration_days} Days</div></div>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tanggal</Label>
-                                    <Input className="h-9 bg-white text-xs" value={contract.tanggalKontrak} onChange={e => onUpdate({ tanggalKontrak: e.target.value })} />
+                                <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100 space-y-4 shadow-sm">
+                                  <div className="flex items-center gap-2"><div className="w-1.5 h-4 bg-amber-500 rounded-full" /><span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Vendor Context</span></div>
+                                  <div className="space-y-3">
+                                    <div><Label className="text-[9px] font-bold text-slate-400 uppercase">Penyedia (Pihak II)</Label><div className="text-[12px] font-black text-slate-800 mt-0.5">{contract.namaPenyedia || '—'}</div></div>
+                                    <div><Label className="text-[9px] font-bold text-slate-400 uppercase">Pemesan (Pihak I)</Label><div className="text-[11px] font-bold text-slate-600 mt-0.5 truncate">{contract.namaPemesan || '—'}</div></div>
+                                  </div>
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nomor DIPA</Label>
-                                    <Input className="h-9 bg-white text-xs" value={contract.nomorDipa || ''} onChange={e => onUpdate({ nomorDipa: e.target.value })} />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kegiatan/Output/Akun</Label>
-                                    <Input className="h-9 bg-white text-xs" value={contract.kegiatanOutputAkun || ''} onChange={e => onUpdate({ kegiatanOutputAkun: e.target.value })} />
-                                </div>
+                                {Object.keys(contract.ultraRobust.technical_specifications).length > 0 && (
+                                  <div className="col-span-full p-5 rounded-3xl bg-slate-900 text-white space-y-4 shadow-xl">
+                                    <div className="flex items-center gap-2"><div className="w-1.5 h-4 bg-emerald-400 rounded-full" /><span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Elite Technical Specs</span></div>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                      {Object.entries(contract.ultraRobust.technical_specifications).map(([k, v]) => (
+                                        <div key={k} className="border-l border-white/10 pl-3">
+                                          <Label className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">{k.replace(/_/g, ' ')}</Label>
+                                          <div className="text-[11px] font-black text-slate-200 mt-0.5 leading-tight">{v}</div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </ScrollArea>
+                          </>
+                        ) : (
+                          <div className="flex-1 flex flex-col items-center justify-center p-12 text-center gap-4">
+                            <Zap className="h-12 w-12 text-slate-200 animate-pulse" />
+                            <div>
+                              <h4 className="text-sm font-bold text-slate-900">Intelligence Offline</h4>
+                              <p className="text-[11px] text-slate-400 max-w-xs mt-1">Run the AI Scan to populate the Ultra-Robust Dashboard with compliance flags and granular costs.</p>
                             </div>
                           </div>
-
-                          {/* Pihak-Pihak Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 border-l-2 border-amber-500 pl-2">
-                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Stakeholders</span>
-                            </div>
-                            <div className="space-y-3">
-                              <div className="space-y-1.5">
-                                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pihak Pertama (Pemesan)</Label>
-                                  <Input className="h-9 bg-white text-xs" value={contract.namaPemesan || ''} onChange={e => onUpdate({ namaPemesan: e.target.value })} />
-                              </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Penanggung Jawab (PPK)</Label>
-                                    <Input className="h-9 bg-white text-xs font-medium" value={contract.namaPpk || ''} onChange={e => onUpdate({ namaPpk: e.target.value })} />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">NPWP Pemesan</Label>
-                                    <Input className="h-9 bg-white text-xs" value={contract.npwpPemesan || ''} onChange={e => onUpdate({ npwpPemesan: e.target.value })} />
-                                </div>
-                              </div>
-                            </div>
-                            <div className="space-y-3 pt-2">
-                              <div className="space-y-1.5">
-                                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pihak Kedua (Penyedia)</Label>
-                                  <Input className="h-9 bg-white text-xs" value={contract.namaPenyedia || ''} onChange={e => onUpdate({ namaPenyedia: e.target.value })} />
-                              </div>
-                              <div className="space-y-1.5">
-                                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">NPWP Penyedia</Label>
-                                  <Input className="h-9 bg-white text-xs" value={contract.npwpPenyedia || ''} onChange={e => onUpdate({ npwpPenyedia: e.target.value })} />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Detail Pesanan Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 border-l-2 border-emerald-500 pl-2">
-                              <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Detail Komoditas & Nilai</span>
-                            </div>
-                            <div className="space-y-3">
-                              <div className="space-y-1.5">
-                                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Produk</Label>
-                                  <Input className="h-9 bg-white text-xs" value={contract.namaProduk || ''} onChange={e => onUpdate({ namaProduk: e.target.value })} />
-                              </div>
-                              <div className="grid grid-cols-3 gap-3">
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Vol Total</Label>
-                                    <Input className="h-9 bg-white text-xs font-bold text-emerald-600" value={contract.kuantitasProduk || ''} onChange={e => onUpdate({ kuantitasProduk: e.target.value })} />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Hrg Satuan</Label>
-                                    <Input className="h-9 bg-white text-xs" value={contract.hargaSatuan || ''} onChange={e => onUpdate({ hargaSatuan: e.target.value })} />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Jumlah Tahap</Label>
-                                    <Input className="h-9 bg-white text-xs" value={contract.jumlahTahap || ''} onChange={e => onUpdate({ jumlahTahap: e.target.value })} />
-                                </div>
-                              </div>
-                              <div className="space-y-1.5">
-                                  <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Estimasi Total Pembayaran</Label>
-                                  <Input className="h-10 bg-slate-900 text-emerald-400 text-sm font-mono font-bold" value={contract.totalPembayaran || ''} onChange={e => onUpdate({ totalPembayaran: e.target.value })} />
-                              </div>
-                            </div>
-                          </div>
+                        )}
                       </TabsContent>
-
-                      <TabsContent value="sections" className="p-0 m-0">
-                        <SectionViewer sections={contract.sections ?? {}} fullText={contract.fullText} />
-                      </TabsContent>
-
-                      <TabsContent value="tables" className="p-0 m-0">
-                        <TableViewer tables={contract.tables ?? []} />
-                      </TabsContent>
-
-                      <TabsContent value="recipients" className="p-0 m-0">
-                        <RecipientCards blocks={contract.deliveryBlocks ?? []} />
-                      </TabsContent>
-                    </ScrollArea>
+                      <TabsContent value="sections" className="h-full m-0 bg-slate-50/30"><SectionViewer sections={contract.sections ?? {}} fullText={contract.fullText} /></TabsContent>
+                      <TabsContent value="tables" className="h-full m-0"><TableViewer tables={contract.tables ?? []} /></TabsContent>
+                      <TabsContent value="recipients" className="h-full m-0"><RecipientCards ledger={contract.ultraRobust?.shipment_ledger ?? []} /></TabsContent>
                     </div>
                   </Tabs>
                </div>

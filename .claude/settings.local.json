@@ -39,7 +39,9 @@
       "Bash(npm run:*)",
       "Bash(ls -la .rtk*)",
       "Bash(ls backend/requirements*.txt)",
-      "Bash(npx shadcn-ui@latest add slider --yes)"
+      "Bash(npx shadcn-ui@latest add slider --yes)",
+      "Bash(git add:*)",
+      "Bash(git commit -m 'feat: [UIUX-005] Add ultra-robust PDF parsing with UTF-8 string cleaning and UnicodeDecodeError fixes:*)"
     ]
   }
 }

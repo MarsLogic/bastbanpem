@@ -122,6 +122,73 @@ export interface ExcelRow {
   editedValues?: Record<string, any>;
 }
 
+export interface ContractHeader {
+  order_id: string;
+  timestamp: string;
+  duration_days?: number;
+  expiry_date?: string;
+}
+
+export interface FinancialTaxLogic {
+  ppn_rate: number;
+  total_tax: number;
+  tax_exempt: boolean;
+}
+
+export interface BankDisbursement {
+  account_name?: string;
+  account_number?: string;
+  bank_name?: string;
+}
+
+export interface Financials {
+  currency: string;
+  grand_total: number;
+  tax_logic: FinancialTaxLogic;
+  bank_disbursement: BankDisbursement;
+}
+
+export interface ComplianceFlags {
+  sampling_required: boolean;
+  penalty_rate: number;
+  mandatory_label?: string;
+}
+
+export interface ShipmentRecipient {
+  name: string;
+  phone?: string;
+  group?: string;
+}
+
+export interface ShipmentDestination {
+  desa?: string;
+  kabupaten?: string;
+  provinsi?: string;
+}
+
+export interface ShipmentCosts {
+  product_total: number;
+  shipping_total: number;
+  is_at_cost: boolean;
+}
+
+export interface ShipmentLedgerItem {
+  shipment_id: number;
+  recipient: ShipmentRecipient;
+  destination: ShipmentDestination;
+  costs: ShipmentCosts;
+}
+
+export interface UltraRobustContract {
+  contract_header: ContractHeader;
+  financials: Financials;
+  compliance_flags: ComplianceFlags;
+  shipment_ledger: ShipmentLedgerItem[];
+  technical_specifications: Record<string, string>;
+  full_text?: string;
+  sections: Record<string, string>;
+}
+
 export interface ContractData {
   id: string;
   name: string; 
@@ -162,6 +229,9 @@ export interface ContractData {
   sskkPageRange?: [number, number];
   specsTable?: any[];
   specsPageRange?: [number, number];
+
+  // Ultra-Robust Schema [UIUX-005]
+  ultraRobust?: UltraRobustContract;
 
   // Folders and Bindings
   ktpDir?: string;
