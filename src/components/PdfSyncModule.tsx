@@ -261,7 +261,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
            </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 flex justify-center items-center p-4">
+      <div className="flex-1 overflow-auto bg-slate-100 dark:bg-slate-900 flex justify-center p-4">
         {pdfLoadStatus === 'loading' && (
           <div className="flex flex-col items-center justify-center gap-3 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
