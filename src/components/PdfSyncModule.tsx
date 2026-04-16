@@ -23,7 +23,7 @@ import {
 import { ContractData } from '../lib/contractStore';
 import { toast } from "sonner";
 import { Document, Page, pdfjs } from 'react-pdf';
-import { parsePdfFile, saveContract } from '../lib/api';
+import { parsePdfFile, saveContract, loadContract } from '../lib/api';
 import { getPdfBlob, savePdfBlob, deletePdfBlob } from '../lib/pdfStorage';
 import { SectionViewer } from './pdf-sync/SectionViewer';
 import { TableViewer } from './pdf-sync/TableViewer';
@@ -114,6 +114,54 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
       }
     };
   }, [contract.id, contract.pdfBlob, contract.contractPdfPath, blobUrl]);
+
+  // [UIUX-005] Metadata Hydration: Restore extracted data from SQLite on page reload
+  React.useEffect(() => {
+    const hydrateMetadata = async () => {
+      // Only attempt to hydrate if:
+      // 1. Contract has been saved before (contractPdfPath indicates prior save)
+      // 2. Data hasn't already been loaded (sections check)
+      // 3. Contract has an ID (required for database lookup)
+      if (!contract.contractPdfPath || contract.sections || !contract.id) {
+        return;
+      }
+
+      try {
+        // Extract contract ID for lookup (use nomorKontrak or fall back to contract.id)
+        const contractIdForLookup = contract.nomorKontrak?.replace(/\s+/g, '_') || contract.id;
+        
+        const savedData = await loadContract(contractIdForLookup);
+        if (savedData) {
+          // Map database fields back to ContractData fields
+          const updates: Record<string, any> = {};
+          
+          // Sections and full text
+          if (savedData.sections) updates.sections = typeof savedData.sections === 'string' ? JSON.parse(savedData.sections) : savedData.sections;
+          if (savedData.full_text) updates.fullText = savedData.full_text;
+          
+          // Tables
+          if (savedData.tables) updates.tables = typeof savedData.tables === 'string' ? JSON.parse(savedData.tables) : savedData.tables;
+          
+          // Metadata fields
+          if (savedData.nomor_kontrak) updates.nomorKontrak = savedData.nomor_kontrak;
+          if (savedData.tanggal_kontrak) updates.tanggalKontrak = savedData.tanggal_kontrak;
+          if (savedData.nama_pemesan) updates.namaPemesan = savedData.nama_pemesan;
+          if (savedData.nama_penyedia) updates.namaPenyedia = savedData.nama_penyedia;
+          if (savedData.nama_produk) updates.namaProduk = savedData.nama_produk;
+          
+          // Apply all updates to store
+          if (Object.keys(updates).length > 0) {
+            onUpdate(updates);
+          }
+        }
+      } catch (err) {
+        console.error('[UIUX-005] Failed to hydrate metadata from SQLite:', err);
+        // Silently fail - user can re-run AI Scan if needed
+      }
+    };
+
+    hydrateMetadata();
+  }, [contract.contractPdfPath, contract.id, contract.sections]);
 
   const handlePdfFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

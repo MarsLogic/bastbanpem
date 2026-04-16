@@ -292,6 +292,22 @@ async def save_contract_data(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/contracts/load/{contract_id}")
+async def load_contract_data(contract_id: str):
+    """Retrieve previously saved contract metadata from SQLite vault."""
+    try:
+        contract = vault_service.get_contract(contract_id)
+        if not contract:
+            raise HTTPException(status_code=404, detail=f"Contract '{contract_id}' not found in vault")
+        return {
+            "status": "success",
+            "contract": dict(contract)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/contracts/bundle")
 async def bundle_contract(request: BundleRequest, background_tasks: BackgroundTasks):
     try:

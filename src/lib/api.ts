@@ -88,6 +88,11 @@ export const saveContract = async (
   );
 };
 
+export const loadContract = async (contractId: string): Promise<Record<string, any>> => {
+  const { data } = await api.get(`/contracts/load/${encodeURIComponent(contractId)}`);
+  return data.contract;
+};
+
 export const splitPdf = async (path: string, pages: number[], outputDir: string, prefix: string) => {
   const { data } = await api.post('/pdf/split', { path, pages, output_dir: outputDir, prefix });
   return data;
