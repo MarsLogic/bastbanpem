@@ -1,9 +1,22 @@
 import sqlite3
 import os
 import json
+import shutil
 from contextlib import contextmanager
 
-DB_PATH = "bastbanpem_vault.db"
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_DATA_DIR = os.path.join(_BASE_DIR, "App_Data")
+os.makedirs(_DATA_DIR, exist_ok=True)
+DB_PATH = os.path.join(_DATA_DIR, "bastbanpem_vault.db")
+
+# Migrate legacy DB from project root to App_Data on first startup
+_legacy_path = os.path.join(_BASE_DIR, "bastbanpem_vault.db")
+if os.path.exists(_legacy_path) and not os.path.exists(DB_PATH):
+    try:
+        shutil.move(_legacy_path, DB_PATH)
+    except PermissionError:
+        # File is locked (backend still running) — copy instead, cleanup next restart
+        shutil.copy2(_legacy_path, DB_PATH)
 
 class Database:
     def __init__(self):
