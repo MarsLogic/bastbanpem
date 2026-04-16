@@ -6,6 +6,17 @@ from typing import List, Dict, Any, Optional
 from backend.services.address_parser import address_parser
 
 class PDFIntelligence:
+    SECTION_ANCHORS = {
+        "HEADER": r"Surat Pesanan",
+        "PEMESAN": r"Pemesan\n",
+        "PENYEDIA": r"Penyedia\n",
+        "RINGKASAN_PESANAN": r"Ringkasan Pesanan",
+        "RINGKASAN_PEMBAYARAN": r"Ringkasan Pembayaran",
+        "SSUK": r"SYARAT-SYARAT UMUM KONTRAK",
+        "SSKK": r"SYARAT-SYARAT KHUSUS KONTRAK",
+        "LAMPIRAN": r"Lampiran"
+    }
+
     def __init__(self):
         # [DOCS-003] Validated against real Surat Pesanan INAPROC PDFs
         # All patterns tested against EP-01K7NM3AVZA3Z6QQXRQN3QEPTV.pdf
@@ -211,6 +222,20 @@ class PDFIntelligence:
             
         return ids
 
+    def extract_sections(self, full_text: str) -> Dict[str, str]:
+        positions = []
+        for name, pattern in self.SECTION_ANCHORS.items():
+            match = re.search(pattern, full_text)
+            if match:
+                positions.append((name, match.start()))
+        
+        positions.sort(key=lambda x: x[1])
+        sections = {}
+        for i, (name, start) in enumerate(positions):
+            end = positions[i+1][1] if i+1 < len(positions) else len(full_text)
+            sections[name] = full_text[start:end].strip()
+        return sections
+
     def analyze_document(self, file_path: str) -> Dict[str, Any]:
         """
         Master Entry Point for PDF Intelligence.
@@ -218,8 +243,20 @@ class PDFIntelligence:
         """
         doc = fitz.open(file_path)
         try:
+            full_text = ""
+            for page in doc:
+                full_text += page.get_text()
+                
+            sections = self.extract_sections(full_text)
+            metadata = self.extract_header_data(doc)
+            
+            # Enrich metadata with holistic data
+            metadata["full_text"] = full_text
+            metadata["sections"] = sections
+            metadata["source_file"] = file_path
+            
             return {
-                "metadata":        self.extract_header_data(doc),
+                "metadata":        metadata,
                 "delivery_blocks": self.extract_delivery_blocks(doc),
                 "tables":          self.extract_lampiran_tables(doc),
                 "total_pages":     len(doc)
