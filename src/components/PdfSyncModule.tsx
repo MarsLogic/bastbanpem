@@ -41,8 +41,9 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Persistence: Hydrate blobUrl from contract.pdfBlob if it exists
+  // Guard with instanceof Blob — JSON serialization turns Blob into {} on reload
   React.useEffect(() => {
-    if (contract.pdfBlob && !blobUrl) {
+    if (contract.pdfBlob instanceof Blob && !blobUrl) {
       const url = URL.createObjectURL(contract.pdfBlob);
       setBlobUrl(url);
     }
@@ -77,8 +78,8 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
   const handleAutoExtract = async () => {
     // Check either the local state (if just uploaded) or the persisted blob
-    const fileToExtract = contract.pdfBlob;
-    
+    const fileToExtract = contract.pdfBlob instanceof Blob ? contract.pdfBlob : null;
+
     if (!fileToExtract) {
       toast.error("No PDF file selected. Please upload a PDF first.");
       return;
