@@ -21,7 +21,7 @@ import {
 import { ContractData } from '../lib/contractStore';
 import { toast } from "sonner";
 import { Document, Page, pdfjs } from 'react-pdf';
-import { parsePdfFile } from '../lib/api';
+import { parsePdfFile, saveContract } from '../lib/api';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -150,7 +150,14 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
       onUpdate(updates);
 
-      toast.success(`Elite AI Scan complete. Extracted data from ${result.total_pages} pages.`);
+      // Auto-persist extracted metadata to SQLite vault
+      const contractId = (m.nomor_kontrak || 'UNKNOWN').replace(/\s+/g, '_');
+      try {
+        await saveContract(contractId, m.nomor_kontrak || 'Unknown Contract', 0, m);
+        toast.success(`Elite AI Scan complete. Extracted from ${result.total_pages} pages. Saved to vault.`);
+      } catch {
+        toast.success(`Elite AI Scan complete. Extracted from ${result.total_pages} pages. (Vault save skipped)`);
+      }
     } catch (err) {
       console.error(err);
       toast.error("Extraction failed. Ensure PDF is valid and backend is running.");

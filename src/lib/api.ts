@@ -76,6 +76,18 @@ export const parsePdfFile = async (file: File) => {
   return data;
 };
 
+export const saveContract = async (
+  id: string,
+  name: string,
+  targetValue: number,
+  metadata: Record<string, any>
+): Promise<void> => {
+  await api.post(
+    `/contracts/save?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&target_value=${targetValue}`,
+    { rows: [], metadata }
+  );
+};
+
 export const splitPdf = async (path: string, pages: number[], outputDir: string, prefix: string) => {
   const { data } = await api.post('/pdf/split', { path, pages, output_dir: outputDir, prefix });
   return data;
