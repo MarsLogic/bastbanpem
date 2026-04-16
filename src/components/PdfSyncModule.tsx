@@ -287,39 +287,28 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         )}
       </div>
       {numPages && numPages > 1 && (
-        <div className="p-2 border-t bg-background flex justify-center items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber <= 1} onClick={() => setPageNumber(1)}><ChevronsLeft className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber <= 1} onClick={() => setPageNumber(p => Math.max(1, p - 1))}><ChevronLeft className="h-4 w-4" /></Button>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={pageNumber.toString()}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                const num = parseInt(e.currentTarget.value, 10);
+        <div className="p-2 border-t bg-background flex justify-center items-center gap-2">
+          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber <= 1} onClick={() => setPageNumber(1)} title="First page"><ChevronsLeft className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber <= 1} onClick={() => setPageNumber(p => Math.max(1, p - 1))} title="Previous page"><ChevronLeft className="h-4 w-4" /></Button>
+
+          <div
+            className="px-3 py-1 text-xs font-medium text-slate-700 bg-slate-100 rounded cursor-pointer hover:bg-slate-200 transition-colors"
+            onClick={(e) => {
+              const newVal = prompt(`Jump to page (1-${numPages}):`, pageNumber.toString());
+              if (newVal) {
+                const num = parseInt(newVal, 10);
                 if (!isNaN(num) && num >= 1 && num <= numPages) {
                   setPageNumber(num);
-                } else {
-                  e.currentTarget.value = pageNumber.toString();
                 }
-                e.currentTarget.blur();
-              } else if (e.key === 'Escape') {
-                e.currentTarget.value = pageNumber.toString();
-                e.currentTarget.blur();
               }
             }}
-            onBlur={(e) => {
-              const num = parseInt(e.currentTarget.value, 10);
-              if (!isNaN(num) && num >= 1 && num <= numPages) {
-                setPageNumber(num);
-              }
-              e.currentTarget.value = pageNumber.toString();
-            }}
-            className="text-sm font-medium tabular-nums px-2 min-w-[45px] text-center border border-slate-300 rounded bg-white hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-          />
-          <span className="text-sm font-medium text-slate-400">/ {numPages}</span>
-          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}><ChevronRight className="h-4 w-4" /></Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber >= numPages} onClick={() => setPageNumber(numPages)}><ChevronsRight className="h-4 w-4" /></Button>
+            title="Click to jump to a page"
+          >
+            {pageNumber} / {numPages}
+          </div>
+
+          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))} title="Next page"><ChevronRight className="h-4 w-4" /></Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" disabled={pageNumber >= numPages} onClick={() => setPageNumber(numPages)} title="Last page"><ChevronsRight className="h-4 w-4" /></Button>
         </div>
       )}
     </div>
