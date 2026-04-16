@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Slider } from "@/components/ui/slider";
 import {
     FileText, ZoomIn, ZoomOut, Maximize2, Minimize2,
     ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Loader2, FileUp,
@@ -39,6 +40,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [scale, setScale] = useState(1.0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [panelHeight, setPanelHeight] = useState<number>(750);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Persistence: Hydrate blobUrl from contract.pdfBlob or IndexedDB
@@ -270,18 +272,31 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
           <div className={`flex flex-col bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden ${isFullscreen ? 'fixed inset-4 z-[100] m-0 flex-row' : ''}`}>
              {renderPdfViewer(isFullscreen)}
              {!isFullscreen && (
-               <div className="w-full flex flex-col bg-slate-50/30 min-w-0 h-[600px]">
-                  <div className="p-6 border-b flex justify-between items-center bg-white/50 backdrop-blur">
-                      <div className="flex flex-col">
+               <div className="w-full flex flex-col bg-slate-50/30 min-w-0" style={{ height: `${panelHeight}px` }}>
+                  <div className="p-4 border-b flex justify-between items-center bg-white/50 backdrop-blur gap-4">
+                      <div className="flex flex-col min-w-0">
                         <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                          <LayoutDashboard className="h-5 w-5 text-blue-600" />
+                          <LayoutDashboard className="h-5 w-5 text-blue-600 shrink-0" />
                           Contract Intelligence [v2.2-PRO]
                         </h3>
                         <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter">1. Master PDF Sync</p>
                       </div>
-                      <Button onClick={handleAutoExtract} disabled={isExtracting} size="sm" className="bg-slate-900 hover:bg-black text-white text-[11px] font-bold h-8">
-                          {isExtracting ? <Loader2 className="animate-spin mr-2 h-3 w-3" /> : "Run AI Scan"}
-                      </Button>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400 whitespace-nowrap tabular-nums">{panelHeight}px</span>
+                          <Slider
+                            min={500}
+                            max={1200}
+                            step={50}
+                            value={[panelHeight]}
+                            onValueChange={([v]: [number]) => setPanelHeight(v)}
+                            className="w-24"
+                          />
+                        </div>
+                        <Button onClick={handleAutoExtract} disabled={isExtracting} size="sm" className="bg-slate-900 hover:bg-black text-white text-[11px] font-bold h-8 whitespace-nowrap">
+                            {isExtracting ? <Loader2 className="animate-spin mr-2 h-3 w-3" /> : "Run AI Scan"}
+                        </Button>
+                      </div>
                   </div>
 
                   <Tabs defaultValue="metadata" className="flex-1 flex flex-col min-h-0">
