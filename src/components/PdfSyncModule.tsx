@@ -245,7 +245,37 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         <div className="p-2 border-t bg-background flex justify-center items-center gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber <= 1} onClick={() => setPageNumber(1)}><ChevronsLeft className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber <= 1} onClick={() => setPageNumber(p => Math.max(1, p - 1))}><ChevronLeft className="h-4 w-4" /></Button>
-          <span className="text-sm font-medium tabular-nums px-3 min-w-[80px] text-center select-none">{pageNumber} / {numPages}</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={pageNumber.toString()}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '');
+              if (val === '') {
+                e.target.value = pageNumber.toString();
+              } else {
+                const num = Math.max(1, Math.min(numPages, parseInt(val, 10) || pageNumber));
+                e.target.value = num.toString();
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const num = Math.max(1, Math.min(numPages, parseInt(e.currentTarget.value, 10) || pageNumber));
+                setPageNumber(num);
+                e.currentTarget.blur();
+              } else if (e.key === 'Escape') {
+                e.currentTarget.value = pageNumber.toString();
+                e.currentTarget.blur();
+              }
+            }}
+            onBlur={(e) => {
+              const num = Math.max(1, Math.min(numPages, parseInt(e.currentTarget.value, 10) || pageNumber));
+              setPageNumber(num);
+              e.currentTarget.value = num.toString();
+            }}
+            className="text-sm font-medium tabular-nums px-2 min-w-[50px] text-center border border-slate-300 rounded bg-white hover:bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <span className="text-sm font-medium text-slate-400">/ {numPages}</span>
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}><ChevronRight className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber >= numPages} onClick={() => setPageNumber(numPages)}><ChevronsRight className="h-4 w-4" /></Button>
         </div>
