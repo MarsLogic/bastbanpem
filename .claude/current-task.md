@@ -1,26 +1,26 @@
-# Task Status: Holistic PDF Extraction & Persistence [COMPLETED]
+# Task Status: Inline Page Navigation [COMPLETED]
 **Date:** 2026-04-16
 
-## 🚀 Accomplishments
-- Extended `ContractMetadata` model to support `full_text`, `sections`, and extra metadata fields.
-- Enhanced `PDFIntelligence` with sequential section splitting (HEADER, PEMESAN, RINGKASAN, SSUK, SSKK, LAMPIRAN).
-- Verified extraction of large (50k+ chars) sections like SSUK.
-- Updated `VaultService` to persist full metadata in SQLite.
-- **UI Integration:** Updated `PdfSyncModule.tsx` with a dynamic Tab-based UI to display extracted metadata and PDF sections.
-- **Dynamic Field Mapping:** Ensured `handleAutoExtract` maps all holistic metadata (sections, full_text) to the `ContractData` store.
-- Verified TypeScript integrity with `tsc --noEmit`.
+## 🎯 Completed
+- Replaced page number prompt dialog with inline editable component
+- Click the page pill ("N / Total") to enter edit mode
+- Type page number and press Enter to jump, or Escape to cancel
+- Blur event also commits valid input
+- Full TypeScript type safety verified
+- Production build succeeds
 
-## 🧪 Verification
-- Created `backend/tests/test_pdf_persistence.py`.
-- Successfully verified extraction from a real government PDF (`surat-pesanan-EP-01K7NM3AVZA3Z6QQXRQN3QEPTV.pdf`).
-- Successfully verified SQLite persistence and re-validation of saved JSON.
-- Verified Frontend type safety with `npx tsc --noEmit`.
+## 📝 Implementation Details
+**File:** `src/components/PdfSyncModule.tsx`
+- Added state: `isEditingPage`, `editPageValue`, `pageInputRef`
+- Dual-mode display: button pill (display) + input field (edit)
+- Input validation: page number must be 1–numPages
+- Keyboard support: Enter (confirm), Escape (cancel)
 
-## ⏭️ Next Steps (Suggested for next session)
-- Run batch scan on all Project 2026 PDFs to test anchor robustness at scale.
-- Implement "Search within Sections" feature in the PDF Sections tab.
-- Add "Copy to Clipboard" for individual section blocks to aid manual reconciliation.
+## ✅ Verification
+- Build: `npm run build` ✓
+- Types: `npx tsc --noEmit` ✓
+- Git: Commit created, main ahead by 1
 
-## 📍 Logic Ripple Map
-- **Affected:** `[DATA-003]`, `[DOCS-003]`, `[CORE-001]`, `[UIUX-005]`, `[UIUX-001]`.
-- **Pending:** Batch validation across all project PDFs.
+## ⏭️ Next Steps
+- Push to origin/main when ready
+- Continue with batch PDF validation or other features
