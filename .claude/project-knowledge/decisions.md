@@ -113,6 +113,30 @@ Each decision:
 
 ---
 
+### Decision: Fuzzy Location Matching with Offline Reference Data
+**Date:** 2026-04-16  
+**Context:** INAPROC PDFs contain malformed address strings — province name typos, kabupaten hyphenation splits, old province names (Nanggroe Aceh Darussalam), abbreviated kecamatan (Sei vs Sungai). A hardcoded 30-entry table was insufficient.  
+**Decision:** Download full Kemendagri administrative data once (38 prov, 514 kab, 7285 kec) into `backend/data/wilayah_reference.json` and use `rapidfuzz.WRatio` fuzzy matching at parse time.  
+**Rationale:**
+- Covers all edge cases without manual curation
+- `rapidfuzz` already in requirements.txt
+- Reference data loaded once via `@lru_cache` — zero repeated I/O cost
+- Narrows kab candidates to matching province, kec candidates to matching kab → higher accuracy
+
+**Alternatives Considered:**
+- Hardcoded lookup table (only covered ~30 provinces, missed kab/kec variants)
+- External API call at parse time (adds latency, offline risk)
+- difflib.get_close_matches (slower, lower accuracy than rapidfuzz WRatio)
+
+**Impact:**
+- `backend/services/address_parser.py` — [DOCS-004] — now has `normalise_province`, `normalise_kabupaten`, `normalise_kecamatan` with fuzzy matching
+- `backend/data/wilayah_reference.json` — 328 KB reference file (do not delete)
+- Output canonical forms: `"Kabupaten X"` or `"Kota X"` for kabupaten; proper-cased province
+
+**Status:** Active
+
+---
+
 ## Decisions Under Review
 
 *Add decisions you're unsure about here, revisit after a few sessions*

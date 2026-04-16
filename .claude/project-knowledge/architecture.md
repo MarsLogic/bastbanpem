@@ -42,8 +42,33 @@ This document explains how the system is structured. Every new AI session should
 - **[DOCS-001]** pdf_service.py — PyMuPDF slicing, report generation
 - **[DOCS-002]** ktp_service.py — RapidOCR identity extraction
 - **[DOCS-003]** pdf_intelligence.py — Pattern learning, field extraction
+- **[DOCS-004]** address_parser.py — INAPROC address fixer + fuzzy location normaliser
 
 **Key Pattern:** Async processing, batch operations, memory-efficient file handling
+
+### Address Parsing & Location Normalisation ([DOCS-004])
+
+`backend/services/address_parser.py` — call `address_parser.parse(raw_string)` to fix any INAPROC Surat Pesanan address.
+
+**Reference data:** `backend/data/wilayah_reference.json` (328 KB, sourced from Kemendagri via ibnux/data-indonesia)
+- 38 provinsi, 514 kabupaten/kota, 7,285 kecamatan
+- Loaded once at startup via `@lru_cache`
+
+**What it fixes automatically:**
+| Problem | Example | Fixed To |
+|---------|---------|----------|
+| PDF line-break hyphenation | `Kali-\nmantan Selatan` | `Kalimantan Selatan` |
+| Kabupaten soft hyphen | `Labuhan-\nbatu` | `Kabupaten Labuhanbatu` |
+| Old province names | `Nanggroe Aceh Darussalam` | `Aceh` |
+| Abbreviated kecamatan | `Sei Tebelian` | `Sungai Tebelian` |
+| Kabupaten casing variants | `Labuhan batu` | `Kabupaten Labuhanbatu` |
+
+**Usage:**
+```python
+from backend.services.address_parser import address_parser
+result = address_parser.parse(raw_address_string)
+# result keys: alamat_lengkap, nama_poktan, desa, kecamatan, kabupaten, provinsi, kode_pos
+```
 
 ### Core Infrastructure ([CORE-###])
 - **[CORE-001]** main.py — FastAPI app entry point

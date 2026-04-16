@@ -11,40 +11,85 @@
 #   4. Poktan name bleeds into desa/kec words (informal part not delimited)
 #   5. Province hyphenation after parse: "Kali- mantan Selatan"
 
+import json
+import os
 import re
-from typing import Dict, Optional
+from functools import lru_cache
+from typing import Dict, List, Optional
+
+from rapidfuzz import fuzz, process
 
 # ---------------------------------------------------------------------------
-# Indonesian province normalisation table
-# Handles known INAPROC hyphenation and casing variants
+# Reference data loader (lazy, loaded once)
 # ---------------------------------------------------------------------------
-PROVINCE_FIXES: Dict[str, str] = {
-    "kalimantan selatan":  "Kalimantan Selatan",
-    "kalimantan barat":    "Kalimantan Barat",
-    "kalimantan tengah":   "Kalimantan Tengah",
-    "kalimantan timur":    "Kalimantan Timur",
-    "kalimantan utara":    "Kalimantan Utara",
-    "sulawesi selatan":    "Sulawesi Selatan",
-    "sulawesi tengah":     "Sulawesi Tengah",
-    "sulawesi tenggara":   "Sulawesi Tenggara",
-    "sulawesi barat":      "Sulawesi Barat",
-    "sulawesi utara":      "Sulawesi Utara",
-    "sumatera utara":      "Sumatera Utara",
-    "sumatera selatan":    "Sumatera Selatan",
-    "sumatera barat":      "Sumatera Barat",
-    "nusa tenggara barat": "Nusa Tenggara Barat",
-    "nusa tenggara timur": "Nusa Tenggara Timur",
-    "papua barat":         "Papua Barat",
-    "kepulauan riau":      "Kepulauan Riau",
-    "kepulauan bangka belitung": "Kepulauan Bangka Belitung",
-    "dki jakarta":         "DKI Jakarta",
-    "di yogyakarta":       "DI Yogyakarta",
-    "bangka belitung":     "Kepulauan Bangka Belitung",
-    "jawa barat":          "Jawa Barat",
-    "jawa tengah":         "Jawa Tengah",
-    "jawa timur":          "Jawa Timur",
-}
 
+_DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "wilayah_reference.json")
+
+@lru_cache(maxsize=1)
+def _load_reference() -> dict:
+    """Load the wilayah reference data once and cache it."""
+    with open(_DATA_FILE, encoding="utf-8") as f:
+        data = json.load(f)
+    return data
+
+
+def _build_normalised_lists():
+    """Build lowercase lookup lists for fuzzy matching."""
+    ref = _load_reference()
+    return {
+        "provinsi": ref["provinsi"],          # ['Aceh', 'Sumatera Utara', ...]
+        "kabupaten": ref["kabupaten"],         # ['Kabupaten Aceh Selatan', ...]
+        "kecamatan": ref["kecamatan"],         # ['Labuhan Haji', ...]
+        "kab_by_prov": ref.get("kab_by_prov", {}),
+        "kec_by_kab": ref.get("kec_by_kab", {}),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Fuzzy match helper
+# ---------------------------------------------------------------------------
+
+def _fuzzy_match(
+    query: str,
+    choices: List[str],
+    score_cutoff: int = 70,
+    strip_prefixes: Optional[List[str]] = None,
+) -> Optional[str]:
+    """
+    Return the best canonical match from choices, or None if score < cutoff.
+
+    strip_prefixes: list of strings to strip from query and each choice
+                    before scoring (e.g. ['Kabupaten ', 'Kota ', 'Kab. ']).
+    """
+    if not query or not choices:
+        return None
+
+    def _strip(s: str) -> str:
+        s_lower = s.lower()
+        if strip_prefixes:
+            for pfx in strip_prefixes:
+                if s_lower.startswith(pfx.lower()):
+                    return s[len(pfx):]
+        return s
+
+    q_stripped = _strip(query).strip()
+    stripped_choices = [_strip(c).strip() for c in choices]
+
+    result = process.extractOne(
+        q_stripped,
+        stripped_choices,
+        scorer=fuzz.WRatio,
+        score_cutoff=score_cutoff,
+    )
+    if result:
+        # result = (match_str, score, index)
+        return choices[result[2]]
+    return None
+
+
+# ---------------------------------------------------------------------------
+# InaprocAddressParser
+# ---------------------------------------------------------------------------
 
 class InaprocAddressParser:
     """
@@ -58,7 +103,7 @@ class InaprocAddressParser:
         #   "nama_poktan":    "BP. SEJAHTERA",
         #   "desa":           "Sei Penggantungan",
         #   "kecamatan":      "Panai Hilir",
-        #   "kabupaten":      "Kab. Labuhan batu",
+        #   "kabupaten":      "Kabupaten Labuhanbatu",
         #   "provinsi":       "Sumatera Utara",
         #   "kode_pos":       "21473",
         # }
@@ -73,7 +118,7 @@ class InaprocAddressParser:
         Fix PDF extraction artifacts before any parsing.
 
         Handles:
-        - Hard hyphen word-break:  "Kali-\\nmantan"   → "Kalimantan"
+        - Hard word-break hyphen:  "Kali-\\nmantan"   → "Kalimantan"
         - Soft hyphen (space gap): "Labuhan-\\n batu"  → "Labuhan batu"
         - Trailing/leading space around newlines
         - Collapsed double spaces
@@ -100,21 +145,94 @@ class InaprocAddressParser:
 
     def normalise_province(self, raw_prov: str) -> str:
         """
-        Normalise province string:
+        Normalise province string using reference data + fuzzy matching.
         - Fix hyphenation: "Kali- mantan Selatan" → "Kalimantan Selatan"
-        - Fix spacing: "Kalimantan  Selatan" → "Kalimantan Selatan"
-        - Apply canonical casing from PROVINCE_FIXES table.
+        - Fix spacing artifacts
+        - Fuzzy-match against 38 canonical province names
         """
         # Fix residual hyphenation ("Kali- mantan Selatan")
         fixed = re.sub(r'(\w+)-\s+(\w)', r'\1\2', raw_prov)
-        # Collapse spaces
         fixed = re.sub(r'\s+', ' ', fixed).strip()
-        # Lookup canonical form (case-insensitive)
-        canonical = PROVINCE_FIXES.get(fixed.lower())
-        return canonical if canonical else fixed
+
+        ref = _build_normalised_lists()
+        match = _fuzzy_match(fixed, ref["provinsi"], score_cutoff=70)
+        return match if match else fixed
 
     # ------------------------------------------------------------------
-    # Step 3 — Poktan extraction
+    # Step 3 — Kabupaten normalisation
+    # ------------------------------------------------------------------
+
+    def normalise_kabupaten(self, raw_kab: str, provinsi: Optional[str] = None) -> str:
+        """
+        Normalise kabupaten string using reference data + fuzzy matching.
+        - Accepts raw name with or without "Kab." prefix
+        - Narrows candidate list to the given province when available
+        - Returns canonical form: "Kabupaten X" or "Kota X"
+        """
+        # Strip known INAPROC prefixes
+        cleaned = re.sub(r'^Kab\.\s*', '', raw_kab, flags=re.IGNORECASE).strip()
+        # Fix residual hyphenation
+        cleaned = re.sub(r'(\w+)-\s+(\w)', r'\1\2', cleaned)
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+        ref = _build_normalised_lists()
+
+        # Narrow to province's kabupaten list when possible
+        candidates: List[str] = []
+        if provinsi:
+            # Try exact province key first, then fuzzy
+            for pname, kabs in ref["kab_by_prov"].items():
+                if pname.lower() == provinsi.lower():
+                    candidates = kabs
+                    break
+            if not candidates:
+                # province name may differ slightly
+                prov_match = _fuzzy_match(provinsi, list(ref["kab_by_prov"].keys()), score_cutoff=80)
+                if prov_match:
+                    candidates = ref["kab_by_prov"].get(prov_match, [])
+
+        if not candidates:
+            candidates = ref["kabupaten"]
+
+        strip_pfx = ["Kabupaten ", "Kota "]
+        match = _fuzzy_match(cleaned, candidates, score_cutoff=70, strip_prefixes=strip_pfx)
+        return match if match else f"Kab. {cleaned}"
+
+    # ------------------------------------------------------------------
+    # Step 4 — Kecamatan normalisation
+    # ------------------------------------------------------------------
+
+    def normalise_kecamatan(self, raw_kec: str, kabupaten: Optional[str] = None) -> str:
+        """
+        Normalise kecamatan string using reference data + fuzzy matching.
+        - Accepts raw name with or without "Kec." prefix
+        - Narrows candidate list to the given kabupaten when available
+        - Returns canonical form without prefix
+        """
+        cleaned = re.sub(r'^Kec(?:amatan)?\.\s*', '', raw_kec, flags=re.IGNORECASE).strip()
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+
+        ref = _build_normalised_lists()
+
+        candidates: List[str] = []
+        if kabupaten:
+            for kname, kecs in ref["kec_by_kab"].items():
+                if kname.lower() == kabupaten.lower():
+                    candidates = kecs
+                    break
+            if not candidates:
+                kab_match = _fuzzy_match(kabupaten, list(ref["kec_by_kab"].keys()), score_cutoff=75)
+                if kab_match:
+                    candidates = ref["kec_by_kab"].get(kab_match, [])
+
+        if not candidates:
+            candidates = ref["kecamatan"]
+
+        match = _fuzzy_match(cleaned, candidates, score_cutoff=70)
+        return match if match else cleaned
+
+    # ------------------------------------------------------------------
+    # Step 5 — Poktan extraction
     # ------------------------------------------------------------------
 
     def _extract_poktan(
@@ -135,15 +253,13 @@ class InaprocAddressParser:
           3. If desa not found, fall back to kecamatan boundary.
           4. If neither found, try kabupaten as last resort.
           5. Return full prefix unchanged if nothing matched.
-
-        Handles all INAPROC edge cases:
-          - Poktan starts with desa word (e.g. "SEMABI KOMPLEKS Semabi …")
-          - Poktan contains desa word repeated (e.g. "BP Simpang Datuk Satu Simpang Datuk …")
-          - Formal desa ≠ informal desa (uses kecamatan boundary instead)
         """
+        # Strip "Kabupaten "/"Kota " for matching in prefix text
+        kab_bare = re.sub(r'^(?:Kabupaten|Kota)\s+', '', kabupaten, flags=re.IGNORECASE).strip()
+
         kec_pattern = r'(?<!\w)' + re.escape(kecamatan) + r'(?!\w)'
         desa_pattern = r'(?<!\w)' + re.escape(desa) + r'(?!\w)'
-        kab_pattern  = r'(?<!\w)' + re.escape(kabupaten) + r'(?!\w)'
+        kab_pattern  = r'(?<!\w)' + re.escape(kab_bare) + r'(?!\w)'
 
         # Step 1 — kecamatan boundary
         kec_m = re.search(kec_pattern, prefix, re.IGNORECASE)
@@ -158,26 +274,23 @@ class InaprocAddressParser:
 
         cut = None
         if desa_positions:
-            # Take the LAST valid desa occurrence (handles repeated desa words in poktan)
             cut = max(desa_positions)
         elif kec_pos is not None:
-            # Desa not in prefix (formal ≠ informal) — use kecamatan boundary
             cut = kec_pos
         else:
-            # Last resort: kabupaten
             kab_m = re.search(kab_pattern, prefix, re.IGNORECASE)
             if kab_m and kab_m.start() > 0:
                 cut = kab_m.start()
 
         if cut:
             poktan = prefix[:cut].strip()
-            poktan = re.sub(r'[\s,\.]+$', '', poktan)  # remove trailing punctuation
+            poktan = re.sub(r'[\s,\.]+$', '', poktan)
             return poktan if poktan else prefix
 
         return prefix
 
     # ------------------------------------------------------------------
-    # Step 4 — Main parse entry point
+    # Step 6 — Main parse entry point
     # ------------------------------------------------------------------
 
     def parse(self, raw: str) -> Dict[str, str]:
@@ -197,7 +310,6 @@ class InaprocAddressParser:
             cleaned,
         )
         if not csv_m:
-            # Fallback: return cleaned string only, no location decomposition
             return result
 
         raw_desa      = csv_m.group(1).strip()
@@ -206,12 +318,14 @@ class InaprocAddressParser:
         raw_provinsi  = csv_m.group(4).strip()
         kode_pos      = csv_m.group(5).strip()
 
-        # Normalise province
-        provinsi = self.normalise_province(raw_provinsi)
+        # Normalise using reference data
+        provinsi  = self.normalise_province(raw_provinsi)
+        kabupaten = self.normalise_kabupaten(raw_kabupaten, provinsi=provinsi)
+        kecamatan = self.normalise_kecamatan(raw_kecamatan, kabupaten=kabupaten)
 
         result["desa"]      = raw_desa
-        result["kecamatan"] = raw_kecamatan
-        result["kabupaten"] = f"Kab. {raw_kabupaten}"
+        result["kecamatan"] = kecamatan
+        result["kabupaten"] = kabupaten
         result["provinsi"]  = provinsi
         result["kode_pos"]  = kode_pos
 
@@ -219,7 +333,7 @@ class InaprocAddressParser:
         comma_pos = cleaned.index(',')
         prefix    = cleaned[:comma_pos].strip()
         result["nama_poktan"] = self._extract_poktan(
-            prefix, raw_desa, raw_kecamatan, raw_kabupaten
+            prefix, raw_desa, kecamatan, kabupaten
         )
 
         return result

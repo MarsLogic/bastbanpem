@@ -167,6 +167,39 @@ export const DocumentGrid = ({ documents, onSelect }) => { ... }
 <div style={{ display: 'flex', padding: '16px' }}>
 ```
 
+## Address / Location Normalisation Pattern
+
+**Always use [DOCS-004] when you need to clean or parse any INAPROC address string.**
+
+```python
+# ✅ DO THIS — handles all INAPROC address variants
+from backend.services.address_parser import address_parser
+
+result = address_parser.parse(raw_string)
+# Returns: { alamat_lengkap, nama_poktan, desa, kecamatan, kabupaten, provinsi, kode_pos }
+
+# For bulk parsing:
+results = address_parser.parse_many(list_of_raw_strings)
+```
+
+**Individual normalisation (when you only need one level):**
+```python
+# Province only
+parser = InaprocAddressParser()
+prov = parser.normalise_province("Kali- mantan Selatan")    # → "Kalimantan Selatan"
+
+# Kabupaten (optionally scoped to a province for better accuracy)
+kab  = parser.normalise_kabupaten("Labuhan batu", provinsi="Sumatera Utara")  # → "Kabupaten Labuhanbatu"
+
+# Kecamatan (optionally scoped to kabupaten)
+kec  = parser.normalise_kecamatan("Sei Tebelian", kabupaten="Kabupaten Sintang")  # → "Sungai Tebelian"
+```
+
+**Reference data is in:** `backend/data/wilayah_reference.json` — do NOT delete this file.  
+**Source:** Kemendagri administrative data via ibnux/data-indonesia (refreshable by re-running the fetch script).
+
+---
+
 ## Testing Patterns
 
 ### 1. Test Structure

@@ -84,6 +84,15 @@ This document captures what works and what doesn't. AI uses this to make better 
 
 ---
 
+### Lesson: INAPROC Address Strings Need Fuzzy Normalisation, Not Just Regex
+**Category:** Bug Prevention / Architecture  
+**Context:** PDF extraction produced address strings with broken province names, hyphenated kabupaten, old province names (Nanggroe Aceh Darussalam). Regex-only cleaning didn't catch real-world variants.  
+**Insight:** A static lookup table only covers what you've seen before. Fuzzy matching against an authoritative reference covers unseen variants automatically. Narrowing candidates by province → kabupaten → kecamatan hierarchy gives high accuracy even at 70% score threshold.  
+**Action:** Built [DOCS-004] address_parser.py with `rapidfuzz.WRatio` + `backend/data/wilayah_reference.json` (38 prov, 514 kab, 7285 kec from Kemendagri). Use `address_parser.parse(raw)` for any INAPROC address.  
+**Date:** 2026-04-16
+
+---
+
 ## Decision Reversals
 
 *If you discover a decision was wrong, document why here*
