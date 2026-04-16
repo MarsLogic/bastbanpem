@@ -3,7 +3,7 @@ import json
 from typing import List, Optional
 from datetime import datetime
 from backend.db import db
-from backend.models import PipelineRow, ReconciliationResult, BatchTaskStatus, BatchSummary
+from backend.models import PipelineRow, ReconciliationResult, BatchTaskStatus, BatchSummary, ContractMetadata
 
 class VaultService:
     def __init__(self):
@@ -25,12 +25,20 @@ class VaultService:
             """)
 
     @staticmethod
-    def save_contract(id: str, name: str, target_value: float):
+    def save_contract(id: str, name: str, target_value: float, metadata: Optional[ContractMetadata] = None):
+        meta_json = metadata.model_dump_json() if metadata else "{}"
         with db.get_cursor() as cursor:
             cursor.execute(
-                "INSERT OR REPLACE INTO contracts (id, name, target_value, status) VALUES (?, ?, ?, ?)",
-                (id, name, target_value, "ACTIVE")
+                "INSERT OR REPLACE INTO contracts (id, name, target_value, status, metadata) VALUES (?, ?, ?, ?, ?)",
+                (id, name, target_value, "ACTIVE", meta_json)
             )
+
+    @staticmethod
+    def get_contract(id: str) -> Optional[dict]:
+        with db.get_cursor() as cursor:
+            cursor.execute("SELECT * FROM contracts WHERE id = ?", (id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
 
     @staticmethod
     def save_recipients(contract_id: str, rows: List[PipelineRow]):
