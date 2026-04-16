@@ -77,6 +77,7 @@ async def pdf_parse(file: UploadFile = File(...)):
 
         return PdfParseResult(
             metadata=metadata,
+            delivery_blocks=analysis.get("delivery_blocks", []),
             tables=analysis["tables"],
             total_pages=analysis["total_pages"]
         )

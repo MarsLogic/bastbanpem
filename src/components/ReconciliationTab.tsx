@@ -231,15 +231,16 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
             </TableHeader>
             <TableBody>
               {(contract.deliveryBlocks || []).map((block, idx) => {
-                const issues = result.issues.filter(i => i.pdfValue === block.nama || i.message.includes(block.nama));
+                const blockName = block.nama || block.namaPenerima || '';
+                const issues = result.issues.filter(i => i.pdfValue === blockName || i.message.includes(blockName));
                 const isClean = issues.length === 0;
-                
+
                 return (
                   <TableRow key={idx} className="group hover:bg-slate-50/50 transition-colors">
                     <TableCell className="text-center font-mono text-[10px] text-slate-400">#{idx + 1}</TableCell>
                     <TableCell className="py-4">
-                      <div className="font-bold text-[13px] text-slate-900">{block.nama}</div>
-                      <div className="text-[11px] font-mono text-slate-500">{block.kuantitas} Unit</div>
+                      <div className="font-bold text-[13px] text-slate-900">{blockName}</div>
+                      <div className="text-[11px] font-mono text-slate-500">{block.jumlah || block.jumlahProduk} Unit</div>
                     </TableCell>
                     <TableCell className="text-center">
                       <ArrowRight className="text-slate-300 w-4 h-4 mx-auto" />

@@ -62,17 +62,38 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
       const result = await parsePdfFile(pdfFile);
 
-      // Map extracted metadata to contract fields
-      // The backend returns: { metadata: {...}, tables: [...], total_pages: N }
-      const metadata = result.metadata || {};
-
+      // === Map Header Metadata (12 fields) ===
+      const m = result.metadata || {};
       const updates: Record<string, any> = {};
-      if (metadata.nomor_kontrak)  updates.nomorKontrak   = metadata.nomor_kontrak.trim();
-      if (metadata.tanggal_kontrak) updates.tanggalKontrak = metadata.tanggal_kontrak.trim();
-      if (metadata.nama_pemesan)   updates.namaPemesan    = metadata.nama_pemesan.trim();
-      if (metadata.nama_penyedia)  updates.namaPenyedia   = metadata.nama_penyedia.trim();
-      if (metadata.nama_produk)    updates.namaProduk     = metadata.nama_produk.trim();
-      if (metadata.nilai_kontrak)  updates.totalPembayaran = metadata.nilai_kontrak.trim();
+
+      if (m.nomor_kontrak)   updates.nomorKontrak    = m.nomor_kontrak.trim();
+      if (m.tanggal_kontrak) updates.tanggalKontrak  = m.tanggal_kontrak.trim();
+      if (m.nama_pemesan)    updates.namaPemesan     = m.nama_pemesan.trim();
+      if (m.nama_penyedia)   updates.namaPenyedia    = m.nama_penyedia.trim();
+      if (m.nama_produk)     updates.namaProduk      = m.nama_produk.trim().replace(/\s+$/, '');
+      if (m.nilai_kontrak)   updates.totalPembayaran = `Rp${m.nilai_kontrak.trim()}`;
+      if (m.total_kuantitas) updates.kuantitasProduk = `${m.total_kuantitas.trim()} liter`;
+
+      // === Map Delivery Blocks (per-recipient) ===
+      const rawBlocks: any[] = result.delivery_blocks || [];
+      if (rawBlocks.length > 0) {
+        updates.deliveryBlocks = rawBlocks.map((b: any) => ({
+          namaPenerima:    b.nama_penerima   || '',
+          nama:            b.nama_penerima   || '',   // alias for reconciliation
+          noTelp:          b.no_telp         || '',
+          permintaanTiba:  b.permintaan_tiba || '',
+          namaPoktan:      b.nama_poktan     || '',
+          alamatLengkap:   b.alamat_lengkap  || '',
+          desa:            b.desa            || '',
+          kecamatan:       b.kecamatan       || '',
+          kabupaten:       b.kabupaten       || '',
+          provinsi:        b.provinsi        || '',
+          kodePos:         b.kode_pos        || '',
+          jumlah:          b.jumlah          || '',
+          hargaProdukTotal: b.harga_produk_total || '',
+          ongkosKirim:     b.ongkos_kirim    || '',
+        }));
+      }
 
       onUpdate(updates);
 

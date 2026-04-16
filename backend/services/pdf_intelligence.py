@@ -6,68 +6,147 @@ from typing import List, Dict, Any, Optional
 
 class PDFIntelligence:
     def __init__(self):
-        # Anchor keywords for contract headers
+        # [DOCS-003] Validated against real Surat Pesanan INAPROC PDFs
+        # All patterns tested against EP-01K7NM3AVZA3Z6QQXRQN3QEPTV.pdf
         self.header_anchors = {
-            "eselon1": [r"Eselon\s*1\s*[:\-\s]*([A-Z\s]+)"],
-            "satker": [r"Satker\s*[:\-\s]*([A-Z0-9\s\-]+)"],
-            "nomor_dipa": [r"Nomor\s*Dipa\s*[:\-\s]*([A-Z0-9\/\.\-]+)"],
-            # Contract number — Surat Pesanan IDs can include spaces, so allow word chars + hyphens
-            "nomor_kontrak": [
-                r"No\.\s*Surat\s*Pesanan\s*[:\s]*([A-Z0-9][A-Z0-9\-\s]{4,50}?)(?:\n|,|\s{2,}|$)",
-                r"SPK\s*No\.?\s*([A-Z0-9\-\/]+)"
-            ],
-            "tanggal_kontrak": [
-                r"Tanggal\s*Surat\s*Pesanan\s*[:\s]*(\d{1,2}\s+\w+\s+\d{4})",
-                r"(\d{1,2}\s+\w+\s+\d{4})",
-                r"(\d{1,2}-\d{1,2}-\d{4})"
-            ],
-            # Pemesan = purchaser organization (line after "Pemesan" header)
-            "nama_pemesan": [
-                r"Pemesan\s*\n([A-Z][A-Z\s]+(?:PERTANIAN|KEHUTANAN|KELAUTAN|PERIKANAN|KEMENTERIAN|DIREKTORAT|DINAS|BADAN|KOTA|KABUPATEN)[A-Z\s]*)",
-                r"Pemesan\s*\n([^\n]{10,80})"
-            ],
-            # Penyedia = vendor/supplier name
-            "nama_penyedia": [
-                r"Penyedia\s*\n([A-Z][A-Z\s\.]+?)(?:\n|$)",
-                r"(?:CV|PT|UD|KOPERASI|FIRMA)\.\s*([A-Z][A-Z\s]+)",
-                r"Penyedia\s+([A-Z][A-Z\s]{3,50})"
-            ],
-            # Product name from Ringkasan Pesanan table
-            "nama_produk": [
-                r"Nama\s*Produk\s*\n([^\n]{5,80})",
-                r"(?:Insektisida|Pupuk|Benih|Obat|Alat)\s+([A-Z0-9\s]+\d+\s*(?:SL|WP|EC|GR|L|Kg|ml))",
-            ],
-            "nilai_kontrak": [
-                r"Estimasi\s*Total\s*Pembayaran\s*Rp\.?\s*([\d\.,]+)",
-                r"Total\s*Harga\s*Rp\.?\s*([\d\.,]+)",
-                r"Nilai\s*Kontrak\s*[:\-\s]*Rp\.?\s*([\d\.,]+)"
-            ],
-            "kegiatan_output_akun": [r"Kegiatan/Output/Akun\s*[:\-\s]*([0-9\.]+)"],
-            "vendor_npwp": [r"NPWP\s*Penyedia\s*[:\-\s]*([0-9\.\-]+)"]
+            # Contract number — exact newline structure from INAPROC export
+            "nomor_kontrak":   r"No\.\s*Surat\s*Pesanan\n:\s*([A-Z0-9][A-Z0-9\-]+)",
+            # Date — take only the date part, not timestamp
+            "tanggal_kontrak": r"Tanggal\s*Surat\s*Pesanan\n:\s*(\d{1,2}\s+\w+\s+\d{4})",
+            # Purchaser org is on the line immediately after "Pemesan\n"
+            "nama_pemesan":    r"Pemesan\n([A-Z][^\n]+)\nKementerian",
+            # PPK = first "Nama Penanggung Jawab" whose jabatan is PPK
+            "nama_ppk":        r"Nama Penanggung Jawab\n:\s*([^\n]+)\nJabatan Penanggung Jawab\n:\s*Pejabat Pembuat Komitmen",
+            # NPWP sections are labelled distinctly
+            "npwp_pemesan":    r"NPWP Pemesan\n:\s*([0-9\.\-]+)",
+            # Vendor name — line after "Penyedia\n"; handles UMKK and non-UMKK vendors
+            "nama_penyedia":   r"Penyedia\n([A-Z][^\n]+)\n(?:UMKK|Nama Penanggung)",
+            "npwp_penyedia":   r"NPWP Penyedia\n:\s*([0-9\.\-]+)",
+            # Product = line after "Barang\nPDN\n" in Ringkasan Pesanan
+            "nama_produk":     r"Barang\nPDN\n([^\n]+)",
+            # Unit price = Rp value after PPN label, before the quantity line
+            "harga_satuan":    r"Golongan PPN[^\n]*\nRp([\d\.,]+)\n",
+            # Total quantity from "X liter" in Ringkasan Pesanan
+            "total_kuantitas": r"([\d\.,]+)\s*liter",
+            # Total payment
+            "nilai_kontrak":   r"Estimasi Total Pembayaran\nRp([\d\.,]+)",
+            # Number of delivery stages
+            "jumlah_tahap":    r"Pengiriman\n:\s*(\d+)\s*Tahap",
+            # Legacy/other contract types
+            "nomor_dipa":          r"Nomor\s*Dipa\s*[:\-\s]*([A-Z0-9\/\.\-]+)",
+            "kegiatan_output_akun": r"Kegiatan/Output/Akun\s*[:\-\s]*([0-9\.]+)",
         }
+
+    def _parse_address(self, addr_raw: str) -> Dict[str, str]:
+        """
+        Parse INAPROC address format:
+        '[Poktan] [Desa] [Kec] [Kab] [Prov], [Desa], [Kec], Kab. [Kab], [Prov], [Kodepos]'
+        """
+        addr_clean = addr_raw.strip().replace('\n', ' ')
+        result = {"alamat_lengkap": addr_clean}
+
+        # Structured part after first comma: Desa, Kec, Kab. X, Prov, Kodepos
+        csv_m = re.search(
+            r',\s*([^,]+),\s*([^,]+),\s*Kab\.\s*([^,]+),\s*([^,]+),\s*(\d{5})',
+            addr_clean
+        )
+        if csv_m:
+            result["desa"]      = csv_m.group(1).strip()
+            result["kecamatan"] = csv_m.group(2).strip()
+            result["kabupaten"] = f"Kab. {csv_m.group(3).strip()}"
+            result["provinsi"]  = csv_m.group(4).strip()
+            result["kode_pos"]  = csv_m.group(5).strip()
+            # Poktan = everything before the first structured desa occurrence
+            prefix = addr_clean[:addr_clean.find(',')].strip()
+            desa = result["desa"]
+            if desa.lower() in prefix.lower():
+                prefix = prefix[:prefix.lower().find(desa.lower())].strip()
+            result["nama_poktan"] = prefix
+
+        return result
 
     def extract_header_data(self, doc: fitz.Document) -> Dict[str, Any]:
         """
-        Elite Scan: Looks at the first 3 pages for contract metadata.
+        Elite Scan: Scans first 3 pages for all 12 contract header fields.
+        Patterns validated against INAPROC Surat Pesanan export format.
         """
         data = {}
         full_text = ""
         for i in range(min(3, len(doc))):
             full_text += doc[i].get_text()
 
-        for key, patterns in self.header_anchors.items():
-            for pattern in patterns:
-                match = re.search(pattern, full_text, re.IGNORECASE)
-                if match:
-                    data[key] = match.group(1).strip()
-                    break
-                    
+        for key, pattern in self.header_anchors.items():
+            m = re.search(pattern, full_text)
+            if m:
+                data[key] = m.group(1).strip()
+
         # Flag heuristics
         data["is_ongkir_terpisah"] = "ongkir terpisah" in full_text.lower()
-        data["is_swakelola"] = "swakelola" in full_text.lower()
+        data["is_swakelola"]       = "swakelola" in full_text.lower()
         data["is_menggunakan_termin"] = "termin" in full_text.lower()
-        
+
         return data
+
+    def extract_delivery_blocks(self, doc: fitz.Document) -> List[Dict[str, Any]]:
+        """
+        Extract all delivery/pengiriman blocks from Surat Pesanan PDF.
+        Each block = one recipient with full address, quantity, pricing.
+        Handles multi-page documents (INAPROC exports can be 32+ pages).
+        """
+        full_text = ""
+        for page in doc:
+            full_text += page.get_text()
+
+        # Split on each "Nama Penerima" header — each is one delivery block
+        sections = re.split(r'(?=Nama Penerima\s*\n:\s*)', full_text)
+        blocks = []
+
+        for section in sections[1:]:  # sections[0] is header before first block
+            block: Dict[str, Any] = {}
+
+            # Name + phone
+            m = re.match(r'Nama Penerima\s*\n:\s*(.+?)\s*\((\d+)\)', section)
+            if not m:
+                continue
+            block["nama_penerima"] = m.group(1).strip()
+            block["no_telp"]       = m.group(2).strip()
+
+            # Delivery date range
+            m = re.search(r'Permintaan Tiba\s*\n:\s*(.+)', section)
+            if m:
+                block["permintaan_tiba"] = m.group(1).strip()
+
+            # Address block — ends at "Catatan Alamat"
+            m = re.search(
+                r'Alamat Pengiriman\s*\n:\s*(.+?)\nCatatan Alamat',
+                section, re.DOTALL
+            )
+            if m:
+                block.update(self._parse_address(m.group(1)))
+
+            # Quantity (first number after product name line)
+            m = re.search(r'INSEKTISIDA[^\n]*\n([\d\.,]+)\n', section)
+            if not m:
+                # Generic product line — any product name capitalised
+                m = re.search(r'(?:PDN|Barang)[^\n]*\n([A-Z][^\n]+)\n([\d\.,]+)\n', section)
+                if m:
+                    block["jumlah"] = m.group(2).strip()
+            else:
+                block["jumlah"] = m.group(1).strip()
+
+            # Product line total
+            m = re.search(r'Harga Produk \([\d\.,]+\)\nRp([\d\.,]+)', section)
+            if m:
+                block["harga_produk_total"] = f"Rp{m.group(1).strip()}"
+
+            # Shipping cost
+            m = re.search(r'Ongkos Kirim \([\d\.,]+ kg\)\nRp([\d\.,]+)', section)
+            if m:
+                block["ongkos_kirim"] = f"Rp{m.group(1).strip()}"
+
+            blocks.append(block)
+
+        return blocks
 
     def extract_lampiran_tables(self, doc: fitz.Document) -> List[Dict[str, Any]]:
         """
@@ -158,13 +237,15 @@ class PDFIntelligence:
     def analyze_document(self, file_path: str) -> Dict[str, Any]:
         """
         Master Entry Point for PDF Intelligence.
+        Returns header metadata, delivery blocks, lampiran tables, and page count.
         """
         doc = fitz.open(file_path)
         try:
             return {
-                "metadata": self.extract_header_data(doc),
-                "tables": self.extract_lampiran_tables(doc),
-                "total_pages": len(doc)
+                "metadata":        self.extract_header_data(doc),
+                "delivery_blocks": self.extract_delivery_blocks(doc),
+                "tables":          self.extract_lampiran_tables(doc),
+                "total_pages":     len(doc)
             }
         finally:
             doc.close()

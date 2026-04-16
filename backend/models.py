@@ -64,30 +64,51 @@ class EvidenceData(BaseModel):
     foto_bukti_5_path: Optional[str] = None
 
 class ContractMetadata(BaseModel):
-    # Administrative
+    # === Contract Identity ===
+    nomor_kontrak: Optional[str] = None       # No. Surat Pesanan
+    tanggal_kontrak: Optional[str] = None     # Tanggal Surat Pesanan
+
+    # === Pemesan (Purchaser) ===
+    nama_pemesan: Optional[str] = None        # Org name (Direktorat/Dinas etc)
+    nama_ppk: Optional[str] = None            # Nama Penanggung Jawab PPK
+    npwp_pemesan: Optional[str] = None        # NPWP Pemesan
+
+    # === Penyedia (Vendor) ===
+    nama_penyedia: Optional[str] = None       # Vendor company name
+    npwp_penyedia: Optional[str] = None       # NPWP Penyedia
+
+    # === Product ===
+    nama_produk: Optional[str] = None         # Product name (e.g. INSEKTISIDA VISTA 400 SL)
+    harga_satuan: Optional[str] = None        # Unit price per liter/unit
+    total_kuantitas: Optional[str] = None     # Total volume (e.g. 28.943,00 liter)
+
+    # === Financials ===
+    nilai_kontrak: Optional[str] = None       # Estimasi Total Pembayaran
+    nilai_penyaluran: float = 0.0
+    nilai_bast: float = 0.0
+    nilai_spm: float = 0.0
+    nilai_konfirmasi: float = 0.0
+
+    # === Delivery Config ===
+    jumlah_tahap: Optional[str] = None        # Number of delivery stages
+
+    # === Flags ===
+    is_ongkir_terpisah: bool = False
+    is_swakelola: bool = False
+    is_menggunakan_termin: bool = False
+
+    # === Legacy / Other Contract Types ===
     eselon1: Optional[str] = None
     satker: Optional[str] = None
-    nomor_kontrak: Optional[str] = None      # No. Surat Pesanan
-    tanggal_kontrak: Optional[str] = None
-    nilai_kontrak: Optional[str] = None
     nomor_dipa: Optional[str] = None
     kegiatan_output_akun: Optional[str] = None
     judul_kegiatan: Optional[str] = None
-
-    # Parties
-    nama_pemesan: Optional[str] = None       # Pihak Pertama / Pemesan
-    nama_penyedia: Optional[str] = None      # Pihak Kedua / Penyedia
-    nama_produk: Optional[str] = None        # Product name from Ringkasan Pesanan
-
-    # Recipient Config
     titik_bagi: Optional[str] = None
-    desa: Optional[str] = None
     tipe_penerima: Optional[str] = None
     jenis_kontrak: Optional[str] = None
-
-    # Vendor
     vendor_name: Optional[str] = None
     vendor_npwp: Optional[str] = None
+    dibuat_oleh: Optional[str] = None
     
     # Financials
     nilai_penyaluran: float = 0.0
@@ -161,6 +182,7 @@ class BundleRequest(BaseModel):
 
 class PdfParseResult(BaseModel):
     metadata: ContractMetadata = Field(default_factory=ContractMetadata)
+    delivery_blocks: List[Dict[str, Any]] = []   # Parsed pengiriman blocks (recipients)
     tables: List[Dict[str, Any]] = []
     total_pages: int = 0
 

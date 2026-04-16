@@ -21,19 +21,27 @@ export interface ContractMetadata {
 }
 
 export interface DeliveryBlock {
+  // Identity
   namaPenerima?: string;
-  telepon?: string;
+  noTelp?: string;
   permintaanTiba?: string;
+  // Location
+  namaPoktan?: string;
   alamatLengkap?: string;
+  desa?: string;
   kecamatan?: string;
   kabupaten?: string;
   provinsi?: string;
   kodePos?: string;
   catatanAlamat?: string;
-  jumlahProduk?: number;
+  // Financials
+  jumlah?: string;            // quantity as string e.g. "1.300,00"
+  jumlahProduk?: number;      // legacy numeric form
   hargaProdukTotal?: string;
   ongkosKirim?: string;
   pageSource?: number;
+  // Reconciliation link
+  nama?: string;              // alias for reconciliation matching
 }
 
 export interface PortalMetadata {
@@ -119,7 +127,7 @@ export interface ContractData {
   kuantitasProduk?: string;
   totalPembayaran?: string;
 
-  deliveryBlocks?: any[];
+  deliveryBlocks?: DeliveryBlock[];
   
   // Portal Metadata
   portalMetadata?: PortalMetadata;
