@@ -236,13 +236,11 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         )}
       </div>
       {numPages && numPages > 1 && (
-        <div className="p-2 border-t bg-background flex justify-center items-center gap-2">
+        <div className="p-2 border-t bg-background flex justify-center items-center gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber <= 1} onClick={() => setPageNumber(1)}><ChevronsLeft className="h-4 w-4" /></Button>
-          <div className="flex items-center gap-2 mx-2">
-            <span className="text-sm">Page</span>
-            <Input type="number" className="h-8 w-16 text-center" min={1} max={numPages} value={pageNumber} onChange={(e) => setPageNumber(parseInt(e.target.value) || 1)} />
-            <span className="text-sm">of {numPages}</span>
-          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber <= 1} onClick={() => setPageNumber(p => Math.max(1, p - 1))}><ChevronLeft className="h-4 w-4" /></Button>
+          <span className="text-sm font-medium tabular-nums px-3 min-w-[80px] text-center select-none">{pageNumber} / {numPages}</span>
+          <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber >= numPages} onClick={() => setPageNumber(p => Math.min(numPages, p + 1))}><ChevronRight className="h-4 w-4" /></Button>
           <Button variant="ghost" size="icon" className="h-8 w-8" disabled={pageNumber >= numPages} onClick={() => setPageNumber(numPages)}><ChevronsRight className="h-4 w-4" /></Button>
         </div>
       )}
