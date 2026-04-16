@@ -127,10 +127,40 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
       }
 
       try {
-        // Extract contract ID for lookup (use nomorKontrak or fall back to contract.id)
-        const contractIdForLookup = contract.nomorKontrak?.replace(/\s+/g, '_') || contract.id;
+        // Try multiple lookup strategies since the saved ID might not match contract.id
+        const possibleIds: string[] = [];
         
-        const savedData = await loadContract(contractIdForLookup);
+        // Strategy 1: Use nomorKontrak if already in store
+        if (contract.nomorKontrak) {
+          possibleIds.push(contract.nomorKontrak.replace(/\s+/g, '_'));
+        }
+        
+        // Strategy 2: Extract from contractPdfPath filename (e.g., "surat-pesanan-EP-001K7NM3..." -> "EP-001K7NM3...")
+        if (contract.contractPdfPath) {
+          const match = contract.contractPdfPath.match(/-(EP-[A-Z0-9]+)/);
+          if (match) {
+            possibleIds.push(match[1]);
+          }
+        }
+        
+        // Strategy 3: Fall back to contract.id
+        possibleIds.push(contract.id);
+        
+        // Try each ID until one succeeds
+        let savedData = null;
+        for (const id of possibleIds) {
+          try {
+            savedData = await loadContract(id);
+            if (savedData) {
+              console.log(`[UIUX-005] Successfully loaded contract data using ID: ${id}`);
+              break;
+            }
+          } catch {
+            // Try next ID
+            continue;
+          }
+        }
+        
         if (savedData) {
           // Map database fields back to ContractData fields
           const updates: Record<string, any> = {};
