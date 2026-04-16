@@ -194,7 +194,7 @@ export const SlicerWorkspace: React.FC<SlicerWorkspaceProps> = ({ farmers, setFa
 
             <div className="w-px h-6 bg-border" />
 
-            <Select value={evidenceType} onValueChange={setEvidenceType}>
+            <Select value={evidenceType} onValueChange={(val) => setEvidenceType(val || 'KTP')}>
               <SelectTrigger className="w-[140px] h-8 text-[10px] font-black uppercase rounded-full">
                 <SelectValue placeholder="Evidence Type" />
               </SelectTrigger>

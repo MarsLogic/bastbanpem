@@ -75,17 +75,18 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
     id: r.nik,
     nik: r.nik,
     name: r.name,
+    group: r.group || 'N/A',
     hasSJ: r.hasSJ || false,
     hasPhoto: r.hasPhoto || false,
     hasKtp: r.hasKtp || false,
-    isMathSynced: r.isSynced,
+    isMathSynced: r.is_synced,
     useGlobal: { ujiLab: true, sertifikasiLab: true, transportInvoice: true }
   }));
 
   const setFarmersProxyByNik = (setter: any) => {
     const updatedFarmers = typeof setter === 'function' ? setter(farmers) : setter;
     const updatedRecipients = contract.recipients.map(r => {
-        const matchingFarmer = updatedFarmers.find((f:any) => f.nik === r.nik);
+        const matchingFarmer = updatedFarmers.find((f: any) => f.nik === r.nik);
         if (matchingFarmer) {
             return { ...r, hasPhoto: matchingFarmer.hasPhoto, hasKtp: matchingFarmer.hasKtp, hasSJ: matchingFarmer.hasSJ };
         }
@@ -189,7 +190,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
                 setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
                 type="ktp"
                 bindings={contract.ktpBindings}
-                onBindChange={(newBindings) => onUpdate(contract.id, { ktpBindings: newBindings })}
+                onBindChange={(newBindings: Record<string, string>) => onUpdate(contract.id, { ktpBindings: newBindings })}
               />
             </DashboardSection>
 
@@ -204,10 +205,10 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
                 farmers={farmers}
                 setFarmers={setFarmersProxyByNik}
                 globalConfig={globalConfig}
-                setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
+                setGlobalConfig={(c: any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
                 type="proof"
                 bindings={contract.proofBindings}
-                onBindChange={(newBindings) => onUpdate(contract.id, { proofBindings: newBindings })}
+                onBindChange={(newBindings: Record<string, string>) => onUpdate(contract.id, { proofBindings: newBindings })}
               />
             </DashboardSection>
         </div>
@@ -230,7 +231,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 h-[800px]">
              <div className="border-r border-slate-100">
-                <DocumentManager contract={contract} onUpdate={(updates) => onUpdate(contract.id, updates)} />
+                <DocumentManager contract={contract} onUpdate={(updates: Partial<ContractData>) => onUpdate(contract.id, updates)} />
              </div>
              <div className="bg-slate-50/30 overflow-hidden flex flex-col">
                 <div className="px-6 py-3 border-b flex justify-between items-center bg-white/50">
@@ -253,7 +254,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         >
           <PortalSyncModule 
             contract={contract} 
-            onUpdate={(updates) => onUpdate(contract.id, updates)} 
+            onUpdate={onUpdate} 
           />
         </DashboardSection>
       </div>

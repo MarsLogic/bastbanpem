@@ -28,7 +28,8 @@
       "Bash(repomix --version)",
       "Bash(npm install:*)",
       "Bash(2>&1)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(choco install:*)"
     ]
   }
 }

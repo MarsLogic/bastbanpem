@@ -23,37 +23,32 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
-  const [selectedExcel, setSelectedExcel] = useState<File | null>(null);
   
   const pdfInputRef = useRef<HTMLInputElement>(null);
-  const excelInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenModal = () => {
     setNewName('');
     setSelectedPdf(null);
-    setSelectedExcel(null);
     setIsModalOpen(true);
+  };
+
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setSelectedPdf(file);
+    if (file) {
+      // Auto-fill Pipeline Identity with filename (minus extension)
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+      setNewName(nameWithoutExt);
+    }
   };
 
   const submitCreate = async () => {
     if (!newName.trim()) return;
     
-    if (selectedPdf && selectedExcel) {
-      setIsProcessing(true);
-      try {
-        const result = await reconcileFiles(selectedPdf, selectedExcel);
-        onCreateContract(newName, result);
-        toast.success('Reconciliation completed successfully');
-      } catch (e: any) {
-        toast.error(`Processing failed: ${e.message}`);
-      } finally {
-        setIsProcessing(false);
-        setIsModalOpen(false);
-      }
-    } else {
-      onCreateContract(newName);
-      setIsModalOpen(false);
-    }
+    // In this updated version, we only initialize with name.
+    // The PDF processing happens within the Contract Workspace.
+    onCreateContract(newName);
+    setIsModalOpen(false);
   };
 
   const filtered = contracts.filter(c => {
@@ -151,7 +146,7 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
       {/* Custom Create Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-card w-[500px] border rounded-xl shadow-2xl flex flex-col overflow-hidden">
+          <div className="bg-card w-[450px] border rounded-xl shadow-2xl flex flex-col overflow-hidden">
             <div className="px-6 py-4 border-b flex justify-between items-center bg-muted/30">
               <h3 className="text-lg font-bold">Create New Contract</h3>
               <Button variant="ghost" size="icon" onClick={() => setIsModalOpen(false)} className="h-8 w-8 rounded-full">
@@ -160,66 +155,53 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
             </div>
             
             <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-4">
                 {/* PDF Upload */}
-                <div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Master Contract PDF</label>
                   <input 
                     type="file" 
                     ref={pdfInputRef} 
-                    onChange={(e) => setSelectedPdf(e.target.files?.[0] || null)} 
+                    onChange={handlePdfChange} 
                     accept=".pdf" 
                     className="hidden" 
                   />
                   <div 
-                    className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors h-32 ${selectedPdf ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
+                    className={`p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 cursor-pointer transition-all h-40 ${selectedPdf ? 'bg-slate-900 border-slate-900 text-white shadow-xl scale-[1.02]' : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'}`}
                     onClick={() => pdfInputRef.current?.click()}
                   >
-                    <FileText className={`h-6 w-6 ${selectedPdf ? 'text-white' : 'text-slate-400'}`} />
-                    <span className="text-[10px] font-black uppercase tracking-tight text-center">
-                      {selectedPdf ? selectedPdf.name : 'Attach PDF'}
-                    </span>
+                    <div className={`p-3 rounded-full ${selectedPdf ? 'bg-white/10' : 'bg-white shadow-sm'}`}>
+                      <FileText className={`h-6 w-6 ${selectedPdf ? 'text-white' : 'text-indigo-600'}`} />
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[11px] font-black uppercase tracking-tight text-center">
+                        {selectedPdf ? selectedPdf.name : 'Select PDF Source'}
+                      </span>
+                      {!selectedPdf && <span className="text-[9px] font-bold text-slate-400 uppercase">Mandatory for Pipeline Intelligence</span>}
+                    </div>
                   </div>
                 </div>
 
-                {/* Excel Upload */}
-                <div>
-                  <input 
-                    type="file" 
-                    ref={excelInputRef} 
-                    onChange={(e) => setSelectedExcel(e.target.files?.[0] || null)} 
-                    accept=".xlsx,.xls" 
-                    className="hidden" 
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Pipeline Identity</label>
+                  <Input 
+                    placeholder="e.g. Surat Pesanan 123..." 
+                    value={newName}
+                    onChange={e => setNewName(e.target.value)}
+                    disabled={isProcessing}
+                    className="h-11 font-bold"
                   />
-                  <div 
-                    className={`p-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors h-32 ${selectedExcel ? 'bg-slate-900 border-slate-900 text-white' : 'bg-slate-50 border-slate-200 hover:bg-slate-100'}`}
-                    onClick={() => excelInputRef.current?.click()}
-                  >
-                    <FileUp className={`h-6 w-6 ${selectedExcel ? 'text-white' : 'text-slate-400'}`} />
-                    <span className="text-[10px] font-black uppercase tracking-tight text-center">
-                      {selectedExcel ? selectedExcel.name : 'Attach Excel'}
-                    </span>
-                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Pipeline Identity</label>
-                <Input 
-                  placeholder="e.g. Surat Pesanan 123..." 
-                  value={newName}
-                  onChange={e => setNewName(e.target.value)}
-                  disabled={isProcessing}
-                />
               </div>
             </div>
 
             <div className="px-6 py-4 bg-slate-50 border-t flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={isProcessing} className="text-xs font-bold uppercase">Back</Button>
-              <Button onClick={submitCreate} disabled={!newName.trim() || isProcessing} className="px-10 bg-black text-white hover:bg-zinc-800 font-bold text-xs uppercase tracking-widest h-10 shadow-lg shadow-zinc-200">
+              <Button onClick={submitCreate} disabled={!newName.trim() || isProcessing} className="px-10 bg-black text-white hover:bg-zinc-800 font-bold text-xs uppercase tracking-widest h-11 shadow-lg shadow-zinc-200 rounded-lg">
                 {isProcessing ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing
+                    Initializing
                   </>
                 ) : 'Initialize Pipeline'}
               </Button>

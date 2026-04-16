@@ -11,6 +11,9 @@ from backend.services.license_service import LicenseService
 import uvicorn
 import traceback
 import os
+import webbrowser
+import threading
+import time
 
 app = FastAPI(title="Bastbanpem Automator - Elite Stack")
 license_svc = LicenseService()
@@ -82,5 +85,12 @@ if os.path.exists(DIST_PATH):
             return FileResponse(file_path)
         return FileResponse(os.path.join(DIST_PATH, "index.html"))
 
+def open_browser():
+    """Wait for server to start then launch default browser."""
+    time.sleep(1.5)
+    webbrowser.open(f"http://{settings.API_HOST}:{settings.API_PORT}")
+
 if __name__ == "__main__":
+    if not os.getenv("ELITE_DEBUG_NO_BROWSER"):
+        threading.Thread(target=open_browser, daemon=True).start()
     uvicorn.run(app, host=settings.API_HOST, port=settings.API_PORT)

@@ -90,13 +90,13 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
             ktp_bindings: contract.ktpBindings || {},
             proof_bindings: contract.proofBindings || {},
             recipients: contract.recipients.map(r => ({
-                id: r.rowId,
+                id: r.id,
                 nik: r.nik,
                 name: r.name,
-                raw_values: r.originalValues || {},
-                balanced_values: r.editedValues || {},
-                is_balanced: r.isSynced,
-                page_source: (r as any).pageSource || 0
+                raw_values: r.original_row || {},
+                balanced_values: r.column_data || {},
+                is_balanced: r.is_synced,
+                page_source: (r as any).page_source || 0
             }))
         };
 

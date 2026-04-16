@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { useMemo } from 'react';
 import localforage from 'localforage';
 
 localforage.config({
@@ -62,6 +63,7 @@ export interface RecipientProxyData {
 
 export interface ExcelRow {
   id: string;
+  rowId?: string; // Support for ReconciliationTab
   nik: string;
   name: string;
   location: {
@@ -93,6 +95,13 @@ export interface ExcelRow {
   isDuplicate?: boolean;
   isGlobalDouble?: boolean;
   otherContracts?: { id: string, name: string }[];
+  // Audit / Legacy fields
+  hasSJ?: boolean;
+  hasPhoto?: boolean;
+  hasKtp?: boolean;
+  calculatedValue?: number;
+  originalValues?: Record<string, any>;
+  editedValues?: Record<string, any>;
 }
 
 export interface ContractData {
@@ -138,6 +147,7 @@ export interface ContractData {
   sertifikatLabPath: string | null;
   
   lastModified: number;
+  metadata?: any;
 }
 
 interface ContractStore {

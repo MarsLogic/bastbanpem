@@ -57,6 +57,16 @@ interface ImageEntry {
   assetUrl: string;
 }
 
+interface ImageTaggerWorkspaceProps {
+  farmers: Farmer[];
+  setFarmers: (setter: any) => void;
+  globalConfig: GlobalConfig;
+  setGlobalConfig: (setter: any) => void;
+  type: 'ktp' | 'proof';
+  bindings?: Record<string, string>;
+  onBindChange?: (bindings: Record<string, string>) => void;
+}
+
 export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({ 
   farmers, 
   setFarmers, 
@@ -89,7 +99,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
   const directoryPath = type === 'ktp' ? globalConfig.ktpDir : globalConfig.proofDir;
 
   const poktans = useMemo(() => {
-    const set = new Set(farmers.map(f => f.group).filter(Boolean));
+    const set = new Set(farmers.map((f: Farmer) => f.group).filter(Boolean));
     return ['ALL', ...Array.from(set)];
   }, [farmers]);
 
@@ -115,9 +125,9 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
       const selected = await open({ directory: true, multiple: false });
       if (selected && typeof selected === 'string') {
         if (type === 'ktp') {
-          setGlobalConfig(prev => ({ ...prev, ktpDir: selected }));
+          setGlobalConfig((prev: any) => ({ ...prev, ktpDir: selected }));
         } else {
-          setGlobalConfig(prev => ({ ...prev, proofDir: selected }));
+          setGlobalConfig((prev: any) => ({ ...prev, proofDir: selected }));
         }
         loadImagesFromDir(selected, false);
       }
@@ -136,7 +146,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
       const loadedImages = imageFiles.map(e => {
         const fullPath = `${dirPath}\\${e.name}`;
         return {
-          name: e.name,
+          name: e.name || '',
           path: fullPath,
           assetUrl: convertFileSrc(fullPath)
         } as ImageEntry;
@@ -259,7 +269,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
           const ocrResult = await ocrKtp(file); // Assume api handles ocrVersion selection internally or we pass it
           const nik = ocrResult.nik;
 
-          if (nik && farmers.find(f => f.nik === nik)) {
+          if (nik && farmers.find((f: Farmer) => f.nik === nik)) {
             newBindings[targets[i].name] = nik;
             boundCount++;
           }
@@ -282,7 +292,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
     }
   };
 
-  const filteredFarmers = farmers.filter(f => 
+  const filteredFarmers = farmers.filter((f: Farmer) => 
     (poktanFilter === 'ALL' || f.group === poktanFilter) &&
     (f.name.toLowerCase().includes(searchTerm.toLowerCase()) || f.nik.includes(searchTerm))
   );
@@ -376,7 +386,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
         </main>
 
         <div className="studio-filmstrip bg-black/40 border-t border-white/5 p-4 flex gap-4 overflow-x-auto scrollbar-none">
-            {images.map(img => (
+            {images.map((img: ImageEntry) => (
                 <div 
                     key={img.name} 
                     onClick={() => setSelectedImage(img)}
@@ -403,12 +413,12 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3 text-white/20" />
                 <Input placeholder="Search..." className="pl-9 h-10 bg-black border-white/10 text-white text-xs rounded-lg" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
               </div>
-              <Select value={poktanFilter} onValueChange={setPoktanFilter}>
+              <Select value={poktanFilter} onValueChange={(val) => setPoktanFilter(val || 'ALL')}>
                   <SelectTrigger className="w-[100px] h-10 bg-black border-white/10 text-white text-[10px] font-bold">
                       <Filter size={12} />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                      {poktans.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                      {poktans.map((p: any) => <SelectItem key={String(p)} value={String(p)}>{String(p)}</SelectItem>)}
                   </SelectContent>
               </Select>
           </div>
@@ -416,7 +426,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
 
         <ScrollArea className="flex-1 p-4">
           <div className="flex flex-col gap-2">
-            {filteredFarmers.map(f => {
+            {filteredFarmers.map((f: Farmer) => {
                const isTagged = selectedImage && bindings[selectedImage.name] === f.nik;
                return (
                 <div key={f.nik} className={cn("p-4 rounded-xl border transition-all cursor-pointer group", isTagged ? "bg-white border-white text-black" : "bg-white/5 border-white/5 text-white hover:border-white/20")}>

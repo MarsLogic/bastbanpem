@@ -2,6 +2,32 @@
 
 Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 100% continuity and token efficiency, you MUST follow these rules.
 
+## 0. Session Initialization (AI Learning System)
+
+**On every new session, do this FIRST (before Pulse Check):**
+
+1. **Check for active task:** `ls -la .claude/current-task.md`
+   - If exists: Read it. This is your surgical context.
+   - If missing: You can explore, but ask user what to work on next.
+
+2. **Load project knowledge (5 min read):**
+   - `.claude/project-knowledge/architecture.md` — How the system is structured
+   - `.claude/project-knowledge/patterns.md` — Coding patterns to follow
+   - `.claude/project-knowledge/decisions.md` — Why we built it this way
+   - `.claude/project-knowledge/lessons-learned.md` — What worked, what didn't
+
+3. **Load memory index:**
+   - `.claude/projects/[project]/memory/MEMORY.md` — Points to all project memories
+   - Reference memories as needed during work
+
+**Why?** These files contain institutional knowledge. Reading them prevents:
+- ❌ AI re-reading the whole codebase every session
+- ❌ AI making decisions that contradict past choices
+- ❌ AI wasting tokens on exploration
+- ✅ AI working surgically, getting smarter over time
+
+**This makes AI act like a Hermes agent** — each session is smarter than the last because it learns from what came before.
+
 ## 1. Mandatory Session Start (Pulse Check)
 Before taking ANY action, you must run these commands to sync your mental map:
 1. `rtk git log -n 1` - Identify the last physical change.

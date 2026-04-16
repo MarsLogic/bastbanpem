@@ -90,7 +90,7 @@ export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: Exc
     let bestMatch: ExcelRow | null = null;
     let maxSimilarity = -1;
 
-    excelRows.forEach(row => {
+    excelRows.forEach((row: ExcelRow) => {
       const sim = calculateNameSimilarity(pdfName, row.name || '');
       if (sim > maxSimilarity) {
         maxSimilarity = sim;
@@ -104,17 +104,17 @@ export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: Exc
         severity: 'high',
         message: `Recipient "${pdfName}" not found in Excel`,
         pdfValue: pdfName,
-        excelValue: bestMatch?.name || 'N/A',
+        excelValue: (bestMatch as any)?.name || 'N/A',
         pageSource: (block as any).pageSource
       });
     } else {
-        if (bestMatch && Math.abs(pdfQty - (bestMatch.financials.qty || 0)) > 0.01) {
+        if (bestMatch && Math.abs(pdfQty - ((bestMatch as ExcelRow).financials.qty || 0)) > 0.01) {
             issues.push({
                 type: 'QUANTITY_MISMATCH',
                 severity: 'medium',
                 message: `Quantity mismatch for ${pdfName}`,
                 pdfValue: pdfQty.toString(),
-                excelValue: (bestMatch.financials.qty || 0).toString(),
+                excelValue: ((bestMatch as ExcelRow).financials.qty || 0).toString(),
                 pageSource: (block as any).pageSource
             });
         }
@@ -124,7 +124,7 @@ export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: Exc
                 severity: 'low',
                 message: `Fuzzy match for "${pdfName}" (${maxSimilarity.toFixed(0)}%)`,
                 pdfValue: pdfName,
-                excelValue: bestMatch?.name || '',
+                excelValue: (bestMatch as any)?.name || '',
                 pageSource: (block as any).pageSource
             });
         }

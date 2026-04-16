@@ -27,8 +27,8 @@ const App: React.FC = () => {
       ) : (
         <ContractListView 
           contracts={contracts}
-          onCreateContract={(name) => {
-            const id = createContract(name);
+          onCreateContract={(name, data) => {
+            const id = createContract(name, data);
             setActiveContractId(id);
           }}
           onSelectContract={setActiveContractId}
