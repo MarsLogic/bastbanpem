@@ -14,7 +14,7 @@ from backend.services.pdf_intelligence import pdf_intel
 from backend.models import (
     KtpResult, ReconciliationResult, AutomationRequest, 
     BundleRequest, PipelineRow, ExcelIngestResult, LocationData,
-    PdfParseResult, PdfParseRequest, BatchSummary
+    PdfParseResult, PdfParseRequest, BatchSummary, ContractMetadata
 )
 
 from backend.services.cpcl_extractor import cpcl_extractor
@@ -278,11 +278,17 @@ async def get_license_hwid():
 from backend.services.vault_service import vault_service
 
 @router.post("/contracts/save")
-async def save_contract_data(id: str, name: str, target_value: float, rows: List[PipelineRow]):
+async def save_contract_data(
+    id: str, 
+    name: str, 
+    target_value: float, 
+    rows: List[PipelineRow],
+    metadata: Optional[ContractMetadata] = Body(None)
+):
     try:
-        vault_service.save_contract(id, name, target_value)
+        vault_service.save_contract(id, name, target_value, metadata)
         vault_service.save_recipients(id, rows)
-        return {"status": "success", "message": f"Saved {len(rows)} recipients."}
+        return {"status": "success", "message": f"Saved {len(rows)} recipients and full metadata."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
