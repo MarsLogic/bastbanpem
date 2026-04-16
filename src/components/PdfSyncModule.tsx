@@ -117,6 +117,8 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     if (file && file.type === 'application/pdf') {
       const url = URL.createObjectURL(file);
       setBlobUrl(url);
+      setPdfLoadStatus('success');
+      setPdfLoadError(null);
 
       // Update contract state
       onUpdate({
