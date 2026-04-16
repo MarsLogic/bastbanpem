@@ -1,15 +1,13 @@
 // [UIUX-004] OCR Tagging UI
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { readDir, writeFile, readFile } from '@tauri-apps/plugin-fs';
-import { convertFileSrc } from '@tauri-apps/api/core';
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Search, FolderOpen, Image as ImageIcon, Link, CheckCircle2, 
+import {
+  Search, FolderOpen, Image as ImageIcon, Link, CheckCircle2,
   Crop, RotateCcw, RotateCw, Save, X, Sparkles, Loader2,
-  ChevronDown, Scan, UserCheck, Users, Users2, Filter, Cpu
+  ChevronDown, Scan, UserCheck, Users, Users2, Filter, Cpu, FileUp
 } from 'lucide-react';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -86,6 +84,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isQuadMode, setIsQuadMode] = useState(false);
   const cropperRef = useRef<ReactCropperElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [rotation, setRotation] = useState(0);
 
   // Proxy Entry Mode
@@ -103,14 +102,8 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
     return ['ALL', ...Array.from(set)];
   }, [farmers]);
 
-  useEffect(() => {
-    if (directoryPath) {
-      loadImagesFromDir(directoryPath, true);
-    } else {
-      setImages([]);
-      setSelectedImage(null);
-    }
-  }, [directoryPath]);
+  // Note: Images are now loaded via file upload, not directory scanning
+  // useEffect for directoryPath removed - web app uses file upload instead
 
   useEffect(() => {
     setIsEditing(false);
@@ -119,63 +112,39 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
     setIsProxyMode(false);
   }, [selectedImage]);
 
-  const handleSelectFolder = async () => {
-    try {
-      const { open } = await import('@tauri-apps/plugin-dialog');
-      const selected = await open({ directory: true, multiple: false });
-      if (selected && typeof selected === 'string') {
-        if (type === 'ktp') {
-          setGlobalConfig((prev: any) => ({ ...prev, ktpDir: selected }));
-        } else {
-          setGlobalConfig((prev: any) => ({ ...prev, proofDir: selected }));
-        }
-        loadImagesFromDir(selected, false);
-      }
-    } catch (err) {
-      console.error("Failed to open dialog", err);
-    }
+  const handleSelectFolder = () => {
+    fileInputRef.current?.click();
   };
 
-  const loadImagesFromDir = async (dirPath: string, silent = true) => {
-    try {
-      const entries = await readDir(dirPath);
-      const imageFiles = entries.filter(e => 
-        e.isFile && e.name && /\.(jpg|jpeg|png)$/i.test(e.name)
-      );
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
 
-      const loadedImages = imageFiles.map(e => {
-        const fullPath = `${dirPath}\\${e.name}`;
-        return {
-          name: e.name || '',
-          path: fullPath,
-          assetUrl: convertFileSrc(fullPath)
-        } as ImageEntry;
-      });
+    // Convert FileList to ImageEntry array
+    const loadedImages: ImageEntry[] = Array.from(files)
+      .filter(file => /\.(jpg|jpeg|png)$/i.test(file.name))
+      .map(file => ({
+        name: file.name,
+        path: file.name,
+        assetUrl: URL.createObjectURL(file),
+        // Store file object for later upload to backend
+        _file: file
+      } as any));
 
-      loadedImages.sort((a, b) => {
-        const aEdited = a.name.includes('_edited_');
-        const bEdited = b.name.includes('_edited_');
-        if (aEdited && !bEdited) return -1;
-        if (!aEdited && bEdited) return 1;
-        return 0;
-      });
-
-      setImages(loadedImages);
-      if (loadedImages.length > 0 && !selectedImage) {
-        setSelectedImage(loadedImages[0]);
-      }
-      
-      if (!silent) {
-        toast.success(`Loaded ${loadedImages.length} images from ${type.toUpperCase()} directory`);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(`Failed to read directory: ${dirPath}`);
+    if (loadedImages.length === 0) {
+      toast.error(`No valid image files found. Select JPG or PNG files.`);
+      return;
     }
+
+    setImages(loadedImages);
+    if (loadedImages.length > 0) {
+      setSelectedImage(loadedImages[0]);
+    }
+    toast.success(`Loaded ${loadedImages.length} images`);
   };
 
   const handleSaveEdit = async () => {
-    if (!cropperRef.current?.cropper || !selectedImage || !directoryPath) return;
+    if (!cropperRef.current?.cropper || !selectedImage) return;
     const cropper = cropperRef.current.cropper;
     const dataUrl = cropper.getCroppedCanvas({
         imageSmoothingEnabled: true,
@@ -196,16 +165,21 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
     const newPath = `${directoryPath}\\${newName}`;
     
     try {
-      await writeFile(newPath, bytes);
-      const newEntry: ImageEntry = { name: newName, path: newPath, assetUrl: convertFileSrc(newPath) };
+      // TODO: POST to backend API endpoint (POST /api/images/save)
+      // Backend should save edited image to /data/images/ and return URL
+      // For now: create blob URL locally
+      const blob = new Blob([bytes], { type: 'image/jpeg' });
+      const assetUrl = URL.createObjectURL(blob);
+
+      const newEntry: ImageEntry = { name: newName, path: newName, assetUrl };
       setImages(prev => [newEntry, ...prev]);
       setSelectedImage(newEntry);
       setIsEditing(false);
       toast.success("Image processed and saved.");
-      
+
       const oldTag = bindings[selectedImage.name];
       if (oldTag && onBindChange) {
-         onBindChange({ ...bindings, [newName]: oldTag });
+        onBindChange({ ...bindings, [newName]: oldTag });
       }
     } catch (err) {
       toast.error("Failed to save edited image.");
@@ -262,11 +236,18 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
       setScanProgress({ current: i + 1, total: targets.length });
       
       try {
-          const fileBytes = await readFile(targets[i].path);
-          const blob = new Blob([fileBytes], { type: 'image/jpeg' });
-          const file = new File([blob], targets[i].name, { type: 'image/jpeg' });
-          
-          const ocrResult = await ocrKtp(file); // Assume api handles ocrVersion selection internally or we pass it
+          // Get file from stored _file or fetch from assetUrl
+          let file: File;
+          if ((targets[i] as any)._file) {
+            file = (targets[i] as any)._file;
+          } else {
+            // Fallback: fetch from assetUrl blob
+            const response = await fetch(targets[i].assetUrl);
+            const blob = await response.blob();
+            file = new File([blob], targets[i].name, { type: 'image/jpeg' });
+          }
+
+          const ocrResult = await ocrKtp(file);
           const nik = ocrResult.nik;
 
           if (nik && farmers.find((f: Farmer) => f.nik === nik)) {
@@ -298,19 +279,31 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
   );
 
   return (
-    <div className={cn("w-full overflow-hidden bg-background relative flex", directoryPath ? "h-[800px]" : "items-center justify-center h-full min-h-[400px]")}>
-      
-      {!directoryPath && (
+    <div className={cn("w-full overflow-hidden bg-background relative flex", images.length > 0 ? "h-[800px]" : "items-center justify-center h-full min-h-[400px]")}>
+
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        accept=".jpg,.jpeg,.png"
+        multiple
+        className="hidden"
+      />
+
+      {images.length === 0 && (
          <div className="flex flex-col items-center justify-center text-center p-8 w-full">
-            <FolderOpen className="size-10 text-slate-400 mb-6" />
-            <h3 className="text-xl font-bold text-slate-900 tracking-tight">Configure {type.toUpperCase()} Source</h3>
+            <FileUp className="size-10 text-slate-400 mb-6" />
+            <h3 className="text-xl font-bold text-slate-900 tracking-tight">Load {type.toUpperCase()} Images</h3>
+            <p className="text-sm text-slate-500 mt-2">Select JPG or PNG files to begin tagging</p>
             <Button onClick={handleSelectFolder} className="mt-8 px-10 bg-black text-white font-bold rounded-xl h-12 shadow-xl">
-              Browse Local System
+              <FileUp className="mr-2 h-4 w-4" />
+              Select Images
             </Button>
          </div>
       )}
 
-      {directoryPath && (
+      {images.length > 0 && (
         <>
       <div className="flex-1 flex flex-col min-w-0 h-full relative border-r bg-[#09090b]">
         
