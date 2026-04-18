@@ -247,7 +247,7 @@ export function cleanValue(
   cleaned = cleanPortalNoise(cleaned);
 
   // 2. Specific field formatting
-  if (key.includes('nama') || key.includes('penanggung') || key.includes('jabatan') || key.includes('divisi')) {
+  if (key.includes('nama') || key.includes('penerima') || key.includes('penanggung') || key.includes('jabatan') || key.includes('divisi')) {
     cleaned = toTitleCase(cleaned);
   } else if (key.includes('alamat')) {
     cleaned = cleanAddress(cleaned);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { cleanValue, formatPhone } from '@/lib/dataCleaner';
+import { cleanValue, formatPhone, toTitleCase } from '@/lib/dataCleaner';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -252,7 +252,7 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
                 <tr key={idx} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
                   <td className="px-3 py-2.5 font-mono text-slate-400 tabular-nums text-[10px]">{item.shipment_id}</td>
                   <td className="px-3 py-2.5">
-                    <div className="font-bold text-slate-900 leading-snug truncate max-w-[150px]">{item.recipient.name}</div>
+                    <div className="font-bold text-slate-900 leading-snug truncate max-w-[150px]">{toTitleCase(item.recipient.name)}</div>
                   </td>
                   <td className="px-3 py-2.5">
                     <div className="text-[11px] font-mono text-slate-500 font-medium tabular-nums">{formatPhone(item.recipient.phone)}</div>
