@@ -8,8 +8,10 @@ import {
 } from '@/components/ui/select';
 import { 
   Banknote, Info, Calculator, 
-  ChevronUp, ChevronDown, Search 
+  ChevronUp, ChevronDown, Search, FileDown
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { Button } from '@/components/ui/button';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -114,6 +116,31 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
     });
   }, [ledger, search, province]);
 
+  const handleExportExcel = () => {
+    const exportData = sorted.map(item => {
+      const dpp = (item.costs?.product_total || 0) + (item.costs?.shipping_total || 0);
+      const ppn = Math.round(dpp * taxRate);
+      const gross = dpp + ppn;
+      return {
+        '#': item.shipment_id,
+        'Penerima': item.recipient.name,
+        'Nomor Telepon': formatPhone(item.recipient.phone),
+        'Provinsi': item.destination.provinsi || '',
+        'Kabupaten': item.destination.kabupaten || '',
+        'Kecamatan': item.destination.kecamatan || '',
+        'Desa': item.destination.desa || '',
+        'DPP (Excl. Tax)': dpp,
+        'PPN (Tax)': ppn,
+        'Total (Incl. Tax)': gross
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Recipient Financials');
+    XLSX.writeFile(workbook, `ringkasan_pembayaran_${new Date().getTime()}.xlsx`);
+  };
+
   const sorted = React.useMemo(() => {
     return [...filtered].sort((a, b) => {
       let va: any, vb: any;
@@ -167,6 +194,16 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
             {provinces.map(p => <SelectItem key={p} value={p} className="text-[10px]">{p}</SelectItem>)}
           </SelectContent>
         </Select>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExportExcel}
+          className="h-7 text-[10px] gap-1.5 px-2.5 border-slate-200 hover:bg-slate-100 shrink-0"
+        >
+          <FileDown className="h-3 w-3" />
+          Export Excel
+        </Button>
       </div>
 
       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white overflow-x-auto">

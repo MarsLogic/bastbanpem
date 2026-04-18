@@ -13,7 +13,7 @@ import { ContractData } from '@/lib/contractStore';
 import { parsePdfFile, saveContract, loadContractIntelligence } from '@/lib/api';
 import { getPdfBlob, savePdfBlob } from '@/lib/pdfStorage';
 
-import { DocumentView }    from './pdf-sync/DocumentView';
+import { DocumentView, SECTION_ORDER } from './pdf-sync/DocumentView';
 import {
   InspectorSidebar,
   SidebarSection,
@@ -572,13 +572,22 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   // ── Sidebar data ──────────────────────────────────────────────────────────
   const sidebarSections = useMemo<SidebarSection[]>(() => {
     const raw = contract.sections ?? {};
-    return Object.entries(raw)
-      .filter(([, text]) => (text as string).trim().length > 0)
+    const entries = Object.entries(raw)
+      .filter(([, text]) => typeof text === 'string' && text.trim().length > 0)
       .map(([key, text]) => ({
         key,
         label: SECTION_LABELS[key] ?? key.replace(/_/g, ' '),
         chars: (text as string).length,
       }));
+
+    // Sort according to SECTION_ORDER
+    return entries.sort((a, b) => {
+      const idxA = SECTION_ORDER.indexOf(a.key);
+      const idxB = SECTION_ORDER.indexOf(b.key);
+      const orderA = idxA === -1 ? 999 : idxA;
+      const orderB = idxB === -1 ? 999 : idxB;
+      return orderA - orderB;
+    });
   }, [contract.sections]);
 
   const sidebarTables = useMemo<SidebarTable[]>(() => {

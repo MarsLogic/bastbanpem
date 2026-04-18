@@ -34,7 +34,7 @@ interface DocumentViewProps {
 
 // ─── Section metadata ─────────────────────────────────────────────────────────
 
-const SECTION_ORDER = [
+export const SECTION_ORDER = [
   'HEADER', 'PEMESAN', 'PENYEDIA',
   'RINGKASAN_PESANAN', 'RINGKASAN_PEMBAYARAN',
   'SSUK', 'SSKK', 'LAMPIRAN',
@@ -208,11 +208,16 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           
           // Heuristic: iterate through elements (in visual DOM order).
           // We pick the LAST element whose top bounding box crosses above
-          // our "read line" threshold (e.g. y <= 150 offset for sticky header).
+          // our "read line" threshold          // Read line threshold: 30% down the viewport is a natural 'focus' area
+          const threshold = window.innerHeight * 0.3;
+          
+          // If we reached the bottom of the scroll, prioritize the last element
+          const scrollContainer = containerRef.current?.closest('.overflow-auto') || document.documentElement;
+          const isAtBottom = (scrollContainer.scrollTop + scrollContainer.clientHeight) >= (scrollContainer.scrollHeight - 50);
+
           for (const el of elements) {
             const rect = el.getBoundingClientRect();
-            // 150px accounts for the persistent sticky header and some padding
-            if (rect.top <= 150) {
+            if (rect.top <= threshold || (isAtBottom && el === elements[elements.length - 1])) {
               activeElement = el;
             } else {
               break;
