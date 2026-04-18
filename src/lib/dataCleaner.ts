@@ -114,6 +114,47 @@ export function formatNPWP(str: string): string {
 }
 
 /**
+ * Robust Indonesian Phone Formatting with Self-Healing.
+ * Detects mangled or truncated numbers (e.g. 53... instead of 853...) and restores them.
+ */
+export function formatPhone(raw: string): string {
+  if (!raw || raw === '—') return '—';
+  
+  // 1. Remove non-digits
+  let clean = raw.replace(/\D/g, '');
+  
+  // 2. Handle 6262 prefixing bug (Double standardizing)
+  if (clean.startsWith('6262')) {
+    clean = clean.substring(2);
+  }
+  
+  // 3. Strip 62 or 0 prefix to get raw sequence
+  if (clean.startsWith('62')) clean = clean.substring(2);
+  if (clean.startsWith('0')) clean = clean.substring(1);
+
+  // 4. SELF-HEALING: Detect common truncated prefixes (Telkomsel 853 -> 53)
+  // If we have 10 digits starting with '53', it's almost certainly a mangled Telkomsel '853'
+  if (clean.length === 10 && clean.startsWith('53')) {
+    clean = '8' + clean;
+  }
+  
+  // 5. Format based on sequence
+  // Mobile: starts with 8
+  if (clean.startsWith('8')) {
+    return `0${clean}`;
+  }
+  
+  // Landline (Regional): 2 to 3 digit area code
+  if (clean.startsWith('2') || clean.startsWith('3')) {
+    const area = clean.substring(0, 2);
+    const rest = clean.substring(2);
+    return `(0${area}) ${rest}`;
+  }
+
+  return `0${clean}`; // Fallback prefix
+}
+
+/**
  * Strips redundant regional prefixes like "Kabupaten", "Kecamatan", etc.
  */
 export function stripRegionalPrefix(str: string, type?: string): string {
@@ -241,7 +282,7 @@ export function cleanValue(
   } else if (key.includes('npwp')) {
     cleaned = formatNPWP(cleaned);
   } else if (key.includes('telepon') || key.includes('hp')) {
-    cleaned = cleaned.replace(/\s/g, ''); // Collapse phone spaces
+    cleaned = formatPhone(cleaned);
   }
 
   // 3. Strip redundant regional prefixes and standardize

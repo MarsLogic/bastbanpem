@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { cleanValue } from '@/lib/dataCleaner';
+import { cleanValue, formatPhone } from '@/lib/dataCleaner';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -31,26 +31,6 @@ interface FinancialSummaryRendererProps {
 
 const fmt = (n: number) => `Rp${Math.round(n).toLocaleString('id-ID')}`;
 
-const formatPhone = (raw: string) => {
-  if (!raw) return '—';
-  // Standardize: remove non-digits, handle +62 or 62 prefix
-  const clean = raw.replace(/\D/g, '').replace(/^62/, '');
-  
-  // Mobile: starts with 8
-  if (clean.startsWith('8')) {
-    return `0${clean}`;
-  }
-  
-  // Landline (Regional): 2 to 3 digit area code
-  // Common 2-digit: 21 (Jakarta), 22 (Bandung), 24 (Semarang), 31 (Surabaya), etc.
-  if (clean.startsWith('2') || clean.startsWith('3')) {
-    const area = clean.substring(0, 2);
-    const rest = clean.substring(2);
-    return `(0${area}) ${rest}`;
-  }
-
-  return `0${clean}`; // Fallback: just prefix with 0
-};
 
 // ─── Parser (Fallback for unstructured text) ───────────────────────────────────
 
