@@ -179,7 +179,7 @@ class PDFIntelligence:
                 shipment_id=i + 1,
                 recipient=ShipmentRecipient(
                     name=self._clean_string(name_m.group(1).strip()),
-                    phone=f"62{name_m.group(2).strip().lstrip('0')}", # Take full number, strip leading zero, prefix 62
+                    phone=self._normalize_phone(name_m.group(2).strip()),
                     group=self._clean_string(poktan_match.group(1).strip() if poktan_match else None)
                 ),
                 destination=ShipmentDestination(
@@ -403,5 +403,31 @@ class PDFIntelligence:
             }
         finally:
             doc.close()
+
+    def _normalize_phone(self, raw: str) -> str:
+        if not raw: return ""
+        # Remove non-digits
+        digits = re.sub(r'\D', '', raw)
+        # If it starts with 62, it is already standardized
+        if digits.startswith('62'):
+            return digits
+        # If it starts with 0, strip it and prefix 62
+        if digits.startswith('0'):
+            return f"62{digits[1:]}"
+        # Fallback: assume it needs 62
+        return f"62{digits}"
+
+    def _clean_numeric(self, val: str) -> float:
+        if not val: return 0.0
+        try:
+            # Remove thousand separators (dots) and normalize comma to dot
+            cleaned = val.replace('.', '').replace(',', '.')
+            return float(cleaned)
+        except:
+            return 0.0
+
+    def _clean_string(self, val: str) -> str:
+        if not val: return ""
+        return val.strip()
 
 pdf_intel = PDFIntelligence()
