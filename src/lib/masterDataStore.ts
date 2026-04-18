@@ -209,18 +209,27 @@ export const useMasterDataStore = create<MasterDataState>()(
             let score = 0;
             let hits = { prov: 0, kab: 0, kec: 0, desa: 0 };
 
+            const stripCommon = (s: string) => s.toLowerCase().replace(/kabupaten|kecamatan|desa|kelurahan|provinsi|kab|kec/g, '').replace(/[^a-z0-9]/g, '');
+
             const calcHits = (toks: string[], dbStr: string, rawInput: string) => {
                 if (!rawInput) return 0;
                 let h = 0;
-                const dbStrHard = dbStr.replace(/\s+/g, '');
+                const dbStrHard = dbStr.toLowerCase().replace(/[^a-z0-9]/g, '');
+                const dbStrImmune = stripCommon(dbStr);
+                
                 for (const t of toks) {
-                    if (dbStr.includes(t)) h++;
-                    else if (t.length >= 4 && dbStr.includes(t.substring(0, Math.floor(t.length * 0.8)))) h += 0.8; // Prefix match for truncated
-                    else if (dbStrHard.includes(t)) h += 0.9; // Space tolerance
+                    const tHard = t.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const tImmune = stripCommon(t);
+                    
+                    if (dbStr.toLowerCase().includes(t.toLowerCase())) h++;
+                    else if (dbStrHard.includes(tHard)) h += 0.95; 
+                    else if (tImmune.length >= 3 && dbStrImmune.includes(tImmune)) h += 0.9;
+                    else if (tHard.length >= 6 && dbStrHard.startsWith(tHard)) h += 1.0; // Strong prefix match for truncated
+                    else if (tHard.length >= 4 && dbStrHard.includes(tHard.substring(0, Math.floor(tHard.length * 0.8)))) h += 0.8; 
                     else {
                         // Limit Levenshtein calls to prevent freeze
-                        for (const word of dbStr.split(/\s+/)) {
-                            if (word.length >= 4 && t.length >= 4 && levenshtein(t, word) <= 1) { h++; break; }
+                        for (const word of dbStr.toLowerCase().split(/\s+/)) {
+                            if (word.length >= 4 && t.length >= 4 && levenshtein(t.toLowerCase(), word) <= 1) { h++; break; }
                         }
                     }
                 }
@@ -254,10 +263,10 @@ export const useMasterDataStore = create<MasterDataState>()(
             if (hitCount >= 3) score += 100; // Increased boost
             else if (hitCount >= 2) score += 60; // Increased boost
 
-            // Special Triangulation: Missing middle-tier
-            if (hits.kab >= 1 && hits.desa >= 1 && (iKecHard === '' || iKecHard === '-')) score += 100; // High confidence if kab+desa match but kec is missing
+            // Special Triangulation: Missing middle-tier (Threshold lowered to 0.7 for expert resilience)
+            if (hits.kab >= 0.7 && hits.desa >= 0.7 && (iKecHard === '' || iKecHard === '-')) score += 120; // Increased boost for Kab+Desa match
             if (hits.kab > 0 && hits.kec > 0) score += 40;
-            if (hits.kec > 0 && hits.desa > 0) score += 50; // Increased boost
+            if (hits.kec > 0 && hits.desa > 0) score += 50;
 
             if (score > bestScore) {
                 bestScore = score;
