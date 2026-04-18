@@ -83,6 +83,13 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Consequences**: Standardized, predictable clause IDs regardless of OCR inconsistencies.
 **Expert Insight**: Document "Dialects" vary; build normalization transforms to force a project-specific "Golden Format".
 
+### Improvement: [LEARN-011] SVG-Only Branding (Favicon ROI)
+**Context**: Project favicons are often generic React icons or missing entirely. Adding external `.ico` or `.png` assets adds deployment complexity and asset-missing risks.
+**Action**: Implemented an inline, data-URI SVG favicon in `index.html`. Used a Slate-900 rounded square (`rx='8'`) and a bold, high-contrast 'B' glyph centered at high precision (`y='21.5'`).
+**Risk Identified**: Inline SVGs can bloat the HTML header if too complex. Kept the pathing minimal (1 rect, 1 text element).
+**Consequences**: 100% reliable, zero-latency branding that works instantly across all environments (Vite, Production, Docker) without needing extra files.
+**Expert Insight**: Use minimalist Data-URI SVGs for favicons in workbench-style apps to maintain a "Zero-Asset" deployment footprint while preserving professional branding.
+
 ### Improvement: [LEARN-010] The Stale-Dist Failure Pattern
 **Context**: Updates to `src` were not appearing on Port 8000 (Backend) despite app restarts.
 **Action**: Discovered that a single TypeScript error (e.g., `mode="white"`) blocked `npm run build`, causing the backend to serve stale assets from the last successful build in the `dist` folder.
