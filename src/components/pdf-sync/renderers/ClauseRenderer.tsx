@@ -120,20 +120,28 @@ function parseClauses(text: string): MainClause[] {
       let content = '';
       
       // Look for a 2+ space gap indicating a multi-column split from pdfplumber
-      const gapMatch = title.match(/^(.*?)\s{2,}(.*)$/);
+      const gapMatch = title.match(/^(.*?)\s{3,}(.*)$/);
       if (gapMatch) {
           title = gapMatch[1].trim();
           content = gapMatch[2].trim();
       }
       
-      // Peak ahead for orphan title continuation 
-      while (!content && title.length < 50 && i + 1 < lines.length) {
-          const nextTrimmed = lines[i + 1].trim();
+      // Peak ahead for orphan title continuation (PDF column artifacts like "pihak")
+      // If content is empty, the next lines might still be part of the title
+      while (!content && i + 1 < lines.length) {
+          const nextLine = lines[i + 1];
+          const nextTrimmed = nextLine.trim();
           if (nextTrimmed.length === 0) {
               i++;
               continue;
           }
-          if (nextTrimmed.length < 20 && !nextTrimmed.match(/^\d+\./) && !nextTrimmed.includes(':')) {
+          
+          // If it starts with a number or seems like a section header, stop
+          if (nextTrimmed.match(/^\d+\./) || nextTrimmed.match(/^[a-zA-Z]\./) || nextTrimmed.includes(':')) break;
+          
+          // If it's short and aligned with the title column (start index < 10)
+          const startIdx = nextLine.search(/\S/);
+          if (startIdx < 15 && nextTrimmed.length < 30) {
               title += ' ' + nextTrimmed;
               i++;
           } else {
