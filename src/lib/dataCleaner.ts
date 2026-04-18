@@ -136,6 +136,53 @@ export function stripRegionalPrefix(str: string, type?: string): string {
 }
 
 /**
+ * Standardizes regional names to match master data labels.
+ * Handles common OCR artifacts, space missing, and broken letters.
+ */
+export function standardizeRegionalName(str: string): string {
+  if (!str || str === '—') return str;
+
+  // 1. Initial cleaning of common OCR junk characters
+  let s = str.replace(/[^\w\s-]/g, '').trim();
+  
+  // 2. Normalize whitespace
+  s = s.replace(/\s+/g, ' ');
+
+  // 3. Common Dictionary Snaps (Case Insensitive)
+  const MAP: Record<string, string> = {
+    'labuhanbatu': 'Labuhan Batu',
+    'labuhanbatu utara': 'Labuhan Batu Utara',
+    'labuhanbatu selatan': 'Labuhan Batu Selatan',
+    'tanahbumbu': 'Tanah Bumbu',
+    'tanah bumbu': 'Tanah Bumbu',
+    'tanah laut': 'Tanah Laut',
+    'tanahlaut': 'Tanah Laut',
+    'barito utara': 'Barito Utara',
+    'baritoutara': 'Barito Utara',
+    'barito kuala': 'Barito Kuala',
+    'baritokuala': 'Barito Kuala',
+    'barito selatan': 'Barito Selatan',
+    'baritoselatan': 'Barito Selatan',
+    'barito timur': 'Barito Timur',
+    'baritotimur': 'Barito Timur',
+    'tanjung jabung timur': 'Tanjung Jabung Timur',
+    'tanjungjabung timur': 'Tanjung Jabung Timur',
+    'tanjung jabung barat': 'Tanjung Jabung Barat',
+    'tanjungjabung barat': 'Tanjung Jabung Barat'
+  };
+
+  const lowered = s.toLowerCase();
+  if (MAP[lowered]) return MAP[lowered];
+
+  // 4. Fuzzy join/split for common patterns
+  // e.g. "Labuhanbatu" -> "Labuhan Batu" (Search for CamelCase or missing spaces)
+  // This is a heuristic: if a word is very long and matchable by master data, 
+  // we rely on triangulation later, but we Title Case it here for a clean start.
+  
+  return toTitleCase(s);
+}
+
+/**
  * Orchestrates cleaning based on the field type/label.
  */
 export function cleanValue(
@@ -197,9 +244,10 @@ export function cleanValue(
     cleaned = cleaned.replace(/\s/g, ''); // Collapse phone spaces
   }
 
-  // 3. Strip redundant regional prefixes for location fields
+  // 3. Strip redundant regional prefixes and standardize
   if (key.includes('provinsi') || key.includes('kabupaten') || key.includes('kecamatan') || key.includes('desa')) {
     cleaned = stripRegionalPrefix(cleaned, key);
+    cleaned = standardizeRegionalName(cleaned);
   }
 
   // 4. Final polish

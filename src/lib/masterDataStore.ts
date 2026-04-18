@@ -161,6 +161,12 @@ export const useMasterDataStore = create<MasterDataState>()(
         const allInputTokens = [...tokens.prov, ...tokens.kab, ...tokens.kec, ...tokens.desa];
         if (allInputTokens.length === 0) return null;
 
+        const cleanHard = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const iProvHard = cleanHard(iProv);
+        const iKabHard = cleanHard(iKab);
+        const iKecHard = cleanHard(iKec);
+        const iDesaHard = cleanHard(iDesa);
+
         const isConsonantMatch = (input: string, target: string) => {
             if (input.length < 3) return false;
             const consonants = target.replace(/[aeiou\s]/g, '');
@@ -202,8 +208,11 @@ export const useMasterDataStore = create<MasterDataState>()(
             const calcHits = (toks: string[], dbStr: string, rawInput: string) => {
                 if (!rawInput) return 0;
                 let h = 0;
+                const dbStrHard = dbStr.replace(/\s+/g, '');
                 for (const t of toks) {
                     if (dbStr.includes(t)) h++;
+                    else if (t.length >= 4 && dbStr.includes(t.substring(0, Math.floor(t.length * 0.8)))) h += 0.8; // Prefix match for truncated
+                    else if (dbStrHard.includes(t)) h += 0.9; // Space tolerance
                     else {
                         // Limit Levenshtein calls to prevent freeze
                         for (const word of dbStr.split(/\s+/)) {
@@ -220,24 +229,31 @@ export const useMasterDataStore = create<MasterDataState>()(
             hits.kab = calcHits(tokens.kab, dbNames.kab, iKab);
             hits.prov = calcHits(tokens.prov, dbNames.prov, iProv);
 
-            if (dbNames.desa === iDesa) score += 120;
+            const dbDesaHard = dbNames.desa.replace(/\s+/g, '');
+            const dbKabHard  = dbNames.kab.replace(/\s+/g, '');
+            const dbKecHard  = dbNames.kec.replace(/\s+/g, '');
+            const dbProvHard = dbNames.prov.replace(/\s+/g, '');
+
+            if (dbDesaHard === iDesaHard) score += 120;
             else if (hits.desa > 0) score += 40 + (hits.desa * 25);
 
-            if (dbNames.kec === iKec) score += 100;
+            if (dbKecHard === iKecHard) score += 100;
             else if (hits.kec > 0) score += 30 + (hits.kec * 25);
 
-            if (dbNames.kab === iKab) score += 80;
+            if (dbKabHard === iKabHard) score += 80;
             else if (hits.kab > 0) score += 25 + (hits.kab * 25);
 
-            if (dbNames.prov === iProv) score += 50;
+            if (dbProvHard === iProvHard) score += 50;
             else if (hits.prov > 0) score += 15 + (hits.prov * 20);
 
             const hitCount = [hits.prov > 0, hits.kab > 0, hits.kec > 0, hits.desa > 0].filter(Boolean).length;
-            if (hitCount >= 3) score += 80;
-            else if (hitCount >= 2) score += 40;
+            if (hitCount >= 3) score += 100; // Increased boost
+            else if (hitCount >= 2) score += 60; // Increased boost
 
+            // Special Triangulation: Missing middle-tier
+            if (hits.kab >= 1 && hits.desa >= 1 && (iKecHard === '' || iKecHard === '-')) score += 100; // High confidence if kab+desa match but kec is missing
             if (hits.kab > 0 && hits.kec > 0) score += 40;
-            if (hits.kec > 0 && hits.desa > 0) score += 50;
+            if (hits.kec > 0 && hits.desa > 0) score += 50; // Increased boost
 
             if (score > bestScore) {
                 bestScore = score;

@@ -84,10 +84,10 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       const hDesa = headers.find(h => /desa|kelurahan/i.test(h));
 
       if (hKab || hProv) {
-        const provinsi = hProv ? String(row[hProv] || '') : '';
-        const kabupaten = hKab ? String(row[hKab] || '') : '';
-        const kecamatan = hKec ? String(row[hKec] || '') : '';
-        const desa = hDesa ? String(row[hDesa] || '') : '';
+        const provinsi = hProv ? cleanValue(String(row[hProv] || ''), 'provinsi') : '';
+        const kabupaten = hKab ? cleanValue(String(row[hKab] || ''), 'kabupaten') : '';
+        const kecamatan = hKec ? cleanValue(String(row[hKec] || ''), 'kecamatan') : '';
+        const desa = hDesa ? cleanValue(String(row[hDesa] || ''), 'desa') : '';
 
         // If either kecamatan or desa is missing, try to resolve from master data
         const isKecEmpty = !kecamatan || kecamatan === '—' || kecamatan.trim() === '';

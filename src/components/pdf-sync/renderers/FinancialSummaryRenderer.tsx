@@ -112,7 +112,12 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
   // Expert Triangulation: Hydrate ledger with missing regional data
   const hydratedLedger = React.useMemo(() => {
     return ledger.map(item => {
-      const { provinsi, kabupaten, kecamatan, desa } = item.destination;
+      // Pre-clean inputs for triangulation
+      const provinsi = cleanValue(item.destination.provinsi || '', 'provinsi');
+      const kabupaten = cleanValue(item.destination.kabupaten || '', 'kabupaten');
+      const kecamatan = cleanValue(item.destination.kecamatan || '', 'kecamatan');
+      const desa = cleanValue(item.destination.desa || '', 'desa');
+
       // If either kecamatan or desa is missing, try to resolve from master data
       if (!kecamatan || kecamatan === '—' || !desa || desa === '—') {
         const resolved = resolveHierarchy({ provinsi, kabupaten, kecamatan, desa });
@@ -121,6 +126,8 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
             ...item,
             destination: {
               ...item.destination,
+              provinsi: resolved.provinsi,
+              kabupaten: resolved.kabupaten,
               kecamatan: (kecamatan === '—' || !kecamatan) ? resolved.kecamatan : kecamatan,
               desa: (desa === '—' || !desa) ? resolved.desa : desa,
             }
