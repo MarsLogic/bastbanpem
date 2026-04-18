@@ -30,53 +30,60 @@ export function toTitleCase(str: string): string {
 
 /**
  * Expands and standardizes address fragments like 'JL', 'No.', 'Nomor'.
+ * Vibranium-Grade: Handles extreme butchery and merged strings.
  */
 export function cleanAddress(str: string): string {
   if (!str) return '';
 
   let s = str.trim();
 
-  // 1. Expand "Jalan / Jl / JL / jl." -> "Jl."
-  // Handle cases like "JLharsono" or "jl.Haji" by ensuring a space follows
-  s = s.replace(/\b(jalan|jl\.?|jl)\b/gi, 'Jl.');
-  s = s.replace(/Jl\.(?=[^\s])/g, 'Jl. '); // Ensure space after Jl.
+  // 1. Expand "Jalan / Jl / jln / jlan" -> "Jl. " (Handles merges like JlHarsono)
+  s = s.replace(/\b(jalan|jl\.?|jln|jlan)(?=\s*\w)/gi, 'Jl. ');
+  s = s.replace(/\b(jalan|jl\.?|jln|jlan)\b/gi, 'Jl. ');
   
-  // 2. Standardize "Nomor / No / NOMOR / no mor / nmr / no114" -> "No."
-  // Catches: No. 3, no114, No.4, NO:4, No : 54, no,54, no-54, nomo54, nmr.32
-  s = s.replace(/\b(nomor|nomo|nmr|nm|no)(?:\s*[:,\.-]?\s*|\s*)(?=\d)/gi, 'No. ');
+  // 2. Standardize "Nomor / No / nmr / Nomer" -> "No. " (Handles merges like No114)
+  s = s.replace(/\b(nomor|nomo|nmr|nomer|no\.?)(?=\s*\d)/gi, 'No. ');
+  s = s.replace(/\b(nomor|nomo|nmr|nomer)\b/gi, 'No. ');
   
-  // Also catch "No." with no digits following (if it exists)
-  s = s.replace(/\b(nomor|nomo|nmr|nm)\b/gi, 'No.');
-  s = s.replace(/No\.(?=[^\s])/g, 'No. '); // Ensure space after No.
-
   // 3. Expand Regional Keywords with fuzzy support
-  // Provinsi
   s = s.replace(/\b(provinsi|prov|insi|prv)\b(?:\s*:\s*)?/gi, 'Provinsi: ');
-  // Kabupaten / Kota
   s = s.replace(/\b(kabupaten|kab|kab\.?)\b(?:\s*:\s*)?/gi, 'Kabupaten: ');
   s = s.replace(/\b(kota|kt)\b(?:\s*:\s*)?/gi, 'Kota: ');
-  // Kecamatan
   s = s.replace(/\b(kecamatan|kec|kcmt|kc)\b(?:\s*:\s*)?/gi, 'Kecamatan: ');
-  // Desa / Kelurahan
   s = s.replace(/\b(kelurahan|desa|kl|ds|kel)\b(?:\s*:\s*)?/gi, 'Desa: ');
 
-  // 4. Standardize RT/RW and Blok
-  // RT 04 / RW 08
+  // 4. Standardize RT/RW and force UPPERCASE
+  // Handles: rt/rw 04/08, rt02rw10, rt 02 / rw 10, rt:02, rw-10
+  
+  // FIRST: Handle the joined "rt/rw 04/08" special case
+  s = s.replace(/\bRT\s*\/?[ \t]*RW\s*[:,\.-]?[ \t]*(\d+)\s*\/\s*(\d+)\b/gi, 'RT. $1 / RW. $2');
+  
+  // SECOND: Individual matches
   s = s.replace(/\bRT(?:\s*[:,\.-]?\s*|\s*)(\d+)\b/gi, 'RT. $1 ');
   s = s.replace(/\bRW(?:\s*[:,\.-]?\s*|\s*)(\d+)\b/gi, 'RW. $1 ');
-  s = s.replace(/\b(blok|blk|block)(?:\s*[:,\.-]?\s*|\s*)(?=[A-Z\d])/gi, 'Blok ');
   
-  // Clean up RT/RW joins like RT. 04/RW. 08
+  // THIRD: Cleanup RT/RW joins like RT. 04 / RW. 08
   s = s.replace(/RT\.\s*(\d+)\s*\/\s*RW\.\s*(\d+)/gi, 'RT. $1 / RW. $2');
 
-  // 5. Fix double dots or weird punctuation often caused by PDF blobs
+  // 5. Standardize Blok (Handles merges like BlokD121)
+  s = s.replace(/\b(blok|blk|block)(?:\s*[:,\.-]?\s*|\s*)(?=[A-Z\d/])/gi, 'Blok ');
+
+  // 6. Kodakpos (Postal Code) formatting (ensure 5 digits isolated or labeled)
+  s = s.replace(/\b(?:kodepos|zip|pos|postal)\s*:?\s*(\d{5})\b/gi, 'Kodepos: $1');
+
+  // 7. Fix double dots or weird punctuation often caused by PDF blobs
   s = s.replace(/\.{2,}/g, '.');
   s = s.replace(/(?<=\b[A-Z0-9])\s*,\s*(?=\b[A-Z0-9])/gi, ', '); // Spacing for commas
 
-  // 4. Clean up excessive whitespace
+  // 8. Clean up excessive whitespace
   s = s.replace(/\s+/g, ' ');
 
-  return toTitleCase(s);
+  // Apply Title Case but RT/RW need to stay UPPERCASE
+  let result = toTitleCase(s);
+  result = result.replace(/\bRt\b/g, 'RT');
+  result = result.replace(/\bRw\b/g, 'RW');
+
+  return result;
 }
 
 /**
