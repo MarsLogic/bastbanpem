@@ -161,14 +161,32 @@ class InaprocAddressParser:
         text = text.replace('\n', ' ')
 
         # 8. Final Spacing & Punctuation Polish
+        text = re.sub(r'\s+/+', ' / ', text)
         text = re.sub(r'  +', ' ', text)
         text = re.sub(r'\s+\.', '.', text)  # remove space before dot
         text = re.sub(r'\.{2,}', '.', text) # collapse double dots
-        text = re.sub(r'(: \s*\.)|(: \.\s*)', ': ', text)
         
         # Specific fix for Jl. . -> Jl.
         text = re.sub(r'Jl\.\s*\.', 'Jl.', text)
         text = re.sub(r'No\.\s*\.', 'No.', text)
+
+        # 9. Smart Fuzzy Deduplication
+        # Split by comma and remove parts that are substrings of others or already seen
+        parts = [p.strip() for p in text.split(',') if p.strip()]
+        unique_parts = []
+        for p in parts:
+            p_lower = p.lower()
+            # Check if this part is a substring of anything we already added (or vice versa)
+            is_redundant = False
+            for existing in unique_parts:
+                ex_lower = existing.lower()
+                if p_lower in ex_lower or ex_lower in p_lower:
+                    is_redundant = True
+                    break
+            if not is_redundant:
+                unique_parts.append(p)
+        
+        text = ", ".join(unique_parts)
 
         return text.strip()
 

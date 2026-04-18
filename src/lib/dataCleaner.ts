@@ -267,33 +267,20 @@ export function cleanValue(
     if (resolver) {
       const match = resolver(cleaned);
       if (match) {
-        // Build a cleaned address tail
-        const parts = [
-          match.desa && `Desa: ${toTitleCase(match.desa)}`,
-          match.kecamatan && `Kecamatan: ${toTitleCase(match.kecamatan)}`,
-          match.kabupaten && `Kabupaten: ${toTitleCase(match.kabupaten)}`,
-          match.provinsi && `Provinsi: ${toTitleCase(match.provinsi)}`,
-        ].filter(Boolean);
+        // Build a cleaned address tail (WITHOUT labels like 'Desa:', 'Kecamatan:', etc.)
+        // We also check if the name already exists in the cleaned string to avoid redundancy
+        const cLower = cleaned.toLowerCase();
         
-        // If we found a good match, we try to append/patch it
-        // This is a heuristic: we replace the the existing regional markers
-        // with the standardized ones from our master data.
+        const parts = [
+          match.desa && !cLower.includes(match.desa.toLowerCase()) && toTitleCase(match.desa),
+          match.kecamatan && !cLower.includes(match.kecamatan.toLowerCase()) && toTitleCase(match.kecamatan),
+          match.kabupaten && !cLower.includes(match.kabupaten.toLowerCase()) && toTitleCase(match.kabupaten),
+          match.provinsi && !cLower.includes(match.provinsi.toLowerCase()) && toTitleCase(match.provinsi),
+        ].filter((p): p is string => !!p);
+        
+        // If we found new components, append them
         if (parts.length > 0) {
-           const tail = parts.join(', ');
-           // Find the first occurrence of a regional marker and replace from there
-           const markers = ['Desa:', 'Kecamatan:', 'Kabupaten:', 'Kota:', 'Provinsi:'];
-           let firstIdx = -1;
-           for (const m of markers) {
-             const idx = cleaned.indexOf(m);
-             if (idx !== -1 && (firstIdx === -1 || idx < firstIdx)) firstIdx = idx;
-           }
-           
-           if (firstIdx !== -1) {
-             cleaned = cleaned.slice(0, firstIdx) + tail;
-           } else {
-             // If no clear markers, check if any of the found names exist in the string and standardize them
-             cleaned += ', ' + tail;
-           }
+           cleaned += ', ' + parts.join(', ');
         }
       }
     }
