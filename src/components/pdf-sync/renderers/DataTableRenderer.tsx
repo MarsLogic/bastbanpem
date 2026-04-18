@@ -21,7 +21,7 @@ interface DataTableRendererProps {
 }
 
 // Initial default
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 10;
 
 type SortDir = 'asc' | 'desc' | null;
 
@@ -234,7 +234,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
             
             <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-4">
               <span className="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Show:</span>
-              {[20, 50, 'all'].map(size => (
+              {[10, 20, 50, 'all'].map(size => (
                 <button
                   key={size}
                   onClick={() => setPageSize(size as any)}
