@@ -236,26 +236,81 @@ class PDFIntelligence:
         return sections
 
     def extract_lampiran_tables(self, doc: fitz.Document) -> List[Dict[str, Any]]:
-        """Ported logic to extract structured tables from Lampiran pages."""
-        tables = []
+        """
+        Extracts and merges fragmented tables from Lampiran pages into a single master table.
+        Uses heuristics to discard UI/Layout artifacts and merge truly tabular rows.
+        """
+        master_table = {
+            "page": None,
+            "page_end": None,
+            "headers": [],
+            "rows": [],
+            "method": "Intelligently Merged"
+        }
+
         for page_idx, page in enumerate(doc):
             tabs = page.find_tables()
             for tab in tabs:
                 df = tab.to_pandas()
-                if not df.empty:
-                    # Basic cleaning of headers and rows
-                    headers = [self._clean_string(str(h)) for h in df.columns]
-                    rows = []
-                    for _, row in df.iterrows():
-                        rows.append({headers[i]: self._clean_string(str(v)) for i, v in enumerate(row)})
+                if df.empty:
+                    continue
+
+                # Strip whitespace and capitalize for clean professional formatting
+                headers = [self._clean_string(str(h)).title() for h in df.columns]
+                
+                # Rule 1: A legitimate table must have multiple columns, NOT just one
+                if len(headers) < 2:
+                    continue
+
+                # Rule 2: Exclude garbage (if any header is insanely long, it's a paragraph, not a header)
+                if any(len(h) > 50 for h in headers):
+                    continue
+
+                headers_lower = " ".join(headers).lower()
+
+                # Rule 3: We specifically want the product/distribution list, NOT the payment summary block
+                if "pembayaran" in headers_lower and ("estimasi" in headers_lower or "total" in headers_lower):
+                    continue
+
+                # Rule 4: Must have some keyword identifying it as a product/catalog table
+                # Typical Lampiran data columns: No, Produk, Varian, Jumlah, Harga, Total, Catatan
+                if not any(k in headers_lower for k in ["produk", "varian", "jumlah", "harga", "catatan", "nama"]):
+                    continue
+
+                # This is a valid chunk of the Lampiran table
+                if not master_table["headers"]:
+                    master_table["headers"] = headers
+                    master_table["page"] = page_idx + 1
+                
+                master_table["page_end"] = page_idx + 1
+
+                for _, row in df.iterrows():
+                    is_garbage = False
+                    cleaned_row = {}
                     
-                    tables.append({
-                        "page": page_idx + 1,
-                        "headers": headers,
-                        "rows": rows,
-                        "method": "find_tables"
-                    })
-        return tables
+                    # Merge the current row into the active master_table headers
+                    # In case of column mismatch due to page breaks, we map by index
+                    for i, (col_name, val) in enumerate(row.items()):
+                        clean_val = self._clean_string(str(val))
+                        
+                        # Apply Title Case but preserve acronyms and numeric structures
+                        if len(clean_val) > 2 and clean_val.isupper():
+                            clean_val = clean_val.title()
+                        
+                        if len(clean_val) > 150:
+                            is_garbage = True
+                            
+                        # Map to master header if within bounds, otherwise ignore extra stray columns
+                        if i < len(master_table["headers"]):
+                            cleaned_row[master_table["headers"][i]] = clean_val
+                    
+                    if not is_garbage and any(cleaned_row.values()):
+                        master_table["rows"].append(cleaned_row)
+
+        if master_table["rows"]:
+            return [master_table]
+            
+        return []
 
     def analyze_document(self, file_path: str) -> Dict[str, Any]:
         doc = fitz.open(file_path)

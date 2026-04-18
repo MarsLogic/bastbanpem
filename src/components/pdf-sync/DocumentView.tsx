@@ -298,57 +298,6 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
         );
       })}
 
-      {/* ── PDF Tables ── */}
-      {hasTables && (
-        <section>
-          <div className="flex items-center gap-3 pt-8 pb-3">
-            <div className="flex items-center gap-2">
-              <TableIcon className="h-4 w-4 text-slate-500" />
-              <span className="text-[13px] font-black text-slate-800 uppercase tracking-wide">
-                Tables
-              </span>
-              <Badge variant="secondary" className="text-[9px] h-4 px-1.5">
-                {tables.length}
-              </Badge>
-            </div>
-            <div className="flex-1 h-px bg-slate-200" />
-          </div>
-
-          <div className="space-y-8">
-            {tables.slice(1).map((table, i) => {
-              const tableIdx = i + 1; // Real index is after the absorbed Table 1
-              return (
-                <div
-                  key={tableIdx}
-                  id={`table-${tableIdx}`}
-                  data-nav-id={`table::${tableIdx}`}
-                  ref={el => { sectionRefs.current[`table::${tableIdx}`] = el; }}
-                  className="scroll-mt-4"
-                >
-                  {/* Table label */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[11px] font-black text-slate-600">Table {tableIdx + 1}</span>
-                    {table.page && (
-                      <Badge variant="outline" className="text-[9px] h-4">
-                        {table.page_end && table.page_end !== table.page
-                          ? `p.${table.page}–${table.page_end}`
-                          : `p.${table.page}`}
-                      </Badge>
-                    )}
-                    {table.method && (
-                      <Badge variant="outline" className="text-[9px] h-4">{table.method}</Badge>
-                    )}
-                    <Badge variant="secondary" className="text-[9px] h-4">
-                      {table.rows?.length ?? 0} rows
-                    </Badge>
-                  </div>
-                  <DataTableRenderer table={table} showMeta={false} />
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
     </div>
   );
 };
