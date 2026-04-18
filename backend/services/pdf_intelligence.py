@@ -17,14 +17,14 @@ from backend.services.diagnostics import diagnostics
 
 class PDFIntelligence:
     SECTION_ANCHORS = {
-        "HEADER": r"Surat Pesanan",
-        "PEMESAN": r"Pemesan\n",
-        "PENYEDIA": r"Penyedia\n",
-        "RINGKASAN_PESANAN": r"Ringkasan Pesanan",
-        "RINGKASAN_PEMBAYARAN": r"Ringkasan Pembayaran",
-        "SSUK": r"SYARAT-SYARAT UMUM KONTRAK",
-        "SSKK": r"SYARAT-SYARAT KHUSUS KONTRAK",
-        "LAMPIRAN": r"Lampiran"
+        "HEADER": r"(?i)Surat\s*Pesanan",
+        "PEMESAN": r"(?im)^\s*Pemesan\s*$",
+        "PENYEDIA": r"(?im)^\s*Penyedia\s*$",
+        "RINGKASAN_PESANAN": r"(?im)^\s*Ringkasan\s*Pesanan\s*$",
+        "RINGKASAN_PEMBAYARAN": r"(?im)^\s*Ringkasan\s*Pembayaran\s*$",
+        "SSUK": r"(?i)SYARAT-SYARAT\s*UMUM\s*KONTRAK",
+        "SSKK": r"(?i)SYARAT-SYARAT\s*KHUSUS\s*KONTRAK",
+        "LAMPIRAN": r"(?im)^\s*Lampiran\s+\d+\."
     }
 
     def __init__(self):
@@ -88,6 +88,146 @@ class PDFIntelligence:
         return re.sub(r'\b[A-Za-z0-9]+\b', format_word, text)
 
     @staticmethod
+    def _remove_page_artifacts(text: str) -> str:
+        """Surgically strips multipage interstitial artifacts (Halaman X/Y, Surat Pesanan headers) 
+        without breaking the paragraph flow layout."""
+        if not text:
+            return ""
+        
+        # 1. Strip interstitial multipage headers
+        artifact_pattern = r'(?im)^\s*(?:Halaman\s+\d+/\d+)?\s*\n*(?:^\s*Lampiran\s*\n+)?^\s*No\.\s*Surat\s*Pesanan\s*:[^\n]*\n+^\s*Tanggal\s*Surat\s*Pesanan\s*:[^\n]*\n*(?:^\s*\n)*'
+        cleaned = re.sub(artifact_pattern, '', text)
+        
+        # 2. Strict terminal chop: if the layout text accidentally captured the next major section (Lampiran 1)
+        # we completely chop the string at that exact marker.
+        trailing_match = re.search(r'(?im)^\s*Lampiran\s+\d+\.', cleaned)
+        if trailing_match:
+            cleaned = cleaned[:trailing_match.start()]
+            
+        # 3. Strip dangling "Halaman X" at the very end of the document block if caught without next page header
+        cleaned = re.sub(r'(?i)\s*Halaman\s+\d+/\d+\s*\n*$', '', cleaned)
+        return cleaned.strip()
+
+    @staticmethod
+    def _parse_sskk_structure(cleaned_text: str) -> List[Dict[str, Any]]:
+        """
+        Parses the cleaned SSKK string layout into structured JSON clauses based on physical column offsets.
+        Implements a Sliding Margin algorithm to prevent word-tearing when kerning eliminates column gaps.
+        """
+        clauses = []
+        if not cleaned_text:
+            return clauses
+            
+        pattern = r'(?m)^\s{10,24}(\d+)\.\s+'
+        matches = list(re.finditer(pattern, cleaned_text))
+        
+        for i, match in enumerate(matches):
+            nomor = match.group(1)
+            start_idx = match.end()
+            end_idx = matches[i+1].start() if i + 1 < len(matches) else len(cleaned_text)
+            
+            block = cleaned_text[start_idx:end_idx]
+            lines = block.strip('\n').split('\n')
+            
+            title_words = []
+            body_words = []
+            
+            for line in lines:
+                if not line.strip(): continue
+                leading_spaces = len(line) - len(line.lstrip())
+                
+                # If the text inherently starts beyond the Title column threshold, it's definitively Body text.
+                if leading_spaces > 28:
+                    body_words.append(line.strip())
+                    continue
+                    
+                parts = re.split(r'\s{2,}', line.strip(), maxsplit=1)
+                
+                # Sub-clause Intelligence: Detect if a sub-number (e.g. 12.1 or 12.a) is tucked into the title
+                # We look for the pattern: current article number + dot + digit/letter
+                sub_marker = rf"\b{nomor}\.[a-z0-9]\b"
+                sub_match = re.search(sub_marker, line.strip(), re.IGNORECASE)
+                
+                if sub_match:
+                    # Force split at the sub-clause marker
+                    split_pos = sub_match.start()
+                    t_part = line.strip()[:split_pos].strip()
+                    b_part = line.strip()[split_pos:].strip()
+                    if t_part: title_words.append(t_part)
+                    if b_part: body_words.append(b_part)
+                    continue
+
+                if len(parts) == 2:
+                    title_words.append(parts[0].strip())
+                    body_words.append(parts[1].strip())
+                else:
+                    # Single-space column merging protection: calculate nearest safe split margin
+                    best_split_idx = 31
+                    if len(line) > best_split_idx:
+                        if line[best_split_idx] != ' ':
+                            left_space = line.rfind(' ', 0, best_split_idx)
+                            right_space = line.find(' ', best_split_idx)
+                            
+                            if left_space != -1 and right_space != -1:
+                                best_split_idx = left_space if (best_split_idx - left_space < right_space - best_split_idx) else right_space
+                            elif left_space != -1:
+                                best_split_idx = left_space
+                            elif right_space != -1:
+                                best_split_idx = right_space
+                                
+                        t_part = line[:best_split_idx].strip()
+                        b_part = line[best_split_idx:].strip()
+                        if t_part: title_words.append(t_part)
+                        if b_part: body_words.append(b_part)
+                    else:
+                        title_words.append(line.strip())
+            
+            clauses.append({
+                'nomor': nomor,
+                'judul': ' '.join(title_words).strip(),
+                'isi': PDFIntelligence._beautify_legal_body('\n'.join(body_words).strip())
+            })
+            
+        return clauses
+
+    @staticmethod
+    def _beautify_legal_body(text: str) -> str:
+        """
+        Beautifies legal body text by normalizing list markers, transforming 
+        alphanumeric sub-clauses, and bolding markers for prominence.
+        """
+        if not text:
+            return ""
+            
+        # 1. Normalize spacing for "x )" markers
+        text = re.sub(r'(\b[a-zA-Z0-9])\s+\)', r'\1)', text)
+        
+        # 2. Transform Alphanumeric sub-clauses: "x.a" -> "xa."
+        # Pattern: digits + dot + letter
+        text = re.sub(r'\b(\d+)\.([a-z]\b)', r'\1\2.', text)
+        
+        # 3. Inject double newlines before list items to create "Stanza" layout
+        # Case A: Numeric/Alpha markers like 1) or a)
+        pattern_brace = r'(?<!^)\s*\b([a-zA-Z0-9]\))(?=\s)'
+        text = re.sub(pattern_brace, r'\n\n\1', text)
+        
+        # Case B: Sub-clause markers like 3.1 or 12a.
+        # We handle both the dots and the new 'xa.' format
+        pattern_sub = r'(?<!^)\s*\b(\d+\.[0-9]|\d+[a-z]\.)(?=\s)'
+        text = re.sub(pattern_sub, r'\n\n\1', text)
+        
+        # 4. Bolding pass: Wrap all detected markers in **bold**
+        # We do this after spacing to avoid messing up the newlines
+        bold_pattern = r'\b([a-zA-Z0-9]\)|\d+\.[0-9]|\d+[a-z]\.)(?=\s)'
+        text = re.sub(bold_pattern, r'**\1**', text)
+        
+        # 5. Structural Cleanup
+        # Remove triple newlines introduced by merging existing breaks
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        
+        return text.strip()
+
+    @staticmethod
     def _clean_legal_section(text: str) -> str:
         if not text:
             return ""
@@ -109,12 +249,14 @@ class PDFIntelligence:
             has_numbering = re.match(r'^(\d+[\.\)]|[a-zA-Z][\.\)])\s+', formatted)
             is_already_bullet = formatted.startswith('-') or formatted.startswith('•')
             is_colon_key = ":" in formatted and len(formatted.split(":")[0]) < 30
+            is_structural_header = formatted.startswith('---')
             
             # If it's heavily indented and short, it's likely a continuation of a title/key, don't bullet it
-            is_likely_continuation = len(indent) > 0 and len(formatted) < 40 and not is_already_bullet and not has_numbering
+            is_likely_continuation = len(indent) > 0 and len(formatted) < 40 and not is_already_bullet and not has_numbering and not is_structural_header
             
             # If no numbering, no bullet, and not a short key-value pair, it's "free text", so add a bullet point
-            if not has_numbering and not is_already_bullet and not is_colon_key and not is_likely_continuation and len(formatted) > 5:
+            # EXPERT REFINEMENT: If it's a colon key (KV pair), NEVER add a bullet to the key part.
+            if not has_numbering and not is_already_bullet and not is_colon_key and not is_likely_continuation and not is_structural_header and len(formatted) > 5:
                 formatted = f"• {formatted}"
                 
             out_lines.append(f"{indent}{formatted}")
@@ -167,19 +309,43 @@ class PDFIntelligence:
         # (Actually, I'll just focus on modifying 206-222 directly)
 
         # ─── New Section Extraction ───
-        sections_with_meta = self.extract_sections_with_pages(doc)
+        sections_with_meta = self.extract_sections_with_pages(doc, full_text)
         cleaned_sections = {}
+        sskk_clauses = []
         
         for name, meta in sections_with_meta.items():
             raw_content = meta["text"]
             
-            # If it's a legal section, re-extract with high-fidelity pdfplumber if we detect it's multi-column
             if name in ["SSKK", "SSUK"] and meta["page_start"] is not None:
                 print(f"[PDF_INTEL] Re-extracting high-fidelity {name} from pages {meta['page_start']} to {meta['page_end']}")
-                raw_content = self._extract_high_fidelity_range(doc.name, meta["page_start"], meta["page_end"], name)
+                
+                # Determine the end pattern if available to cleanly slice the layout text
+                idx = list(sections_with_meta.keys()).index(name)
+                keys = list(sections_with_meta.keys())
+                end_pattern = None
+                if idx + 1 < len(keys):
+                    next_name = keys[idx + 1]
+                    end_pattern = self.SECTION_ANCHORS.get(next_name)
+                    
+                raw_content = self._extract_high_fidelity_range(
+                    doc.name, meta["page_start"], meta["page_end"], name,
+                    start_pattern=self.SECTION_ANCHORS.get(name),
+                    end_pattern=end_pattern
+                )
             
             if name in ["SSKK", "SSUK"]:
-                cleaned_sections[name] = PDFIntelligence._clean_legal_section(self._clean_string(raw_content))
+                content = self._clean_string(raw_content)
+                if name == "SSKK":
+                    # Use accurate layout-preserving scrubber instead of destructive cleaner
+                    content = PDFIntelligence._remove_page_artifacts(content)
+                    cleaned_sections[name] = content
+                    # Perform structural scanning to output machine-ready data
+                    sskk_clauses = PDFIntelligence._parse_sskk_structure(content)
+                else:
+                    cleaned_sections[name] = PDFIntelligence._clean_legal_section(content)
+            elif name == "LAMPIRAN":
+                # User requested to skip raw parsing for Lampiran; we only want the data table
+                continue
             else:
                 cleaned_sections[name] = self._clean_string(raw_content)
 
@@ -190,47 +356,100 @@ class PDFIntelligence:
             shipment_ledger=self.extract_shipment_ledger(full_text), # Helperized
             technical_specifications=self.extract_tech_specs(full_text), # Helperized
             full_text=self._clean_string(full_text),
-            sections=cleaned_sections
+            sections=cleaned_sections,
+            parsed_sskk_clauses=sskk_clauses
         )
 
-    def extract_sections_with_pages(self, doc: fitz.Document) -> Dict[str, Any]:
-        """Maps sections to their start/end pages by searching each page."""
+    def _refine_sskk_content(self, text: str) -> str:
+        """Injects structural markers into SSKK sections to separate shared entities (PPK vs Penyedia)."""
+        # 1. Handle "Korespondensi" Split
+        if "Korespondensi" in text:
+            # We insert headers that the KeyValueRenderer will interpret as group dividers (needs " : —")
+            text = text.replace("Alamat Para Pihak sebagai berikut:", "PEMESAN / SATUAN KERJA : —")
+            
+            # Detect the "Penyedia :" line as the pivot
+            pivot_pattern = r'(\bPenyedia\s*:\s*)'
+            if re.search(pivot_pattern, text):
+                text = re.sub(pivot_pattern, r'PENYEDIA : —\n\1', text, count=1)
+        
+        # 2. Handle "Wakil sah para pihak" Split
+        if "Wakil sah" in text:
+            # Handle variations of the "Wakil Sah" sentence
+            text = re.sub(r'Wakil Sah.*?Penyedia.*?berikut:?', 'WAKIL SAH PPK DAN PENYEDIA : —', text, flags=re.IGNORECASE)
+            text = text.replace("Untuk PPK", "UNTUK PPK")
+            text = text.replace("Untuk Penyedia", "UNTUK PENYEDIA")
+            
+        return text
+
+    def extract_sections_with_pages(self, doc: fitz.Document, full_text: str) -> Dict[str, Any]:
+        """Maps sections to their start/end indices in the full_text."""
         sections = {}
         positions = []
         
-        # First, find start page/pos for each section
+        # 1. Find the first occurrence of each anchor in the full document text
+        # Using full_text ensures indices are consistent across the whole doc.
         for name, pattern in self.SECTION_ANCHORS.items():
-            for p_idx, page in enumerate(doc):
-                p_text = page.get_text()
-                match = re.search(pattern, p_text, re.IGNORECASE)
-                if match:
-                    positions.append({"name": name, "page": p_idx, "start": match.start()})
-                    break # Found anchor for this section
+            match = re.search(pattern, full_text, re.IGNORECASE)
+            if match:
+                positions.append({
+                    "name": name, 
+                    "start": match.start(),
+                    "match_text": match.group(0)
+                })
         
-        positions.sort(key=lambda x: x["page"] * 100000 + x["start"])
+        # 2. Sort positions by their occurrence in the document
+        positions.sort(key=lambda x: x["start"])
         
+        # 3. Slice the text between anchors
         for i, pos in enumerate(positions):
             name = pos["name"]
-            p_start = pos["page"]
+            idx_start = pos["start"]
             
-            # End is the start of the next section
-            p_end = positions[i+1]["page"] if i+1 < len(positions) else len(doc) - 1
+            # The section ends where the next section starts, or at the end of the text
+            idx_end = positions[i+1]["start"] if i+1 < len(positions) else len(full_text)
             
-            # Combine text from p_start to p_end
-            combined_text = ""
-            for p_idx in range(p_start, p_end + 1):
-                combined_text += doc[p_idx].get_text()
-                
+            section_text = full_text[idx_start:idx_end]
+            
+            # Identify which pages this section spans for high-fidelity fallback
+            # We estimate pages by looking at cumulative page text lengths
+            p_start, p_end = self._estimate_page_range(doc, idx_start, idx_end)
+            
             sections[name] = {
-                "text": combined_text,
+                "text": section_text,
                 "page_start": p_start,
                 "page_end": p_end
             }
             
         return sections
 
-    def _extract_high_fidelity_range(self, file_path: str, start_page: int, end_page: int, section_name: str) -> str:
-        """Uses pdfplumber to extract text with layout preservation."""
+    def _estimate_page_range(self, doc: fitz.Document, start_idx: int, end_idx: int):
+        """Estimate the physical page range for a text span based on cumulative get_text length.
+        Fixed to correctly handle exact boundaries."""
+        page_offsets = []
+        cumulative = 0
+        for i, page in enumerate(doc):
+            p_len = len(page.get_text())
+            page_offsets.append({
+                "page": i,
+                "start": cumulative,
+                "end": cumulative + p_len
+            })
+            cumulative += p_len
+
+        def get_page(char_idx):
+            for po in page_offsets:
+                # Use strict less-than for end to prevent off-by-one on exact boundaries
+                if po["start"] <= char_idx < po["end"]:
+                    return po["page"]
+            return page_offsets[-1]["page"] if page_offsets else 0
+
+        p_start = get_page(start_idx)
+        p_end = get_page(max(0, end_idx - 1)) # -1 because end_idx is exclusive
+
+        return (p_start, p_end)
+
+    def _extract_high_fidelity_range(self, file_path: str, start_page: int, end_page: int, section_name: str, start_pattern: str = None, end_pattern: str = None) -> str:
+        """Uses pdfplumber to extract text with layout preservation, sliced exactly to the required anchors."""
         import pdfplumber
         high_fidelity_text = ""
         try:
@@ -240,8 +459,17 @@ class PDFIntelligence:
                         page = pdf.pages[p_idx]
                         high_fidelity_text += page.extract_text(layout=True) + "\n\n"
             
-            # Optional: Sub-extract the specific section if it starts mid-page
-            # For now, we take the whole page range to be safe.
+            # Slice strictly between start and end anchors to prevent bleeding
+            if start_pattern:
+                s_match = re.search(start_pattern, high_fidelity_text, re.IGNORECASE)
+                if s_match:
+                    high_fidelity_text = high_fidelity_text[s_match.start():]
+                    
+            if end_pattern:
+                e_match = re.search(end_pattern, high_fidelity_text, re.IGNORECASE)
+                if e_match:
+                    high_fidelity_text = high_fidelity_text[:e_match.start()]
+                    
             return high_fidelity_text
         except Exception as e:
             print(f"[PDF_INTEL] Error in pdfplumber extraction: {e}")
@@ -271,7 +499,8 @@ class PDFIntelligence:
                 destination=ShipmentDestination(
                     desa=self._clean_string(addr_data.get("desa")),
                     kabupaten=self._clean_string(addr_data.get("kabupaten")),
-                    provinsi=self._clean_string(addr_data.get("provinsi"))
+                    provinsi=self._clean_string(addr_data.get("provinsi")),
+                    full_address=self._clean_string(addr_data.get("full_address"))
                 ),
                 costs=ShipmentCosts(product_total=prod_total, shipping_total=ship_total, is_at_cost=True)
             ))
@@ -442,6 +671,7 @@ class PDFIntelligence:
                 tanggal_kontrak=ultra.contract_header.timestamp,
                 full_text=ultra.full_text,
                 sections=ultra.sections,
+                parsed_sskk_clauses=ultra.parsed_sskk_clauses,
                 source_file=file_path,
                 nilai_kontrak=str(ultra.financials.grand_total)
             )

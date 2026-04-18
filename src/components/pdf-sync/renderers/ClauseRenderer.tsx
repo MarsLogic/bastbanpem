@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { KeyValueRenderer, canRenderAsKeyValue } from './KeyValueRenderer';
 import { ProseRenderer } from './ProseRenderer';
+import { Highlight } from '@/components/ui/highlight';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,6 +55,12 @@ function parseClauses(text: string): MainClause[] {
   for (let i = 0; i < lines.length; i++) {
     const line    = lines[i];
     const trimmed = line.trim();
+
+    // PERFORMANCE/SAFETY: Ignore lines that clearly look like shipment metadata
+    // e.g. "114. 785 544" or "000 36 24 24 1.29"
+    if (trimmed.match(/^\d{1,4}\.\s*\d{3,}/) || trimmed.match(/^\d{3,}\s+\d{2,}\s+\d{2,}/)) {
+        continue;
+    }
 
     // Sub-clause
     const subMatch = trimmed.match(subRe);
@@ -114,7 +121,9 @@ function parseClauses(text: string): MainClause[] {
 
     // Main clause with inline title
     const inlineMatch = trimmed.match(mainInlineRe);
-    if (inlineMatch) {
+    // CRITICAL: Ensure the number part is short (most clauses are < 100). 
+    // Shipment IDs like 114. 785... have a long tail that mainInlineRe might eat.
+    if (inlineMatch && inlineMatch[1].length <= 3) {
       flushMain();
       let title = inlineMatch[2].trim();
       let content = '';
@@ -167,29 +176,15 @@ function parseClauses(text: string): MainClause[] {
   return roots;
 }
 
-// ─── Highlight ────────────────────────────────────────────────────────────────
-
-function highlight(text: string, query: string): React.ReactNode {
-  if (!query) return text;
-  const idx = text.toLowerCase().indexOf(query.toLowerCase());
-  if (idx === -1) return text;
-  return (
-    <>
-      {text.slice(0, idx)}
-      <mark className="bg-yellow-200 text-yellow-900 rounded-sm px-0.5">
-        {text.slice(idx, idx + query.length)}
-      </mark>
-      {highlight(text.slice(idx + query.length), query)}
-    </>
-  );
-}
+// ─── Search Logic ─────────────────────────────────────────────────────────────
 
 function clauseMatches(clause: MainClause, q: string): boolean {
   if (!q) return true;
-  if (clause.title.toLowerCase().includes(q)) return true;
-  if (clause.content.toLowerCase().includes(q)) return true;
+  const lowerQ = q.toLowerCase();
+  if (clause.title.toLowerCase().includes(lowerQ)) return true;
+  if (clause.content.toLowerCase().includes(lowerQ)) return true;
   return clause.children.some(
-    s => s.title.toLowerCase().includes(q) || s.content.toLowerCase().includes(q)
+    s => s.title.toLowerCase().includes(lowerQ) || s.content.toLowerCase().includes(lowerQ)
   );
 }
 
@@ -200,30 +195,28 @@ const SubClauseItem: React.FC<{ sub: SubClause; q: string }> = ({ sub, q }) => {
   const hasContent = Boolean(sub.content);
 
   return (
-    <div className="ml-6 border-l-2 border-slate-100 pl-3">
+    <div className="ml-5 border-l border-slate-200/60 pl-4 my-1">
       <button
         onClick={() => hasContent && setOpen(o => !o)}
-        className={`flex items-start gap-1.5 w-full text-left py-1.5 ${hasContent ? 'cursor-pointer' : 'cursor-default'}`}
+        className={`flex items-start gap-2 w-full text-left py-2 transition-opacity ${hasContent ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
       >
-        {hasContent ? (
-          open
-            ? <ChevronDown className="h-3 w-3 text-slate-400 mt-0.5 shrink-0" />
-            : <ChevronRight className="h-3 w-3 text-slate-400 mt-0.5 shrink-0" />
-        ) : (
-          <span className="w-3 shrink-0" />
-        )}
-        <span className="font-black text-slate-400 tabular-nums text-[11px] shrink-0">
+        <span className="font-extrabold text-slate-600 tabular-nums text-[11px] mt-[1px] shrink-0">
           {sub.number}.
         </span>
-        <span className="text-[12px] font-semibold text-slate-700 leading-snug">
-          {q ? highlight(sub.title, q) : sub.title}
+        <span className="text-[12px] font-bold text-slate-800 leading-snug">
+          <Highlight text={sub.title} query={q} />
         </span>
+        {hasContent && (
+           open
+           ? <ChevronDown className="h-3 w-3 text-slate-400 mt-1 shrink-0 ml-auto" />
+           : <ChevronRight className="h-3 w-3 text-slate-400 mt-1 shrink-0 ml-auto" />
+        )}
       </button>
 
       {open && hasContent && (
-        <div className={`ml-5 pb-2 border-slate-50 ${canRenderAsKeyValue(sub.content) ? '' : ''}`}>
+        <div className="pb-3 pr-2">
             {canRenderAsKeyValue(sub.content) ? (
-                <div className="bg-slate-50/30 p-2 rounded-xl mt-2">
+                <div className="bg-slate-50/50 p-2.5 rounded-xl mt-1 border border-slate-100">
                     <KeyValueRenderer text={sub.content} />
                 </div>
             ) : (
@@ -243,45 +236,54 @@ const MainClauseItem: React.FC<{ clause: MainClause; q: string; defaultOpen: boo
   const [open, setOpen] = useState(defaultOpen);
   const hasBody = Boolean(clause.content) || clause.children.length > 0;
 
+  // Auto-expand if the query matches this specific clause or its children
+  useEffect(() => {
+    if (q && clauseMatches(clause, q)) {
+      setOpen(true);
+    }
+  }, [q, clause]);
+
   return (
-    <div className="border border-slate-200 rounded-lg overflow-hidden">
+    <div className="border border-slate-200/80 rounded-2xl overflow-hidden bg-white shadow-sm transition-shadow hover:shadow-md">
       {/* Header — always clickable */}
       <button
         onClick={() => hasBody && setOpen(o => !o)}
-        className={`flex items-center gap-2 w-full text-left bg-slate-50 px-4 py-2.5 border-b border-slate-100 transition-colors hover:bg-slate-100 ${!hasBody ? 'cursor-default' : ''}`}
+        className={`flex items-center gap-3 w-full text-left bg-slate-50/80 px-4 py-3 border-b border-slate-100 transition-colors hover:bg-slate-100/80 ${!hasBody ? 'cursor-default' : ''}`}
       >
-        {hasBody ? (
-          open
-            ? <ChevronDown className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            : <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-        ) : (
-          <span className="w-3.5 shrink-0" />
-        )}
-        <span className="font-black text-slate-500 tabular-nums text-[12px] shrink-0">
+        <span className="font-extrabold text-slate-700 tabular-nums text-[12px] shrink-0">
           {clause.number}.
         </span>
-        <span className="text-[13px] font-semibold text-slate-800 flex-1 leading-snug">
-          {q ? highlight(clause.title, q) : clause.title}
+        <span className="text-[14px] font-bold text-slate-900 flex-1 leading-snug tracking-tight">
+          <Highlight text={clause.title} query={q} />
         </span>
-        {clause.children.length > 0 && (
-          <span className="text-[10px] text-slate-400 shrink-0">
-            {clause.children.length} sub-clause{clause.children.length !== 1 ? 's' : ''}
-          </span>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {clause.children.length > 0 && (
+            <span className="text-[10px] font-semibold text-slate-500 bg-white border border-slate-200 rounded-full px-2 py-0.5">
+              {clause.children.length} sub-clause{clause.children.length !== 1 ? 's' : ''}
+            </span>
+          )}
+          {hasBody && (
+            open
+              ? <ChevronDown className="h-4 w-4 text-slate-500" />
+              : <ChevronRight className="h-4 w-4 text-slate-500" />
+          )}
+        </div>
       </button>
 
       {/* Body */}
       {open && hasBody && (
         <div className="bg-white">
           {clause.content && (
-            <div className={`px-4 py-3 border-b border-slate-50 ${canRenderAsKeyValue(clause.content) ? '' : ''}`}>
-              {canRenderAsKeyValue(clause.content) ? (
-                <div className="bg-slate-50/30 p-2 rounded-xl">
-                    <KeyValueRenderer text={clause.content} />
-                </div>
-              ) : (
-                <ProseRenderer text={clause.content} searchQuery={q} />
-              )}
+            <div className="px-5 py-4 pt-1 border-b border-slate-50">
+              <div className="pl-6 border-l border-slate-100 ml-1">
+                {canRenderAsKeyValue(clause.content) ? (
+                  <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
+                      <KeyValueRenderer text={clause.content} />
+                  </div>
+                ) : (
+                  <ProseRenderer text={clause.content} searchQuery={q} />
+                )}
+              </div>
             </div>
           )}
           {clause.children.length > 0 && (
@@ -299,8 +301,16 @@ const MainClauseItem: React.FC<{ clause: MainClause; q: string; defaultOpen: boo
 
 // ─── Root component ───────────────────────────────────────────────────────────
 
-export const ClauseRenderer: React.FC<{ text: string }> = ({ text }) => {
+export const ClauseRenderer: React.FC<{ text: string; searchQuery?: string }> = ({ text, searchQuery }) => {
   const [search, setSearch] = useState('');
+  
+  // Sync internal search with external global search
+  React.useEffect(() => {
+    if (searchQuery !== undefined) {
+      setSearch(searchQuery);
+    }
+  }, [searchQuery]);
+
   const q = search.toLowerCase().trim();
 
   const clauses = useMemo(() => parseClauses(text), [text]);
@@ -321,16 +331,18 @@ export const ClauseRenderer: React.FC<{ text: string }> = ({ text }) => {
 
   return (
     <div className="space-y-3">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-        <Input
-          placeholder={`Search ${clauses.length} clauses…`}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="h-8 pl-8 text-[11px] bg-slate-50 border-slate-200"
-        />
-      </div>
+      {/* Only show local search if no global search is provided */}
+      {!searchQuery && (
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+          <Input
+            placeholder={`Search ${clauses.length} clauses…`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="h-8 pl-8 text-[11px] bg-slate-50 border-slate-200"
+          />
+        </div>
+      )}
 
       {/* No results */}
       {visible.length === 0 && (

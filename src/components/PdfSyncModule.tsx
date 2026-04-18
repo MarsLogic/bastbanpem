@@ -13,6 +13,7 @@ import { ContractData } from '@/lib/contractStore';
 import { parsePdfFile, saveContract, loadContractIntelligence } from '@/lib/api';
 import { getPdfBlob, savePdfBlob } from '@/lib/pdfStorage';
 
+import { ScanningLoader } from './pdf-sync/ScanningLoader';
 import { DocumentView, SECTION_ORDER } from './pdf-sync/DocumentView';
 import {
   InspectorSidebar,
@@ -355,7 +356,7 @@ const OfflinePlaceholder: React.FC<{
     >
       {isExtracting
         ? <><Loader2 className="animate-spin h-4 w-4 mr-2" />Scanning...</>
-        : <><Zap className="h-4 w-4 mr-2" />Run AI Scan</>
+        : <><Zap className="h-4 w-4 mr-2" />Run PDF Scan</>
       }
     </Button>
   </div>
@@ -416,6 +417,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         if (saved.metadata?.nomor_kontrak) updates.nomorKontrak = saved.metadata.nomor_kontrak;
         if (saved.metadata?.nama_penyedia) updates.namaPenyedia = saved.metadata.nama_penyedia;
         if (saved.metadata?.nama_pemesan)  updates.namaPemesan  = saved.metadata.nama_pemesan;
+        if (saved.metadata?.parsed_sskk_clauses) updates.sskkClauses = saved.metadata.parsed_sskk_clauses;
 
         if (Object.keys(updates).length > 0) {
           onUpdate(updates);
@@ -461,7 +463,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
     });
   }, [blobUrl, contract.id, onUpdate]);
 
-  // ── AI Scan ───────────────────────────────────────────────────────────────
+  // ── PDF Scan ───────────────────────────────────────────────────────────────
   const handleAutoExtract = useCallback(async () => {
     let file = contract.pdfBlob instanceof Blob ? (contract.pdfBlob as File) : null;
 
@@ -526,6 +528,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
       if (result.metadata?.nomor_kontrak) updates.nomorKontrak = result.metadata.nomor_kontrak;
       if (result.metadata?.nama_penyedia) updates.namaPenyedia = result.metadata.nama_penyedia;
       if (result.metadata?.nama_pemesan)  updates.namaPemesan  = result.metadata.nama_pemesan;
+      if (result.metadata?.parsed_sskk_clauses) updates.sskkClauses = result.metadata.parsed_sskk_clauses;
       onUpdate(updates);
 
       const sqliteId = (result.metadata?.nomor_kontrak || 'UNK').replace(/\s+/g, '_');
@@ -547,7 +550,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         },
       });
     } catch (err) {
-      console.error('[PdfSyncModule] AI scan failed:', err);
+      console.error('[PdfSyncModule] PDF scan failed:', err);
       toast.error('Extraction failed. Check backend logs.', {
         style: {
           backgroundColor: '#1f2937',
@@ -601,8 +604,17 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
 
 
+  const handleActiveChange = useCallback((id: string) => {
+    setActiveNavId(id as NavItemIdString);
+  }, []);
+
   // ── Active content ────────────────────────────────────────────────────────
   const renderContent = () => {
+    // If we are currently scanning/extracting, show the premium loader
+    if (isExtracting || isHydrating) {
+      return <ScanningLoader />;
+    }
+
     // Sections and tables → unified scrollable document view.
     // Clicking a sidebar item scrolls to that section/table; all content visible in one page.
     return (
@@ -610,8 +622,9 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         sections={contract.sections ?? {}}
         tables={contract.tables ?? []}
         scrollToKey={activeNavId}
-        onActiveChange={(id) => setActiveNavId(id as NavItemIdString)}
+        onActiveChange={handleActiveChange}
         ultraRobust={contract.ultraRobust}
+        sskkClauses={contract.sskkClauses}
       />
     );
   };

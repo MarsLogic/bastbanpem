@@ -41,4 +41,22 @@ Follow these steps to complete a batch transmission:
 - **Files failing to upload?** Check if the files still exist in the `App_Data` folder. The app requires these files to be present during injection.
 
 ---
+## Elite Workbench Features (Financial Grid)
+
+To handle complex BAST documents with mangled or incomplete data, we have integrated the **Elite Intelligence Engine**:
+
+- **Advanced Data Healing (Triangulation):** 
+  - The system automatically detects mangled regional data (e.g., misspelled Districts or Villages).
+  - It uses a **Master Data Triangulation** algorithm to logically cross-reference and "heal" these fields, ensuring 100% accuracy before government portal injection.
+  
+- **Premium Financial Grid:**
+  - **Dynamic Sorting:** Click any header (Recipient, Phone, Province, DPP, etc.) to sort instantly. Financial columns use intelligent numeric sorting.
+  - **Quick Search & Filter:** Filter recipients by name or province in real-time.
+  - **Smart Pagination:** Optimized view sizes (10, 20, 50, All) and a reactive "Jump to Page" control for large documents. Note: Navigation controls hide automatically for single-page results.
+
+- **Global Excel Export:**
+  - Standard Excel exports now include the fully "healed" and normalized data, not just the raw captured text.
+
+---
 *Created by Senior Full-Stack Engineer (Build & Deployment Specialist)*
+*Updated: April 2026 - Performance & UI Polish Update*

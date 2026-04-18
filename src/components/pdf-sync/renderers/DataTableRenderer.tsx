@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, FileDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import { cleanValue } from '@/lib/dataCleaner';
+import { cleanValue, stripRegionalPrefix } from '@/lib/dataCleaner';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 
 interface RawTable {
@@ -18,6 +18,7 @@ interface DataTableRendererProps {
   table: RawTable;
   /** Show page/method metadata badge in header */
   showMeta?: boolean;
+  searchQuery?: string;
 }
 
 // Initial default
@@ -62,12 +63,22 @@ function inferHeaders(rows: Record<string, any>[]): string[] {
   return Object.keys(first);
 }
 
-export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, showMeta = false }) => {
-  const [search,   setSearch]   = useState('');
+import { Highlight } from '@/components/ui/highlight';
+
+export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, showMeta = false, searchQuery }) => {
+  const [search,   setSearch]   = useState(searchQuery || '');
   const [sortCol,  setSortCol]  = useState<string | null>(null);
   const [sortDir,  setSortDir]  = useState<SortDir>(null);
   const [pageSize,  setPageSize]  = useState<number | 'all'>(DEFAULT_PAGE_SIZE);
   const [page,      setPage]      = useState(0);
+
+  // Sync internal search ONLY on initial load if provided
+  React.useEffect(() => {
+    if (searchQuery && !search) {
+      setSearch(searchQuery);
+    }
+  }, []);
+
   const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
   const resolveHierarchy = useMasterDataStore(state => state.resolveHierarchy);
   const isLoaded = useMasterDataStore(state => state.isLoaded);
@@ -85,24 +96,38 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       const hDesa = headers.find(h => /desa|kelurahan/i.test(h));
 
       if (hKab || hProv) {
-        const provinsi = hProv ? cleanValue(String(row[hProv] || ''), 'provinsi') : '';
-        const kabupaten = hKab ? cleanValue(String(row[hKab] || ''), 'kabupaten') : '';
-        const kecamatan = hKec ? cleanValue(String(row[hKec] || ''), 'kecamatan') : '';
-        const desa = hDesa ? cleanValue(String(row[hDesa] || ''), 'desa') : '';
+        const rawProv = hProv ? String(row[hProv] || '').trim() : '';
+        const rawKab  = hKab ? String(row[hKab] || '').trim() : '';
+        const rawKec  = hKec ? String(row[hKec] || '').trim() : '';
+        const rawDesa = hDesa ? String(row[hDesa] || '').trim() : '';
 
-        // If either kecamatan or desa is missing, try to resolve from master data
-        const isKecEmpty = !kecamatan || kecamatan === '—' || kecamatan.trim() === '';
-        const isDesaEmpty = !desa || desa === '—' || desa.trim() === '';
+        const provinsi = hProv ? cleanValue(rawProv, 'provinsi') : '';
+        const kabupaten = hKab ? cleanValue(rawKab, 'kabupaten') : '';
+        const kecamatan = hKec ? cleanValue(rawKec, 'kecamatan') : '';
+        const desa = hDesa ? cleanValue(rawDesa, 'desa') : '';
 
-        if (isKecEmpty || isDesaEmpty) {
+        // Mangled detection: Empty, just dash, too short, or contains obvious OCR garbage
+        const isMangled = (s: string) => !s || s === '—' || s.length < 2 || /[%$#^*]/.test(s);
+
+        if (isMangled(provinsi) || isMangled(kabupaten) || isMangled(kecamatan) || isMangled(desa)) {
           const resolved = resolveHierarchy({ provinsi, kabupaten, kecamatan, desa });
           if (resolved) {
             const newRow = { ...row };
-            if (isKecEmpty && hKec) newRow[hKec] = resolved.kecamatan;
-            if (isDesaEmpty && hDesa) newRow[hDesa] = resolved.desa;
+            if (hProv) newRow[hProv] = stripRegionalPrefix(resolved.provinsi || provinsi || rawProv);
+            if (hKab)  newRow[hKab]  = stripRegionalPrefix(resolved.kabupaten || kabupaten || rawKab);
+            if (hKec)  newRow[hKec]  = stripRegionalPrefix(isMangled(kecamatan) ? (resolved.kecamatan || kecamatan || rawKec) : (kecamatan || rawKec));
+            if (hDesa) newRow[hDesa] = stripRegionalPrefix(isMangled(desa) ? (resolved.desa || desa || rawDesa) : (desa || rawDesa));
             return newRow;
           }
         }
+
+        // Apply light cleaning as fallback if no triangulation
+        const newRow = { ...row };
+        if (hProv) newRow[hProv] = stripRegionalPrefix(provinsi || rawProv);
+        if (hKab)  newRow[hKab]  = stripRegionalPrefix(kabupaten || rawKab);
+        if (hKec)  newRow[hKec]  = stripRegionalPrefix(kecamatan || rawKec);
+        if (hDesa) newRow[hDesa] = stripRegionalPrefix(desa || rawDesa);
+        return newRow;
       }
       return row;
     });
@@ -161,12 +186,12 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[160px]">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-          <Input placeholder="Search rows..." value={search} onChange={e => setSearch(e.target.value)} className="h-7 pl-8 py-0 text-[10px] bg-slate-50 border-slate-200" />
+          <Input placeholder="Search rows..." value={search} onChange={e => setSearch(e.target.value)} className="h-8 pl-8 py-0 text-[12px] bg-white border-slate-200 shadow-sm" />
         </div>
         {!isLoaded && (
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 border border-black animate-pulse">
             <div className="w-1.5 h-1.5 rounded-full bg-white" />
-            <span className="text-[9px] font-black text-white uppercase tracking-tighter">Analyzing...</span>
+            <span className="text-[9px] font-medium text-white uppercase tracking-tighter">Analyzing...</span>
           </div>
         )}
         <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
@@ -203,15 +228,15 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
           <table className="w-full text-[11px] border-collapse">
             <thead className="sticky top-0 z-10 bg-slate-50">
               <tr>
-                <th className="px-3 py-2.5 text-left text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-200 w-10 select-none">
+                <th className="px-3 py-2.5 text-left text-[9px] font-medium uppercase tracking-wider text-slate-400 border-b border-slate-200 w-10 select-none">
                   #
                 </th>
                 {headers.map(h => (
                   <th
                     key={h}
                     onClick={() => toggleSort(h)}
-                    className="px-3 py-2.5 text-left text-[9px] font-black uppercase tracking-wider
-                               text-slate-500 border-b border-slate-200 cursor-pointer select-none
+                    className="px-3 py-3 text-left text-[10px] font-bold uppercase tracking-[0.15em]
+                               text-slate-400 border-b border-slate-200 cursor-pointer select-none
                                hover:bg-slate-100 transition-colors whitespace-nowrap"
                     style={{ minWidth: 80, maxWidth: 300 }}
                   >
@@ -244,11 +269,13 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
                         style={{ maxWidth: 300 }}
                       >
                         <div
-                          className={`truncate text-[11px] leading-relaxed
+                          className={`truncate text-[12px] leading-relaxed font-medium
                                       ${isEmpty ? 'text-slate-300 italic' : 'text-slate-700'}`}
                           title={strVal}
                         >
-                          {isEmpty ? '—' : cleanValue(strVal, h, resolveRawAddress)}
+                          {isEmpty ? '—' : (
+                            <Highlight text={cleanValue(strVal, h, resolveRawAddress)} query={search || searchQuery} />
+                          )}
                         </div>
                       </td>
                     );
@@ -269,14 +296,14 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
             </span>
             
             <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-4">
-              <span className="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Show:</span>
+              <span className="text-[10px] text-slate-400 uppercase tracking-tight font-medium">Show:</span>
               {[10, 20, 50, 'all'].map(size => (
                 <button
                   key={size}
                   onClick={() => setPageSize(size as any)}
                   className={`text-[10px] px-1.5 py-0.5 rounded transition-colors font-mono
                              ${pageSize === size 
-                               ? 'bg-slate-800 text-white font-bold' 
+                               ? 'bg-slate-800 text-white font-medium' 
                                : 'text-slate-500 hover:bg-slate-200'}`}
                 >
                   {size === 'all' ? 'All' : size}

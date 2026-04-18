@@ -37,8 +37,8 @@ export const AutoRenderer: React.FC<AutoRendererProps> = ({ text, searchQuery })
   const type = React.useMemo(() => detect(text), [text]);
 
   switch (type) {
-    case 'keyvalue': return <KeyValueRenderer text={text} />;
-    case 'legal':    return <LegalAccordionRenderer text={text} />;
+    case 'keyvalue': return <KeyValueRenderer text={text} searchQuery={searchQuery} />;
+    case 'legal':    return <LegalAccordionRenderer text={text} searchQuery={searchQuery} />;
     case 'mixed':    return <MixedRenderer text={text} searchQuery={searchQuery} />;
     default:         return <ProseRenderer text={text} searchQuery={searchQuery} />;
   }

@@ -170,23 +170,28 @@ class InaprocAddressParser:
         text = re.sub(r'Jl\.\s*\.', 'Jl.', text)
         text = re.sub(r'No\.\s*\.', 'No.', text)
 
-        # 9. Smart Fuzzy Deduplication
-        # Split by comma and remove parts that are substrings of others or already seen
+        # 9. Smart Fuzzy Deduplication (Vibranium Protected)
+        # We PROTECT the last 5 segments (ZIP, Prov, Kab, Kec, Desa) from dedup
+        # because those are the structured part we need for the table.
         parts = [p.strip() for p in text.split(',') if p.strip()]
-        unique_parts = []
-        for p in parts:
-            p_lower = p.lower()
-            # Check if this part is a substring of anything we already added (or vice versa)
-            is_redundant = False
-            for existing in unique_parts:
-                ex_lower = existing.lower()
-                if p_lower in ex_lower or ex_lower in p_lower:
-                    is_redundant = True
-                    break
-            if not is_redundant:
-                unique_parts.append(p)
         
-        text = ", ".join(unique_parts)
+        if len(parts) > 5:
+            prefix = parts[:-5]
+            suffix = parts[-5:]
+            
+            clean_prefix = []
+            seen = set()
+            for p in prefix:
+                norm = re.sub(r'[^a-z0-9]', '', p.lower())
+                if norm and norm not in seen:
+                    clean_prefix.append(p)
+                    seen.add(norm)
+            
+            # Combine back, ensuring suffix is UNTOUCHED
+            text = ", ".join(clean_prefix + suffix)
+        else:
+            # Short address, just return as is
+            text = ", ".join(parts)
 
         return text.strip()
 
@@ -200,7 +205,8 @@ class InaprocAddressParser:
         fixed = re.sub(r'\s+', ' ', fixed).strip()
         ref = _build_normalised_lists()
         match = _fuzzy_match(fixed, ref["provinsi"], score_cutoff=70)
-        return match if match else fixed
+        final = match if match else fixed
+        return re.sub(r'^Provinsi\s+', '', final, flags=re.IGNORECASE).strip()
 
     # ------------------------------------------------------------------
     # Step 3 — Kabupaten normalisation
@@ -229,7 +235,8 @@ class InaprocAddressParser:
 
         strip_pfx = ["Kabupaten ", "Kota "]
         match = _fuzzy_match(cleaned, candidates, score_cutoff=70, strip_prefixes=strip_pfx)
-        return match if match else f"Kab. {cleaned}"
+        final = match if match else cleaned
+        return re.sub(r'^(?:Kabupaten|Kota|Kab)\s+', '', final, flags=re.IGNORECASE).strip()
 
     # ------------------------------------------------------------------
     # Step 4 — Kecamatan normalisation
@@ -256,7 +263,8 @@ class InaprocAddressParser:
             candidates = ref["kecamatan"]
 
         match = _fuzzy_match(cleaned, candidates, score_cutoff=70)
-        return match if match else cleaned
+        final = match if match else cleaned
+        return re.sub(r'^Kecamatan\s+', '', final, flags=re.IGNORECASE).strip()
 
     # ------------------------------------------------------------------
     # Step 5 — Postal Code Auto-Healing
@@ -303,22 +311,50 @@ class InaprocAddressParser:
     def parse(self, raw: str) -> Dict[str, str]:
         """Parse one INAPROC delivery address string into clean components."""
         cleaned = self.clean_raw(raw)
-        result: Dict[str, str] = {"alamat_lengkap": cleaned}
+        result: Dict[str, str] = {"alamat_lengkap": cleaned, "full_address": cleaned}
 
-        # The structured CSV part after the first comma is authoritative
-        # Pattern: , [DESA], [KEC], Kab. [KAB], [PROV], [KODEPOS]
+        # Expert Parse: The structured components are usually at the end of the string
+        # after one or more commas. We look for trailing comma-separated segments.
+        # Format: [Desa], [Kec], [Kab], [Prov], [Kodepos]
+        
+        # 1. Try most common format: , [D], [K], [Kb], [P], [ZIP]
+        # We handle cases where labels (Kab., Kec.) are already stripped
         csv_m = re.search(
-            r',\s*([^,]+),\s*([^,]+),\s*Kab\.\s*([^,]+),\s*([^,]+),\s*(\d{5})',
+            r',\s*([^,]+),\s*([^,]+),\s*(?:Kab\.\s+)?([^,]+),\s*([^,]+),\s*(\d{5})',
             cleaned,
+            re.IGNORECASE
         )
+        
+        # 2. Fallback: just split by comma and take trailing parts
         if not csv_m:
-            return result
+            parts = [p.strip() for p in cleaned.split(',') if p.strip()]
+            if len(parts) >= 5 and re.match(r'^\d{5}$', parts[-1]):
+                raw_desa      = parts[-5]
+                raw_kecamatan = parts[-4]
+                raw_kabupaten = parts[-3]
+                raw_provinsi  = parts[-2]
+                raw_kode_pos  = parts[-1]
+            elif len(parts) >= 4:
+                # Missing ZIP fallback
+                raw_desa      = parts[-4]
+                raw_kecamatan = parts[-3]
+                raw_kabupaten = parts[-2]
+                raw_provinsi  = parts[-1]
+                raw_kode_pos  = ""
+            else:
+                return result
+        else:
+            raw_desa      = csv_m.group(1).strip()
+            raw_kecamatan = csv_m.group(2).strip()
+            raw_kabupaten = csv_m.group(3).strip()
+            raw_provinsi  = csv_m.group(4).strip()
+            raw_kode_pos  = csv_m.group(5).strip()
 
-        raw_desa      = csv_m.group(1).strip()
-        raw_kecamatan = csv_m.group(2).strip()
-        raw_kabupaten = csv_m.group(3).strip()
-        raw_provinsi  = csv_m.group(4).strip()
-        raw_kode_pos  = csv_m.group(5).strip()
+        # Final Cleanse (remove labels if they survived)
+        raw_kabupaten = re.sub(r'\b(kabupaten|kab|kb)\b\.?\s*', '', raw_kabupaten, flags=re.IGNORECASE).strip()
+        raw_kecamatan = re.sub(r'\b(kecamatan|kec|kcmt)\b\.?\s*', '', raw_kecamatan, flags=re.IGNORECASE).strip()
+        raw_desa      = re.sub(r'\b(desa|kelurahan|kel|ds)\b\.?\s*', '', raw_desa, flags=re.IGNORECASE).strip()
+        raw_provinsi  = re.sub(r'\b(provinsi|prov|insi)\b\.?\s*', '', raw_provinsi, flags=re.IGNORECASE).strip()
 
         # Normalise using reference data
         provinsi  = self.normalise_province(raw_provinsi)
@@ -328,11 +364,11 @@ class InaprocAddressParser:
         # Auto-Heal Postal Code
         kode_pos = self.heal_postal_code(provinsi, kabupaten, kecamatan, raw_desa, existing=raw_kode_pos)
 
-        result["desa"]      = raw_desa
-        result["kecamatan"] = kecamatan
-        result["kabupaten"] = kabupaten
-        result["provinsi"]  = provinsi
-        result["kode_pos"]  = kode_pos
+        result["desa"]         = raw_desa
+        result["kecamatan"]    = kecamatan
+        result["kabupaten"]    = kabupaten
+        result["provinsi"]     = provinsi
+        result["kode_pos"]     = kode_pos
 
         # Extract poktan from informal prefix (before first comma)
         comma_pos = cleaned.find(',')

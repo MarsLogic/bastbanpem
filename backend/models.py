@@ -69,6 +69,7 @@ class ContractMetadata(BaseModel):
     tanggal_kontrak: Optional[str] = None     # Tanggal Surat Pesanan
     full_text: Optional[str] = None           # Holistic PDF text
     sections: Dict[str, str] = Field(default_factory=dict) # PDF Sections
+    parsed_sskk_clauses: List[Dict[str, Any]] = Field(default_factory=list) # Structured JSON representation of SSKK
     extracted_at: Optional[str] = None        # Extraction Timestamp
     source_file: Optional[str] = None         # Source PDF Path
 
@@ -220,6 +221,7 @@ class ShipmentDestination(BaseModel):
     desa: Optional[str] = None
     kabupaten: Optional[str] = None
     provinsi: Optional[str] = None
+    full_address: Optional[str] = None
 
 class ShipmentCosts(BaseModel):
     product_total: float = 0.0
@@ -240,6 +242,7 @@ class UltraRobustContract(BaseModel):
     technical_specifications: Dict[str, str] = Field(default_factory=dict)
     full_text: Optional[str] = None
     sections: Dict[str, str] = Field(default_factory=dict)
+    parsed_sskk_clauses: List[Dict[str, Any]] = Field(default_factory=list)
 
 class PdfParseResult(BaseModel):
     metadata: ContractMetadata = Field(default_factory=ContractMetadata)

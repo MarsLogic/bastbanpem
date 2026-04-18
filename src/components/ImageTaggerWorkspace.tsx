@@ -91,7 +91,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
   const [isProxyMode, setIsProxyMode] = useState(false);
   const [proxyData, setProxyData] = useState({ nik: '', name: '', relation: 'Keluarga' });
 
-  // AI Scanning State
+  // PDF Scanning State
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 });
 

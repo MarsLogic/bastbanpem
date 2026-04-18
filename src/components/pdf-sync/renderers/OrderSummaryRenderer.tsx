@@ -1,184 +1,206 @@
 import React from 'react';
-import { cleanValue } from '@/lib/dataCleaner';
 import { Badge } from '@/components/ui/badge';
+import { Package, Globe, Tag, ExternalLink } from 'lucide-react';
+import { Highlight } from '@/components/ui/highlight';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface OrderField {
-  label:  string;
-  value:  string;
+interface ProductItem {
+  name: string;
+  isBarang: boolean;
+  isPDN: boolean;
+  pricePerUnit: string;
+  quantity: string;
+  metadata: string[];
+  catalogUrl?: string;
+}
+
+interface OrderSummaryProps {
+  text: string;
+  allSections?: Record<string, string>;
+  searchQuery?: string;
 }
 
 // ─── Parser ───────────────────────────────────────────────────────────────────
 
-const COLUMN_HEADERS = new Set([
-  'nama produk', 'harga produk', 'jumlah', 'barang', 'pdn',
-  'jumlah barang', 'keterangan', 'ringkasan pesanan',
-]);
-
-const PROCUREMENT_TYPES = ['Melalui Negosiasi', 'Tender', 'E-Purchasing'];
-
-function isColumnHeader(line: string): boolean {
-  return COLUMN_HEADERS.has(line.trim().toLowerCase());
-}
-
-function isUrl(line: string): boolean {
-  const clean = line.replace(/\s/g, '').toLowerCase();
-  return clean.startsWith('http') || clean.includes('katalog.ina');
-}
-
-function isPortalNoise(line: string): boolean {
-  const clean = line.replace(/\s/g, '').toLowerCase();
-  // Filter common portal parameters and GUIDs
-  return (
-    /orderkey=|productid=|itemkey=|orderid=|snapshot-product/.test(clean) ||
-    /^[0-9a-f-]{32,36}$/i.test(clean) || // GUIDs
-    (clean.includes('&') && clean.includes('=')) || // raw query params
-    /^[a-f0-9]{8,12}$/i.test(clean) // short hashes
-  );
-}
-
-function parseOrderSummary(text: string): { procurement: string; fields: OrderField[] } {
+function parseOrderSummary(text: string, context?: Record<string, string>): { procurement: string; products: ProductItem[] } {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   let procurement = '';
-  const fields: OrderField[] = [];
-  let catalogUrlParts: string[] = [];
+  const products: ProductItem[] = [];
+  
+  // 0. Build Identity Blacklist from other sections to prevent bleed
+  const blacklist = new Set<string>();
+  if (context) {
+    ['HEADER', 'PEMESAN', 'PENYEDIA'].forEach(key => {
+      const sectionText = context[key] || '';
+      sectionText.split('\n').forEach(l => {
+        const cleaned = l.trim();
+        if (cleaned.length > 5) blacklist.add(cleaned.toUpperCase());
+      });
+    });
+  }
+  
+  const EXCLUDE_NAMES = new Set([
+    'DIREKTORAT', 'KODEPOS', 'ALAMAT', 'NAMA', 'PEMESAN', 'PENYEDIA', 
+    'SURAT PESANAN', 'RINGKASAN PESANAN', 'TERM', 'DRAFT', 'HALAMAN'
+  ]);
 
-  // 1. Identify procurement method first
   const dataLines = lines.filter(line => {
-    if (PROCUREMENT_TYPES.some(t => line.toLowerCase().includes(t.toLowerCase()))) {
+    if (/Melalui Negosiasi|Tender|E-Purchasing/i.test(line)) {
       procurement = line;
       return false;
     }
     return true;
   });
 
-  // 2. Process data lines
-  let i = 0;
-  while (i < dataLines.length) {
-    const line = dataLines[i];
-    const lower = line.toLowerCase();
+  const blocks: string[][] = [];
+  let currentBlock: string[] = [];
 
-    // Skip obviously non-data lines (headers)
-    if (lower === 'ringkasan pesanan' || isColumnHeader(line)) {
-      i++;
-      continue;
+  // 1. Expert Block Grouping: Identify Product Blocks
+  for (const line of dataLines) {
+    const upperLine = line.trim().toUpperCase();
+    
+    // STRICT PRODUCT DETECTION: 
+    // Must be All-Caps, certain length, and NOT an administrative keyword.
+    // AND must NOT be title case (e.g. "Surat Pesanan")
+    const isStrictlyUpper = /^[A-Z0-9\s\(\)/-]{10,}$/.test(line);
+    const isExcluded = [...EXCLUDE_NAMES].some(ex => upperLine.includes(ex));
+    
+    if (isStrictlyUpper && !isExcluded && !line.includes('Rp')) {
+      if (currentBlock.length > 0) blocks.push(currentBlock);
+      currentBlock = [line];
+    } else {
+      currentBlock.push(line);
     }
+  }
+  if (currentBlock.length > 0) blocks.push(currentBlock);
 
-    // Product Category URL / Hash aggregation
-    if (isUrl(line) || isPortalNoise(line)) {
-      catalogUrlParts.push(line.replace(/\s/g, ''));
-      i++;
-      // Keep consuming subsequent lines if they look like URL parts or hashes
-      while (i < dataLines.length && (isUrl(dataLines[i]) || isPortalNoise(dataLines[i]))) {
-        catalogUrlParts.push(dataLines[i].replace(/\s/g, ''));
-        i++;
-      }
-      continue;
-    }
+  // 2. Process Blocks: Only keep those that look like Products (Name + Amount/Qty)
+  for (const block of blocks) {
+    const pName = block[0];
+    const prices: string[] = [];
+    const quantities: string[] = [];
+    const meta: string[] = [];
+    let url = '';
 
-    // PPN rate pattern
-    if (/^Golongan PPN/i.test(line)) {
-      fields.push({ label: 'Golongan PPN', value: line.replace(/^Golongan PPN\s*/i, '') });
-      i++;
-      continue;
-    }
-
-    // Currency amount (Rp...)
-    if (/^Rp[\d\.,]+/.test(line)) {
-      fields.push({ label: 'Harga Satuan', value: line });
-      i++;
-      continue;
-    }
-
-    // Quantity pattern
-    if (/^[\d\.,]+\s*(?:liter|kg|unit|gr|btl|box)/i.test(line) || (/^[\d\.,]+\s*$/.test(line) && line.length > 2)) {
-      fields.push({ label: 'Jumlah', value: line });
-      i++;
-      continue;
-    }
-
-    // Product name: all-caps or title case multi-word
-    if (/^[A-Z][A-Z\s\d\(\)-]+$/.test(line) && line.length > 4) {
-      if (!line.includes('RP') && !line.includes('WIB')) {
-        fields.push({ label: 'Nama Produk', value: line });
-        i++;
-        continue;
+    for (let i = 1; i < block.length; i++) {
+      const line = block[i];
+      if (line.includes('Rp')) {
+        prices.push(line.match(/Rp\s?[\d\.,]+/i)?.[0] || '');
+      } else if (/^[\d\.,]{2,}$/.test(line) && !/^\d{5}$/.test(line)) {
+        quantities.push(line);
+      } else if (/liter|kg|unit|gr|btl|box|Golongan PPN/i.test(line)) {
+        meta.push(line);
+      } else if (/katalog\.ina|snapshot-product|orderid=/i.test(line)) {
+        url = line.replace(/\s/g, '');
       }
     }
 
-    i++;
+    // FINAL VALIDATION: Must have a Name and at least a Price OR a Quantity
+    // This wipes out noise like "Surat Pesanan" or "Divisi / Unit Kerja" which lack amounts.
+    if (pName && (prices.length > 0 || quantities.length > 0)) {
+      let finalPrice = prices[0] || '—';
+      if (prices.length > 1) {
+        const sorted = [...prices].sort((a, b) => {
+          const valA = parseFloat(a.replace(/Rp\.?\s?|[\.]/g, '').replace(',', '.'));
+          const valB = parseFloat(b.replace(/Rp\.?\s?|[\.]/g, '').replace(',', '.'));
+          return valA - valB;
+        });
+        finalPrice = sorted[0];
+      }
+
+      products.push({
+        name: pName,
+        isBarang: true,
+        isPDN: true,
+        pricePerUnit: finalPrice,
+        quantity: quantities[0] || '—',
+        metadata: meta,
+        catalogUrl: url
+      });
+    }
   }
 
-  // Final merging and URL cleaning
-  const resultFields: OrderField[] = [];
-  const seenValues = new Set<string>();
-
-  // Add extracted fields
-  for (const f of fields) {
-    if (seenValues.has(f.value)) continue;
-    seenValues.add(f.value);
-    resultFields.push(f);
-  }
-
-  // Add catalog URL if found
-  if (catalogUrlParts.length > 0) {
-    const fullUrl = catalogUrlParts.join('');
-    resultFields.push({ label: 'Product Catalog', value: fullUrl });
-  }
-
-  return { procurement, fields: resultFields };
+  return { procurement, products };
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
-export const OrderSummaryRenderer: React.FC<{ text: string }> = ({ text }) => {
-  const { procurement, fields } = React.useMemo(() => parseOrderSummary(text), [text]);
+export const OrderSummaryRenderer: React.FC<OrderSummaryProps> = ({ text, allSections, searchQuery }) => {
+  const { procurement, products } = React.useMemo(() => parseOrderSummary(text, allSections), [text, allSections]);
 
   return (
-    <div className="space-y-3">
-      {procurement && (
+    <div className="space-y-4">
+      {/* Header with Procurement Badge */}
+      <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-[10px] h-5">
+          <Package className="h-4 w-4 text-slate-400" />
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest">Ringkasan Pesanan</span>
+        </div>
+        {procurement && (
+          <Badge variant="secondary" className="text-[9px] h-5 bg-slate-100 text-slate-600 font-medium">
             {procurement}
           </Badge>
-        </div>
-      )}
-      <div className="rounded-lg border border-slate-200 overflow-hidden">
-        <table className="w-full text-[12px] border-collapse">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-200 w-[38%]">
-                Field
-              </th>
-              <th className="px-4 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-200">
-                Value
-              </th>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200">
+              <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 w-[50%]">Nama Produk</th>
+              <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-right">Harga Produk</th>
+              <th className="px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-right">Jumlah</th>
             </tr>
           </thead>
           <tbody>
-            {fields.map((field, i) => (
-              <tr
-                key={i}
-                className={`border-b border-slate-100 hover:bg-slate-100/30 transition-colors
-                            ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
-              >
-                <td className="px-4 py-2.5 text-slate-500 font-medium align-top leading-snug">
-                  {field.label}
-                </td>
-                <td className="px-4 py-2.5 text-slate-800 font-semibold align-top leading-snug break-words">
-                  {field.label === 'Product Catalog' ? (
-                    <a 
-                      href={field.value.startsWith('http') ? field.value : `https://${field.value}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline decoration-blue-200 underline-offset-2 break-all"
-                    >
-                      {field.value}
-                    </a>
-                  ) : (
-                    cleanValue(field.value, field.label)
+            {products.map((item, idx) => (
+              <tr key={idx} className="group hover:bg-slate-50/50 transition-colors">
+                <td className="px-4 py-4 align-top space-y-2">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    {item.isBarang && (
+                      <Badge className="bg-blue-50 text-blue-600 border-blue-100 text-[8px] h-4 px-1.5 uppercase font-bold">Barang</Badge>
+                    )}
+                    {item.isPDN && (
+                      <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] h-4 px-1.5 uppercase font-bold">PDN</Badge>
+                    )}
+                  </div>
+                  
+                  <div className="text-[12px] font-medium text-slate-900 leading-tight">
+                    <Highlight text={item.name} query={searchQuery} />
+                  </div>
+                  
+                  <div className="flex flex-col gap-0.5">
+                    {item.metadata.map((meta, mIdx) => (
+                      <span key={mIdx} className="text-[11px] text-slate-500 font-normal">
+                        <Highlight text={meta} query={searchQuery} />
+                      </span>
+                    ))}
+                  </div>
+
+                  {item.catalogUrl && (
+                    <div className="mt-3 pt-2 border-t border-slate-100">
+                      <a 
+                        href={item.catalogUrl.startsWith('http') ? item.catalogUrl : `https://${item.catalogUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[11px] text-blue-600 hover:text-blue-800 transition-colors group/link"
+                      >
+                        <ExternalLink className="h-3 w-3 opacity-60" />
+                        <span className="truncate max-w-[300px] underline underline-offset-4 decoration-blue-200">{item.catalogUrl}</span>
+                      </a>
+                    </div>
                   )}
+                </td>
+                
+                <td className="px-4 py-4 text-right align-top">
+                  <div className="text-[12px] font-normal font-mono text-slate-500 tabular-nums">
+                    <Highlight text={item.pricePerUnit} query={searchQuery} />
+                  </div>
+                </td>
+                
+                <td className="px-4 py-4 text-right align-top">
+                  <div className="text-[12px] font-normal font-mono text-slate-900 tabular-nums">
+                    <Highlight text={item.quantity} query={searchQuery} />
+                  </div>
                 </td>
               </tr>
             ))}

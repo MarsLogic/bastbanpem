@@ -41,6 +41,55 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Consequences**: Cleaned index with 90% higher signal-to-noise ratio.
 **Expert Insight**: Never delete a service file that might be in a user's terminal history. Use a Proxy Shield to centralize logic while preserving the entry point.
 
+### Improvement: [LEARN-005] Pivot-Aware Sub-Entity Extraction (SSKK)
+**Context**: "Surat Pesanan" SSKK Section 1 (Korespondensi) and Section 2 share field names like "Nama" and "Alamat" across two entities (PPK and Vendor). Standard sequential parsing causes these to merge, creating ambiguous data blocks.
+**Action**: Implemented a **Pivot-Aware Refiner** (`_refine_sskk_content` in `pdf_intelligence.py`) that detects entity boundaries (e.g., the `Penyedia` line) and injects structural markers recognized by the frontend (`Key : —`).
+**Risk Identified**: Using generic separators (like `---`) is insufficient if the frontend isn't explicitly trained on them. Injected markers must align with the `KeyValueRenderer.tsx` trigger (`value === '—'`).
+**Consequences**: 100% logical separation of Government vs. Vendor data in legal sections without changing the frontend code.
+**Expert Insight**: When dealing with shared-column or shared-key documents, inject deliberate "Structural Breakpoints" into the text stream before the KV-parser runs.
+
+### Improvement: [LEARN-006] Unified Branding: PDF Scan vs. AI Scan
+**Context**: The application terminology was inconsistent, using "AI Scan" and "PDF Scan" interchangeably. This created user confusion regarding whether different engines were being triggered.
+**Action**: Standardized all UI labels, button text, and status messages to **"PDF Scan"** across the frontend (`src/components/`).
+**Risk Identified**: Backend logs or internal design plans might still use "AI Scan". For consistency, always refer to the feature as "PDF Scan" in the UI.
+**Consequences**: Consistent, professional branding that clarifies the primary action (scanning the PDF).
+**Expert Insight**: Terminology consistency is a "Core UX Mandate". UI labels should always be searched and replaced systematically after a branding pivot.
+
+### Improvement: [LEARN-007] High-Fidelity Data Cleaning Standards (PT. / CV. / Web)
+**Context**: Indonesian business entities (PT/CV) were often extracted without dots or with inconsistent spacing (e.g., `CV.Karya` or `pt. abc`). Web fields (Email/Website) were incorrectly Title Cased by generic cleaning logic.
+**Action**:
+1.  **Prefix Normalization**: Implemented regex in `toTitleCase` to force `PT. ` and `CV. ` (Uppercase + Dot + Space).
+2.  **Web Lowercasing**: Forced `email` and `website` fields to lowercase in `cleanValue`.
+3.  **Label Coverage**: Expanded Title Case cleaning to include the `penyedia` label.
+**Risk Identified**: Generic `toTitleCase` functions often mangle technical strings. Always exclude or explicitly handle web-related and organizational prefixes.
+**Consequences**: Professional, standardized data presentation that matches official legal document styles.
+**Expert Insight**: Never trust a generic "Title Case" library for regional legal data; always build a whitelist/regex layer for common local abbreviations.
+
+### Improvement: [LEARN-008] Stanza-Based Legal Layout (SSKK)
+**Context**: Legal sections (SSKK) were extracted as dense, unreadable text blocks. Administration users found it difficult to scan for specific clauses in the bunched-up output.
+**Action**: Implemented a **Beautification Engine** (`_beautify_legal_body` in `pdf_intelligence.py`) that:
+1.  Normalizes list markers (e.g., `1 )` -> `1)`).
+2.  Injects **double newlines** ("Stanzas") between different clauses.
+3.  Wraps markers in **bold formatting** (`**1)**`).
+4.  Updated `Highlight.tsx` to support Markdown-style bold rendering.
+**Risk Identified**: Markers like `1.1` can be confused with dates. Used strict boundary regex (`\b\d+\.\d+\b`) to prevent false positives.
+**Consequences**: High-fidelity, readable legal document layout that mirrors professional contract typography.
+**Expert Insight**: Legal readability is as important as extraction accuracy. Always provide vertical separation (stanzas) and visual anchors (bold markers) in long text blocks.
+
+### Improvement: [LEARN-009] Alphanumeric Marker Normalization (12.a -> 12a.)
+**Context**: Contract sub-clauses used inconsistent numbering (e.g. `12.a` vs `12a.`). 
+**Action**: Implemented a transformation pass that converts `x.a` patterns to `xa.` (e.g., `12.a` -> `12a.`) to match specific organizational preferences for compact sub-clause IDs.
+**Risk Identified**: Avoid matching decimal numbers (e.g., `12.5`). Regex requires the second character to be a letter `[a-z]` specifically. 
+**Consequences**: Standardized, predictable clause IDs regardless of OCR inconsistencies.
+**Expert Insight**: Document "Dialects" vary; build normalization transforms to force a project-specific "Golden Format".
+
+### Improvement: [LEARN-010] The Stale-Dist Failure Pattern
+**Context**: Updates to `src` were not appearing on Port 8000 (Backend) despite app restarts.
+**Action**: Discovered that a single TypeScript error (e.g., `mode="white"`) blocked `npm run build`, causing the backend to serve stale assets from the last successful build in the `dist` folder.
+**Risk Identified**: Port 8000 is **Static**; it is the most common cause of "My change isn't working" frustration.
+**Consequences**: Established a mandatory Build success verification before concluding sessions.
+**Expert Insight**: NEVER assume code is live on Port 8000 until `npm run build` completes with 0 errors. A failed build leaves the system in a "Frozen/Zombie" state.
+
 ---
 
 ## 🛠️ Performance & Efficiency
@@ -83,4 +132,4 @@ This document is the "Collective Brain" of the project. It captures architectura
 - ✅ **MANDATORY**: Push ALL `.md` changes immediately to synchronize sessions.
 
 ---
-*Last Updated: 2026-04-18 (Phase 2: Sanitization Complete)*
+*Last Updated: 2026-04-18 (Phase 4: Legal Layout Beautification & Professional Branding Complete)*

@@ -74,6 +74,7 @@ Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 
 - **Typography**: Geist Sans/Mono with Tailwind text scaling (`text-[10px]`, `text-[11px]`).
 - **Toasts**: Always use semantic styles (Background: #374151 or #1f2937).
 - **Patterns**: No hardcoded hex codes. Use Tailwind + Design System tokens.
+- **Brand Fidelity**: NEVER introduce new colors (rainbow colors) without checking against the defined palette. All UI/UX changes MUST adhere to existing `Slate`, `Zinc`, or `Gray` neutral themes.
 
 ---
 

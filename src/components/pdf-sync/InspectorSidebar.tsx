@@ -156,53 +156,28 @@ export const InspectorSidebar: React.FC<InspectorSidebarProps> = ({
   tables,
   hasIntel,
 }) => {
-  const [filter, setFilter] = useState('');
-  const q = filter.toLowerCase().trim();
-
-  const visibleSections = useMemo(
-    () => sections.filter(s => !q || s.label.toLowerCase().includes(q) || s.key.toLowerCase().includes(q)),
-    [sections, q],
-  );
-
-  const visibleTables = useMemo(
-    () => tables.filter(t => !q || `table ${t.index + 1}`.includes(q)),
-    [tables, q],
-  );
-
-  const showSections = visibleSections.length > 0;
-  const showTables   = visibleTables.length > 0;
+  const showSections = sections.length > 0;
+  const showTables   = tables.length > 0;
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-slate-200 overflow-hidden">
-      {/* Filter input */}
-      <div className="px-3 py-2.5 border-b border-slate-100 shrink-0">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-300" />
-          <Input
-            placeholder="Filter..."
-            value={filter}
-            onChange={e => setFilter(e.target.value)}
-            className="h-7 pl-8 text-[11px] bg-slate-50 border-slate-200 focus-visible:ring-slate-300"
-          />
-        </div>
-      </div>
 
       {/* Nav items — scrollable */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
 
         {/* Empty state — show hint if no search and no intel */}
-        {!q && !hasIntel && (
+        {!hasIntel && (
           <div className="px-3 py-4">
             <p className="text-[10px] text-slate-400 leading-relaxed italic">
-              AI Scan pending. Content will appear here after extraction.
+              PDF Scan pending. Content will appear here after extraction.
             </p>
           </div>
         )}
 
         {showSections && (
           <>
-            <GroupHeader label="Sections" count={visibleSections.length} />
-            {visibleSections.map(section => (
+            <GroupHeader label="Sections" count={sections.length} />
+            {sections.map(section => (
               <NavItem
                 key={section.key}
                 id={serializeId({ type: 'section', key: section.key })}
@@ -221,8 +196,8 @@ export const InspectorSidebar: React.FC<InspectorSidebarProps> = ({
         {showTables && (
           <>
             <Divider />
-            <GroupHeader label="Tables" count={visibleTables.length} />
-            {visibleTables.map(table => (
+            <GroupHeader label="Tables" count={tables.length} />
+            {tables.map(table => (
               <NavItem
                 key={table.index}
                 id={serializeId({ type: 'table', index: table.index })}
@@ -236,13 +211,6 @@ export const InspectorSidebar: React.FC<InspectorSidebarProps> = ({
               />
             ))}
           </>
-        )}
-
-        {/* Empty state when filter matches nothing */}
-        {q && !showSections && !showTables && (
-          <p className="px-4 py-6 text-[11px] text-slate-400 italic text-center">
-            No items match "{filter}"
-          </p>
         )}
 
       </div>

@@ -143,6 +143,7 @@ export const MixedRenderer: React.FC<MixedRendererProps> = ({ text, searchQuery 
             <DataTableRenderer
               table={{ headers, rows, method: 'text-parsed' }}
               showMeta={false}
+              searchQuery={searchQuery}
             />
           </div>
         );

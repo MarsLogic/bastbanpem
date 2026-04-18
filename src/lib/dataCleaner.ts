@@ -9,23 +9,36 @@
 export function toTitleCase(str: string): string {
   if (!str) return '';
   
-  // List of abbreviations that should stay uppercase
+  // 1. Force standardization of PT. and CV. (Case-insensitive match, ensure dot and trailing space)
+  // This handles variations like 'cv.', 'Cv', 'pt', 'PT.' and ensures they become 'CV. ' or 'PT. '
+  let s = str.trim().replace(/\b(pt|cv)\b\.?\s*/gi, (match, prefix) => `${prefix.toUpperCase()}. `);
+
+  // 2. List of abbreviations that should stay uppercase
   const PRESERVE = new Set(['PPK', 'NPWP', 'NIK', 'KTP', 'CV', 'PT', 'TBK', 'UD', 'PD', 'SPM', 'SK', 'IVA']);
 
-  return str
-    .toLowerCase()
+  return s
     .split(/\s+/)
     .map(word => {
+      if (!word) return '';
       const upper = word.toUpperCase();
+      
+      // Handle PT. and CV. (already standardized above, but keep uppercase here)
+      if (upper === 'CV.' || upper === 'PT.') return upper;
+      
+      // Standard PRESERVE check
       if (PRESERVE.has(upper)) return upper;
+      
       // Handle Parentheses: (PPK) -> (PPK)
       if (word.startsWith('(') && word.endsWith(')')) {
         const inner = word.slice(1, -1).toUpperCase();
         if (PRESERVE.has(inner)) return `(${inner})`;
       }
-      return word.charAt(0).toUpperCase() + word.slice(1);
+      
+      const lowered = word.toLowerCase();
+      return lowered.charAt(0).toUpperCase() + lowered.slice(1);
     })
-    .join(' ');
+    .join(' ')
+    .trim();
 }
 
 /**
@@ -39,7 +52,7 @@ export function cleanAddress(str: string): string {
   let s = str.trim();
 
   // 1. Expand "Jalan / Jl / jln / jlan" -> "Jl. "
-  // Strip existing punctuation to prevent "Jl. . "
+  // Specifically handle the missing space artifact: "Jl.haji" -> "Jl. Haji"
   s = s.replace(/\b(jalan|jl\.?|jln|jlan)\s*[:,\.-]*\s*/gi, 'Jl. ');
   
   // 2. Standardize "Nomor / No / nmr / Nomer" -> "No. "
@@ -53,36 +66,31 @@ export function cleanAddress(str: string): string {
   s = s.replace(/\b(kecamatan|kec|kcmt|kc)\b(?:\s*[:,\.-]?\s*|\s*)/gi, ' ');
   s = s.replace(/\b(kelurahan|desa|kl|ds|kel)\b(?:\s*[:,\.-]?\s*|\s*)/gi, ' ');
 
-  // 4. Handle hyphens in regional names (ciledug-tangerang -> ciledug tangerang)
-  s = s.replace(/(?<=[a-z])-(?=[a-z])/gi, ' ');
+  // 4. Remove special characters/hyphens in regional pairings (ciledug-tangerang -> ciledug tangerang)
+  s = s.replace(/(?<=[a-z])[^a-z0-9\s.](?=[a-z])/gi, ' ');
 
-  // 5. Standardize RT/RW and force UPPERCASE
-  // FIRST: Handle the joined "rt/rw 04/08" special case
-  s = s.replace(/\bRT\s*\/?[ \t]*RW\s*[:,\.-]?[ \t]*(\d+)\s*\/\s*(\d+)\b/gi, 'RT. $1 / RW. $2');
+  // 5. Standardize RT/RW (No dot, just spaces: "RT 02 / RW 10")
+  // Handles: Rt02/rw10, rt:02, rw-10, RT.02
   
-  // SECOND: Individual matches
-  s = s.replace(/\bRT(?:\s*[:,\.-]?\s*|\s*)(\d+)\b/gi, 'RT. $1 ');
-  s = s.replace(/\bRW(?:\s*[:,\.-]?\s*|\s*)(\d+)\b/gi, 'RW. $1 ');
+  // Force spaces between label and digits
+  s = s.replace(/\bRT\s*[:,\.-]?\s*(\d+)\b/gi, 'RT $1 ');
+  s = s.replace(/\bRW\s*[:,\.-]?\s*(\d+)\b/gi, 'RW $1 ');
   
-  // THIRD: Cleanup RT/RW joins like RT. 04 / RW. 08
-  s = s.replace(/RT\.\s*(\d+)\s*\/\s*RW\.\s*(\d+)/gi, 'RT. $1 / RW. $2');
+  // Handle the slash join: "RT 02/RW 10" or "RT 02 / RW 10"
+  s = s.replace(/RT\s*(\d+)\s*\/?\s*RW\s*(\d+)/gi, 'RT $1 / RW $2');
 
   // 6. Standardize Blok (Handles merges like BlokD121)
   s = s.replace(/\b(blok|blk|block)(?:\s*[:,\.-]?\s*|\s*)(?=[A-Z\d/])/gi, 'Blok ');
 
-  // 7. Kodakpos (Postal Code) formatting (ensure 5 digits isolated or labeled)
-  s = s.replace(/\b(?:kodepos|zip|pos|postal)\s*:?\s*(\d{5})\b/gi, '$1'); // Label removed
+  // 7. Kodakpos (Postal Code) formatting
+  s = s.replace(/\b(?:kodepos|zip|pos|postal)\s*:?\s*(\d{5})\b/gi, '$1');
 
   // 8. Final Spacing & Punctuation Polish
   s = s.replace(/\s+/g, ' ');
   s = s.replace(/\s+\./g, '.'); // remove space before dot
   s = s.replace(/\.{2,}/g, '.'); // collapse double dots
   
-  // Specific fix for Jl. . -> Jl.
-  s = s.replace(/Jl\.\s*\./gi, 'Jl.');
-  s = s.replace(/No\.\s*\./gi, 'No.');
-
-  // Apply Title Case but RT/RW need to stay UPPERCASE
+  // Apply Title Case but RT/RW need to stay UPPERCASE (No dots)
   let result = toTitleCase(s.trim());
   result = result.replace(/\bRt\b/g, 'RT');
   result = result.replace(/\bRw\b/g, 'RW');
@@ -96,16 +104,17 @@ export function cleanAddress(str: string): string {
 export function cleanPortalNoise(str: string): string {
   if (!str) return '';
   
-  // Remove query-string like noise
+  // CRITICAL: If it looks like a URL, do NOT strip noise, as it breaks the link.
+  if (/^(?:https?:\/\/|\/\/)/i.test(str)) return str;
+  
+  // Remove query-string like noise for non-URL fields
   let s = str.replace(/[&?](?:orderKey|productId|itemKey|orderId|snapshot-product|token)=[^&\s]+/gi, '');
   
   // Remove GUIDs (common in portal exports)
   s = s.replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '');
   
   // Remove short hashes (8-12 chars hex) if they look like standalone noise
-  // Note: Only if they aren't part of a larger word
   s = s.replace(/\b[a-f0-9]{8,12}\b/gi, (match) => {
-    // If it's pure numbers, keep it. If it contains letters a-f, it's likely a hash.
     return /[a-f]/.test(match.toLowerCase()) ? '' : match;
   });
 
@@ -258,17 +267,14 @@ export function cleanValue(
   cleaned = cleanPortalNoise(cleaned);
 
   // 2. Specific field formatting
-  if (key.includes('nama') || key.includes('penerima') || key.includes('penanggung') || key.includes('jabatan') || key.includes('divisi')) {
-    cleaned = toTitleCase(cleaned);
-  } else if (key.includes('alamat')) {
+  if (key.includes('alamat')) {
     cleaned = cleanAddress(cleaned);
     
     // Deep Regional Cleaning if resolver is provided
     if (resolver) {
       const match = resolver(cleaned);
       if (match) {
-        // Build a cleaned address tail (WITHOUT labels like 'Desa:', 'Kecamatan:', etc.)
-        // We also check if the name already exists in the cleaned string to avoid redundancy
+        // Build a cleaned address tail
         const cLower = cleaned.toLowerCase();
         
         const parts = [
@@ -278,12 +284,15 @@ export function cleanValue(
           match.provinsi && !cLower.includes(match.provinsi.toLowerCase()) && toTitleCase(match.provinsi),
         ].filter((p): p is string => !!p);
         
-        // If we found new components, append them
         if (parts.length > 0) {
            cleaned += ', ' + parts.join(', ');
         }
       }
     }
+  } else if (key.includes('nama') || key.includes('penerima') || key.includes('penanggung') || key.includes('jabatan') || key.includes('divisi') || key.includes('penyedia')) {
+    cleaned = toTitleCase(cleaned);
+  } else if (key.includes('email') || key.includes('website') || key.includes('mail')) {
+    cleaned = cleaned.toLowerCase();
   } else if (key.includes('npwp')) {
     cleaned = formatNPWP(cleaned);
   } else if (key.includes('telepon') || key.includes('hp')) {

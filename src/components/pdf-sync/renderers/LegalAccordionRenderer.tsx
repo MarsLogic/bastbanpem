@@ -2,10 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, Search, ChevronsDownUp, ChevronsUpDown } from 'lucide-react';
+import { AutoRenderer } from './AutoRenderer';
 import { ProseRenderer } from './ProseRenderer';
+
+import { Highlight } from '@/components/ui/highlight';
 
 interface LegalAccordionRendererProps {
   text: string;
+  searchQuery?: string;
 }
 
 interface Article {
@@ -56,9 +60,16 @@ function parseArticles(text: string): Article[] {
   return articles.length >= 2 ? articles : [];
 }
 
-export const LegalAccordionRenderer: React.FC<LegalAccordionRendererProps> = ({ text }) => {
-  const [search,   setSearch]   = useState('');
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+export const LegalAccordionRenderer: React.FC<LegalAccordionRendererProps> = ({ text, searchQuery }) => {
+  const [search,   setSearch]   = React.useState(searchQuery || '');
+  const [expanded, setExpanded] = React.useState<Set<string>>(new Set());
+
+  // Sync internal search with global search
+  React.useEffect(() => {
+    if (searchQuery !== undefined) {
+      setSearch(searchQuery);
+    }
+  }, [searchQuery]);
 
   const articles = useMemo(() => parseArticles(text), [text]);
 
@@ -141,7 +152,7 @@ export const LegalAccordionRenderer: React.FC<LegalAccordionRendererProps> = ({ 
           variant="ghost"
           size="sm"
           onClick={toggleAll}
-          className="h-8 px-3 text-[10px] font-bold text-slate-500 hover:text-slate-800 shrink-0"
+          className="h-8 px-3 text-[10px] font-medium text-slate-400 hover:text-slate-600 shrink-0"
         >
           {allExpanded
             ? <><ChevronsDownUp className="h-3.5 w-3.5 mr-1.5" />Collapse all</>
@@ -173,17 +184,12 @@ export const LegalAccordionRenderer: React.FC<LegalAccordionRendererProps> = ({ 
                            hover:bg-slate-50 transition-colors"
               >
                 {isOpen
-                  ? <ChevronDown  className="h-4 w-4 text-slate-700 shrink-0" />
+                  ? <ChevronDown  className="h-4 w-4 text-slate-500 shrink-0" />
                   : <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
                 }
-                <span className={`text-[12px] font-bold leading-snug flex-1
-                                  ${isOpen ? 'text-slate-700' : 'text-slate-800'}`}>
-                  {q ? (
-                    // Highlight search term in title
-                    highlightText(article.title, q)
-                  ) : (
-                    article.title
-                  )}
+                <span className={`text-[12px] font-medium leading-snug flex-1
+                                  ${isOpen ? 'text-slate-600' : 'text-slate-700'}`}>
+                  <Highlight text={article.title} query={q} />
                 </span>
                 {article.body && (
                   <span className="text-[9px] font-mono text-slate-400 shrink-0">
@@ -196,8 +202,8 @@ export const LegalAccordionRenderer: React.FC<LegalAccordionRendererProps> = ({ 
 
               {/* Body */}
               {isOpen && article.body && (
-                <div className="px-5 pb-4 pt-1 border-t border-slate-100 bg-slate-50/40">
-                  <ProseRenderer text={article.body} searchQuery={q || undefined} />
+                <div className="px-5 pb-4 pt-1 border-t border-slate-100 bg-slate-50/20">
+                  <AutoRenderer text={article.body} searchQuery={q || undefined} />
                 </div>
               )}
               {isOpen && !article.body && (
@@ -213,19 +219,3 @@ export const LegalAccordionRenderer: React.FC<LegalAccordionRendererProps> = ({ 
   );
 };
 
-// Simple inline highlight helper — avoids regex exec
-function highlightText(text: string, query: string): React.ReactNode {
-  const lower   = text.toLowerCase();
-  const qLower  = query.toLowerCase();
-  const idx     = lower.indexOf(qLower);
-  if (idx === -1) return text;
-  return (
-    <>
-      {text.slice(0, idx)}
-      <mark className="bg-yellow-200 text-yellow-900 rounded px-0.5">
-        {text.slice(idx, idx + query.length)}
-      </mark>
-      {text.slice(idx + query.length)}
-    </>
-  );
-}

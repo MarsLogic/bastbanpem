@@ -23,6 +23,7 @@
     "clsx": "^2.1.1",
     "cropperjs": "^1.6.2",
     "decimal.js": "^10.4.3",
+    "framer-motion": "^12.38.0",
     "idn-area-data": "^4.0.1",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",

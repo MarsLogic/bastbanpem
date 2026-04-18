@@ -1,6 +1,7 @@
 import React from 'react';
 import { cleanValue } from '@/lib/dataCleaner';
 import { useMasterDataStore } from '@/lib/masterDataStore';
+import { Highlight } from '@/components/ui/highlight';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -21,6 +22,11 @@ const STOP_KEYWORDS = [
   'penyedia', 'pemesan', 'penerima', 'lampiran', 'ssuk', 'sskk',
   'dokumen', 'informasi lain', 'catatan', 'detail'
 ];
+
+const JUNK_KEYS = new Set([
+  'halaman', 'surat pesanan',
+  'https', 'termasuk', 'ringkasan pesanan', 'catatan alamat'
+]);
 
 function parseKeyValues(text: string): KVPair[] {
   const pairs: KVPair[] = [];
@@ -98,10 +104,10 @@ function parseKeyValues(text: string): KVPair[] {
 
     // Filter out common header/footer junk
     if (
+      JUNK_KEYS.has(line.toLowerCase()) ||
       /^halaman \d+\/\d+/i.test(line) ||
       /^surat pesanan/i.test(line) ||
-      /^tanggal surat pesanan/i.test(line) ||
-      /^no\.\s*surat pesanan/i.test(line)
+      /^http/i.test(line)
     ) {
       i++;
       continue;
@@ -110,7 +116,26 @@ function parseKeyValues(text: string): KVPair[] {
     i++;
   }
 
-  return pairs;
+  // Final Pass: Filter out pairs with junk keys and deduplicate
+  const uniquePairs: KVPair[] = [];
+  const seen = new Set<string>();
+
+  pairs.forEach(p => {
+    const k = p.key.toLowerCase();
+    const v = p.value.toLowerCase();
+    const signature = `${k}|${v}`;
+
+    // Skip junk or duplicates
+    if (JUNK_KEYS.has(k) || seen.has(signature)) return;
+    
+    // Skip values that look like URLs assigned to generic keys
+    if (k === 'https' || k === 'http') return;
+
+    uniquePairs.push(p);
+    seen.add(signature);
+  });
+
+  return uniquePairs;
 }
 
 export function canRenderAsKeyValue(text: string): boolean {
@@ -119,11 +144,47 @@ export function canRenderAsKeyValue(text: string): boolean {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export const KeyValueRenderer: React.FC<{ text: string }> = ({ text }) => {
-  const pairs = parseKeyValues(text);
+interface Section {
+  title: string;
+  pairs: KVPair[];
+}
+
+/**
+ * Detects and renders URLs as clickable links, potentially with highlights.
+ */
+function renderValueWithLinks(val: string, q?: string) {
+  if (!val || val === '—') return val;
+  
+  // Pattern to catch http/https and protocol-relative links (//katalog...)
+  const urlPattern = /(https?:\/\/[^\s]+|\/\/[kK]atalog\.[^\s]+)/g;
+  const parts = val.split(urlPattern);
+  
+  if (parts.length === 1) return q ? <Highlight text={val} query={q} /> : val;
+
+  return parts.map((part, i) => {
+    if (urlPattern.test(part)) {
+      const href = part.startsWith('//') ? `https:${part}` : part;
+      return (
+        <a 
+          key={i} 
+          href={href} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:text-blue-800 underline break-all font-normal"
+        >
+          {part}
+        </a>
+      );
+    }
+    return q ? <Highlight text={part} query={q} /> : part;
+  });
+}
+
+export const KeyValueRenderer: React.FC<{ text: string; searchQuery?: string }> = ({ text, searchQuery }) => {
+  const allPairs = React.useMemo(() => parseKeyValues(text), [text]);
   const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
 
-  if (pairs.length === 0) {
+  if (allPairs.length === 0) {
     return (
       <p className="text-[12px] text-slate-400 italic p-4">
         No structured fields detected in this section.
@@ -131,50 +192,53 @@ export const KeyValueRenderer: React.FC<{ text: string }> = ({ text }) => {
     );
   }
 
-  return (
-    <div className="rounded-lg border border-slate-200 overflow-hidden">
-      <table className="w-full text-[12px] border-collapse">
-        <thead className="bg-slate-50">
-          <tr>
-            <th className="px-4 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-200 w-[38%]">
-              Field
-            </th>
-            <th className="px-4 py-2 text-left text-[10px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-200">
-              Value
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {pairs.map((pair, i) => {
-            const isGroupHeader = pair.value === '—';
-            
-            if (isGroupHeader) {
-                return (
-                    <tr key={i} className="bg-slate-100/50 border-y border-slate-200">
-                        <td colSpan={2} className="px-4 py-2.5 text-xs font-black uppercase text-slate-700 tracking-wide text-center">
-                            {pair.key}
-                        </td>
-                    </tr>
-                );
-            }
+  // 1. Group into Sections
+  const sections: Section[] = [];
+  let currentSection: Section = { title: 'General Information', pairs: [] };
 
-            return (
-              <tr
-                key={i}
-                className={`border-b border-slate-100 hover:bg-slate-100/30 transition-colors
-                            ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}`}
+  allPairs.forEach((pair) => {
+    const isGroupHeader = pair.value === '—';
+    if (isGroupHeader) {
+      if (currentSection.pairs.length > 0) sections.push(currentSection);
+      currentSection = { title: pair.key, pairs: [] };
+    } else {
+      currentSection.pairs.push(pair);
+    }
+  });
+  sections.push(currentSection);
+
+  return (
+    <div className="space-y-4 pt-1">
+      {sections.map((section, sIdx) => (
+        <div 
+          key={sIdx} 
+          className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden"
+        >
+          {/* Section Header */}
+          <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center">
+            <span className="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black">
+              {section.title}
+            </span>
+          </div>
+
+          {/* Section Content */}
+          <div className="flex flex-col">
+            {section.pairs.map((pair, pIdx) => (
+              <div
+                key={pIdx}
+                className="grid grid-cols-[180px_1fr] border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors"
               >
-                <td className="px-4 py-2.5 text-slate-500 font-medium align-top leading-snug">
-                  {pair.key}
-                </td>
-                <td className="px-4 py-2.5 align-top leading-snug break-words text-slate-800 font-semibold">
-                  {cleanValue(pair.value, pair.key, resolveRawAddress)}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                <div className="px-5 py-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider align-top leading-normal border-r border-slate-100/50">
+                  <Highlight text={pair.key} query={searchQuery} />
+                </div>
+                <div className="px-5 py-3 text-[12px] text-slate-700 font-medium align-top leading-relaxed break-words">
+                  {renderValueWithLinks(cleanValue(pair.value, pair.key, resolveRawAddress), searchQuery)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

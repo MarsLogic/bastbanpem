@@ -229,6 +229,7 @@ export interface ContractData {
   sskkPageRange?: [number, number];
   specsTable?: any[];
   specsPageRange?: [number, number];
+  sskkClauses?: any[]; // Structured SSKK data from backend
 
   // Ultra-Robust Schema [UIUX-005]
   ultraRobust?: UltraRobustContract;

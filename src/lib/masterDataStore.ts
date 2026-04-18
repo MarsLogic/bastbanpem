@@ -151,7 +151,8 @@ export const useMasterDataStore = create<MasterDataState>()(
         const iKec = clean(input.kecamatan || '');
         const iDesa = clean(input.desa || '');
 
-        if (!iKab && !iKec && !iDesa) return null;
+        // Expert Healing: Allow triangulation even if only ONE field exists
+        if (!iProv && !iKab && !iKec && !iDesa) return null;
 
         const getTokens = (s: string) => s.split(/[\s-]+/).filter(t => t.length >= 2);
         const tokens = {
@@ -161,7 +162,14 @@ export const useMasterDataStore = create<MasterDataState>()(
             desa: getTokens(iDesa)
         };
         const allInputTokens = [...tokens.prov, ...tokens.kab, ...tokens.kec, ...tokens.desa];
-        if (allInputTokens.length === 0) return null;
+        if (allInputTokens.length === 0) {
+            // If we have text but no 2-char tokens, try one last time with raw text for short names
+            if (iProv || iKab || iKec || iDesa) {
+                // proceed to fuzzy logic even with short inputs
+            } else {
+                return null;
+            }
+        }
 
         const cleanHard = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
         const iProvHard = cleanHard(iProv);
@@ -248,25 +256,24 @@ export const useMasterDataStore = create<MasterDataState>()(
             const dbProvHard = dbNames.prov.replace(/\s+/g, '');
 
             if (dbDesaHard === iDesaHard) score += 120;
-            else if (hits.desa > 0) score += 40 + (hits.desa * 25);
+            else if (hits.desa > 0) score += 50 + (hits.desa * 30);
 
             if (dbKecHard === iKecHard) score += 100;
-            else if (hits.kec > 0) score += 30 + (hits.kec * 25);
+            else if (hits.kec > 0) score += 45 + (hits.kec * 25);
 
             if (dbKabHard === iKabHard) score += 80;
-            else if (hits.kab > 0) score += 25 + (hits.kab * 25);
+            else if (hits.kab > 0) score += 40 + (hits.kab * 25);
 
             if (dbProvHard === iProvHard) score += 50;
-            else if (hits.prov > 0) score += 15 + (hits.prov * 20);
+            else if (hits.prov > 0) score += 20 + (hits.prov * 20);
 
             const hitCount = [hits.prov > 0, hits.kab > 0, hits.kec > 0, hits.desa > 0].filter(Boolean).length;
-            if (hitCount >= 3) score += 100; // Increased boost
-            else if (hitCount >= 2) score += 60; // Increased boost
+            if (hitCount >= 3) score += 120;
+            else if (hitCount >= 2) score += 80;
 
-            // Special Triangulation v3: Missing middle-tier (Threshold lowered for master resilience)
-            // If we have high confidence on Kab + Desa (both > 0.6), adopt the master kecamatan
+            // Special Triangulation v3: Missing middle-tier
             if (hits.kab >= 0.6 && hits.desa >= 0.6 && (iKecHard === '' || iKecHard === '-')) {
-                score += 200; // Major boost to force adoption
+                score += 200;
             }
             if (hits.kab > 0 && hits.kec > 0) score += 40;
             if (hits.kec > 0 && hits.desa > 0) score += 50;
@@ -277,7 +284,7 @@ export const useMasterDataStore = create<MasterDataState>()(
             }
         }
 
-        const result = bestScore >= 60 ? bestMatch : null;
+        const result = bestScore >= 55 ? bestMatch : null;
         resolutionCache.set(cacheKey, result);
         return result;
       },
@@ -313,19 +320,21 @@ export const useMasterDataStore = create<MasterDataState>()(
         }
 
         // Deep scoring for finalists
+        const cleanRawHard = cleanRaw.replace(/[^a-z0-9]/g, '');
+
         for (const idx of finalists) {
             const loc = locations[idx];
             let score = 0;
-            const prov = loc.provinsi.toLowerCase();
-            const kab = loc.kabupaten.toLowerCase();
-            const kec = loc.kecamatan.toLowerCase();
-            const desa = loc.desa.toLowerCase();
+            const provHard = loc.provinsi.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const kabHard = loc.kabupaten.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const kecHard = loc.kecamatan.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const desaHard = loc.desa.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-            // Check if specific tokens appear in the raw string
-            if (cleanRaw.includes(desa)) score += 100;
-            if (cleanRaw.includes(kec)) score += 60;
-            if (cleanRaw.includes(kab)) score += 40;
-            if (cleanRaw.includes(prov)) score += 20;
+            // Check if specific tokens appear in the raw string (Normalized)
+            if (desaHard.length >= 3 && cleanRawHard.includes(desaHard)) score += 100;
+            if (kecHard.length >= 3 && cleanRawHard.includes(kecHard)) score += 60;
+            if (kabHard.length >= 3 && cleanRawHard.includes(kabHard)) score += 50;
+            if (provHard.length >= 3 && cleanRawHard.includes(provHard)) score += 25;
 
             if (score > bestScore) {
                 bestScore = score;
@@ -333,7 +342,7 @@ export const useMasterDataStore = create<MasterDataState>()(
             }
         }
 
-        return bestScore >= 80 ? bestMatch : null;
+        return bestScore >= 55 ? bestMatch : null;
       }
     }),
     {

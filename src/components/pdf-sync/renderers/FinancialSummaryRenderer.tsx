@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { cleanValue, formatPhone, toTitleCase } from '@/lib/dataCleaner';
+import { cleanValue, formatPhone, toTitleCase, stripRegionalPrefix } from '@/lib/dataCleaner';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 import { Badge } from '@/components/ui/badge';
+import { Highlight } from '@/components/ui/highlight';
 import { Input } from '@/components/ui/input';
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from '@/components/ui/select';
 import { 
   Banknote, Info, Calculator, 
-  ChevronUp, ChevronDown, Search, FileDown
+  ChevronUp, ChevronDown, Search, FileDown,
+  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Button } from '@/components/ui/button';
@@ -25,6 +27,7 @@ interface FinancialSummaryRendererProps {
   text: string;
   ledger?: any[];
   financials?: any;
+  searchQuery?: string;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -75,12 +78,19 @@ function parseFinancialRows(text: string): FinancialRow[] {
 
 // ─── Sub-Components ───────────────────────────────────────────────────────────
 
-const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ ledger, financials }) => {
+const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQuery?: string }> = ({ ledger, financials, searchQuery }) => {
   const [search, setSearch] = useState('');
+
+  // Sync internal search ONLY on initial load
+  React.useEffect(() => {
+    if (searchQuery && !search) setSearch(searchQuery);
+  }, []);
   const [province, setProvince] = useState('');
   const [sortKey, setSortKey] = useState<string>('shipment_id');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
-  const { resolveHierarchy, fetchMasterData, isLoaded } = useMasterDataStore();
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
+  const { resolveHierarchy, resolveRawAddress, fetchMasterData, isLoaded } = useMasterDataStore();
   const taxRate = financials.tax_logic.vat_rate || 0.11;
 
   useEffect(() => {
@@ -93,40 +103,75 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
     return Array.from(set).sort();
   }, [ledger]);
 
-  // Expert Triangulation: Hydrate ledger with missing regional data
+  // Expert Triangulation: Hydrate ledger with missing or mangled regional data
   const hydratedLedger = React.useMemo(() => {
     return ledger.map(item => {
-      // Pre-clean inputs for triangulation
-      const provinsi = cleanValue(item.destination.provinsi || '', 'provinsi');
-      const kabupaten = cleanValue(item.destination.kabupaten || '', 'kabupaten');
-      const kecamatan = cleanValue(item.destination.kecamatan || '', 'kecamatan');
-      const desa = cleanValue(item.destination.desa || '', 'desa');
+      const dest = item.destination || {};
+      
+      // Keep RAW values for fallback
+      const rawProv = (dest.provinsi || '').trim();
+      const rawKab  = (dest.kabupaten || '').trim();
+      const rawKec  = (dest.kecamatan || '').trim();
+      const rawDesa = (dest.desa || '').trim();
 
-      // If either kecamatan or desa is missing, try to resolve from master data
-      if (!kecamatan || kecamatan === '—' || !desa || desa === '—') {
-        const resolved = resolveHierarchy({ provinsi, kabupaten, kecamatan, desa });
+      // Preliminary cleaning (standardize case, strip obvious noise)
+      // but only if it doesn't destroy the data
+      const provinsi = cleanValue(rawProv, 'provinsi');
+      const kabupaten = cleanValue(rawKab, 'kabupaten');
+      const kecamatan = cleanValue(rawKec, 'kecamatan');
+      const desa = cleanValue(rawDesa, 'desa');
+
+      // Mangled detection: Empty, just dash, too short, or contains obvious OCR garbage
+      // We allow hyphens and spaces in Indonesian regional names
+      const isMangled = (s: string) => !s || s === '—' || s.length < 2 || /[%$#^*]/.test(s);
+      
+      if (isMangled(provinsi) || isMangled(kabupaten) || isMangled(kecamatan) || isMangled(desa)) {
+        // Try structured triangulation first
+        let resolved = resolveHierarchy({ provinsi, kabupaten, kecamatan, desa });
+        
+        // Deep Recovery: If structured fields are empty/mangled, try raw address triangulation
+        if (!resolved && dest.full_address) {
+          resolved = resolveRawAddress(dest.full_address);
+        }
+
         if (resolved) {
           return {
             ...item,
             destination: {
-              ...item.destination,
-              provinsi: resolved.provinsi,
-              kabupaten: resolved.kabupaten,
-              kecamatan: (kecamatan === '—' || !kecamatan) ? resolved.kecamatan : kecamatan,
-              desa: (desa === '—' || !desa) ? resolved.desa : desa,
+              ...dest,
+              provinsi: stripRegionalPrefix(resolved.provinsi || provinsi || rawProv),
+              kabupaten: stripRegionalPrefix(resolved.kabupaten || kabupaten || rawKab),
+              kecamatan: stripRegionalPrefix(isMangled(kecamatan) ? (resolved.kecamatan || kecamatan || rawKec) : (kecamatan || rawKec)),
+              desa: stripRegionalPrefix(isMangled(desa) ? (resolved.desa || desa || rawDesa) : (desa || rawDesa)),
             }
           };
         }
       }
-      return item;
+
+      // Fallback: Use cleaned values, but if cleanValue destroyed them, use rawProv
+      return {
+        ...item,
+        destination: {
+           ...dest,
+           provinsi: stripRegionalPrefix(provinsi || rawProv),
+           kabupaten: stripRegionalPrefix(kabupaten || rawKab),
+           kecamatan: stripRegionalPrefix(kecamatan || rawKec),
+           desa: stripRegionalPrefix(desa || rawDesa)
+        }
+      };
     });
   }, [ledger, resolveHierarchy, isLoaded]);
 
   const filtered = React.useMemo(() => {
     const q = search.toLowerCase().trim();
     return hydratedLedger.filter(item => {
-      const matchSearch = !q || [item.recipient.name, item.destination.kabupaten, item.destination.provinsi].some(v => v?.toLowerCase().includes(q));
-      const matchProv = !province || item.destination.provinsi === province;
+      const dest = item.destination || {};
+      const name = item.recipient?.name || '';
+      const kab = dest.kabupaten || '';
+      const prov = dest.provinsi || '';
+      
+      const matchSearch = !q || [name, kab, prov].some(v => String(v || '').toLowerCase().includes(q));
+      const matchProv = !province || prov === province;
       return matchSearch && matchProv;
     });
   }, [hydratedLedger, search, province]);
@@ -140,10 +185,10 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
         '#': item.shipment_id,
         'Penerima': toTitleCase(item.recipient.name),
         'Nomor Telepon': formatPhone(item.recipient.phone),
-        'Provinsi': item.destination.provinsi ? cleanValue(item.destination.provinsi, 'provinsi') : '',
-        'Kabupaten': item.destination.kabupaten ? cleanValue(item.destination.kabupaten, 'kabupaten') : '',
-        'Kecamatan': item.destination.kecamatan ? cleanValue(item.destination.kecamatan, 'kecamatan') : '',
-        'Desa': item.destination.desa ? cleanValue(item.destination.desa, 'desa') : '',
+        'Provinsi': item.destination.provinsi || '',
+        'Kabupaten': item.destination.kabupaten || '',
+        'Kecamatan': item.destination.kecamatan || '',
+        'Desa': item.destination.desa || '',
         'DPP (Excl. Tax)': dpp,
         'PPN (Tax)': ppn,
         'Total (Incl. Tax)': gross
@@ -185,9 +230,16 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
     });
   }, [filtered, sortKey, sortDir, taxRate]);
 
+  // Reset page when filtering or sorting changes
+  React.useEffect(() => { setPage(0); }, [search, province, sortKey, sortDir, pageSize]);
+
+  const actualPageSize = pageSize === 'all' ? Math.max(1, sorted.length) : pageSize;
+  const totalPages = Math.max(1, Math.ceil(sorted.length / actualPageSize));
+  const pageData = sorted.slice(page * actualPageSize, (page * actualPageSize) + actualPageSize);
+
   const TH = ({ label, col, align = 'left' }: { label: string, col: string, align?: 'left' | 'right' }) => (
     <th 
-      className={`px-3 py-2.5 text-${align} text-[9px] font-black uppercase tracking-wider text-slate-400 bg-slate-50 border-b border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap`}
+      className={`px-3 py-2.5 text-${align} text-[9px] font-medium uppercase tracking-wider text-slate-400 bg-slate-50 border-b border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap`}
       onClick={() => {
         if (sortKey === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
         else { setSortKey(col); setSortDir('asc'); }
@@ -205,7 +257,13 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
       <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
-          <Input placeholder="Search recipients..." value={search} onChange={e => setSearch(e.target.value)} className="h-7 pl-8 py-0 text-[10px] bg-slate-50 border-slate-200" />
+          <Input 
+            placeholder={searchQuery ? "Global search active..." : "Search recipients..."}
+            value={search} 
+            onChange={e => setSearch(e.target.value)} 
+            className="h-7 pl-8 py-0 text-[10px] bg-slate-50 border-slate-200" 
+            readOnly={!!searchQuery}
+          />
         </div>
         {!isLoaded && (
           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 border border-black animate-pulse shrink-0">
@@ -251,39 +309,140 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
             </tr>
           </thead>
           <tbody>
-            {sorted.map((item, idx) => {
+            {pageData.map((item, idx) => {
               const dpp = (item.costs?.product_total || 0) + (item.costs?.shipping_total || 0);
               const ppn = Math.round(dpp * taxRate);
               const gross = dpp + ppn;
+              const globalIdx = page * actualPageSize + idx;
               return (
-                <tr key={idx} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
-                  <td className="px-3 py-2.5 font-mono text-slate-400 tabular-nums text-[10px]">{item.shipment_id}</td>
-                  <td className="px-3 py-2.5">
-                    <div className="font-bold text-slate-900 leading-snug truncate max-w-[150px]">{toTitleCase(item.recipient.name)}</div>
+                <tr key={idx} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${globalIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
+                  <td className="px-3 py-2.5 font-mono text-slate-400 tabular-nums text-[10px]">
+                    <Highlight text={item.shipment_id} query={searchQuery} />
                   </td>
                   <td className="px-3 py-2.5">
-                    <div className="text-[11px] font-mono text-slate-500 font-medium tabular-nums">{formatPhone(item.recipient.phone)}</div>
+                    <div className="font-normal text-slate-700 leading-snug truncate max-w-[150px]">
+                      <Highlight text={toTitleCase(item.recipient.name)} query={searchQuery} />
+                    </div>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <div className="text-[11px] font-mono text-slate-500 tabular-nums">
+                      <Highlight text={formatPhone(item.recipient.phone)} query={search || searchQuery} />
+                    </div>
                   </td>
                   <td className="px-3 py-2.5 text-slate-700 whitespace-nowrap">
-                    {item.destination.provinsi ? cleanValue(item.destination.provinsi, 'provinsi') : '—'}
+                    <Highlight text={item.destination?.provinsi || '—'} query={search || searchQuery} />
                   </td>
                   <td className="px-3 py-2.5 text-slate-600 truncate max-w-[120px]">
-                    {item.destination.kabupaten ? cleanValue(item.destination.kabupaten, 'kabupaten') : '—'}
+                    <Highlight text={item.destination?.kabupaten || '—'} query={search || searchQuery} />
                   </td>
                   <td className="px-3 py-2.5 text-slate-600 truncate max-w-[100px]">
-                    {item.destination.kecamatan ? cleanValue(item.destination.kecamatan, 'kecamatan') : '—'}
+                    <Highlight text={item.destination?.kecamatan || '—'} query={search || searchQuery} />
                   </td>
                   <td className="px-3 py-2.5 text-slate-500 truncate max-w-[100px]">
-                    {item.destination.desa ? cleanValue(item.destination.desa, 'desa') : '—'}
+                    <Highlight text={item.destination?.desa || '—'} query={search || searchQuery} />
                   </td>
                   <td className="px-3 py-2.5 text-right font-mono text-slate-600 tabular-nums">{fmt(dpp)}</td>
                   <td className="px-3 py-2.5 text-right font-mono text-slate-400 tabular-nums">{fmt(ppn)}</td>
-                  <td className="px-3 py-2.5 text-right font-mono font-bold text-slate-900 tabular-nums">{fmt(gross)}</td>
+                  <td className="px-3 py-2.5 text-right font-mono text-slate-700 tabular-nums">{fmt(gross)}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* Premium Pagination Control Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 bg-slate-50/50 border-t border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Show</span>
+            <div className="flex items-center p-0.5 bg-slate-200/50 rounded-lg">
+              {[10, 20, 50, 'all'].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setPageSize(size as any)}
+                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all duration-200 uppercase
+                             ${pageSize === size 
+                               ? 'bg-white text-slate-900 shadow-sm ring-1 ring-slate-200' 
+                               : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="h-4 w-px bg-slate-200" />
+          
+          <span className="text-[10px] text-slate-500 font-medium tabular-nums">
+            Showing <span className="text-slate-900 font-bold">{page * actualPageSize + 1}</span>
+            –<span className="text-slate-900 font-bold">{Math.min((page + 1) * actualPageSize, sorted.length)}</span>
+            {' '}of <span className="text-slate-900 font-bold">{sorted.length}</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1.5 border-r border-slate-200 pr-3 mr-3">
+               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-slate-400">Jump</span>
+               <Input
+                 type="number"
+                 min={1}
+                 max={totalPages}
+                 value={page + 1}
+                 onChange={(e) => {
+                   const p = parseInt(e.target.value);
+                   if (!isNaN(p) && p >= 1 && p <= totalPages) {
+                     setPage(p - 1);
+                   }
+                 }}
+                 className="h-7 w-14 text-[10px] font-mono text-center bg-white border-slate-200 focus:ring-1 focus:ring-slate-900 transition-all"
+               />
+            </div>
+          )}
+
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline" size="icon"
+              className="h-7 w-7 border-slate-200 disabled:opacity-30"
+              disabled={page === 0}
+              onClick={() => setPage(0)}
+            >
+              <ChevronsLeft className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline" size="icon"
+              className="h-7 w-7 border-slate-200 disabled:opacity-30"
+              disabled={page === 0}
+              onClick={() => setPage(p => p - 1)}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </Button>
+            
+            <div className="flex items-center px-4 h-7 bg-white rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 tabular-nums">
+              <span className="text-slate-900 font-bold">{page + 1}</span>
+              <span className="mx-1 text-slate-300">/</span>
+              <span>{totalPages}</span>
+            </div>
+
+            <Button
+              variant="outline" size="icon"
+              className="h-7 w-7 border-slate-200 disabled:opacity-30"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage(p => p + 1)}
+            >
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline" size="icon"
+              className="h-7 w-7 border-slate-200 disabled:opacity-30"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage(totalPages - 1)}
+            >
+              <ChevronsRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -309,71 +468,59 @@ const FinancialTotalsCard: React.FC<{ financials: any; ledger: any[]; taxRate: n
   const isBalanced = discrepancy < 5000 || isExtractionFailed;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-      <div className={`md:col-span-2 p-6 rounded-3xl text-white shadow-2xl space-y-4 relative overflow-hidden group transition-colors duration-500
-                       ${isBalanced ? 'bg-slate-900' : 'bg-slate-900 border-2 border-red-500/30'}`}>
+    <div className="grid grid-cols-1 gap-4 mt-8">
+      <div className={`p-6 rounded-3xl border shadow-sm space-y-4 relative overflow-hidden group transition-all duration-500
+                       ${isBalanced 
+                         ? 'bg-white border-slate-200 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]' 
+                         : 'bg-white border-red-200 shadow-md ring-1 ring-red-50'}`}>
         <div className="flex items-center justify-between relative z-10">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/10 rounded-xl">
-              <Calculator className="h-5 w-5 text-slate-300" />
+            <div className={`p-2 rounded-xl transition-colors ${isBalanced ? 'bg-slate-100' : 'bg-red-50'}`}>
+              <Calculator className={`h-5 w-5 ${isBalanced ? 'text-slate-500' : 'text-red-500'}`} />
             </div>
             <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Total Kontrak</span>
-              <span className={`text-[8px] font-bold uppercase tracking-widest mt-0.5 ${isExtractionFailed ? 'text-amber-400' : (isBalanced ? 'text-emerald-400' : 'text-red-400')}`}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400">Total Kontrak</span>
+              <span className={`text-[8px] font-bold uppercase tracking-widest mt-0.5 ${isExtractionFailed ? 'text-amber-600' : (isBalanced ? 'text-emerald-600' : 'text-red-600')}`}>
                 {isExtractionFailed ? '⚠ Reconstructed from Ledger' : (isBalanced ? '✓ Reconciled with Ledger' : '⚠ Total Discrepancy')}
               </span>
             </div>
           </div>
-          <Badge className={`bg-white/20 text-white border-0 text-[10px] px-3 py-1 ${isExtractionFailed ? 'bg-amber-500/20 text-amber-300' : ''}`}>
+          <Badge className={`border-0 text-[10px] px-3 py-1 font-bold ${
+            isExtractionFailed ? 'bg-amber-100 text-amber-700' : (isBalanced ? 'bg-slate-100 text-slate-600' : 'bg-red-100 text-red-700')
+          }`}>
             {isExtractionFailed ? 'ESTIMATED' : (isBalanced ? 'IDR' : `GAP: ${fmt(discrepancy)}`)}
           </Badge>
         </div>
         
-        <div className="text-4xl font-black font-mono tracking-tighter tabular-nums relative z-10">{fmt(grandTotal)}</div>
+        <div className="text-4xl font-bold font-mono tracking-tighter tabular-nums text-slate-900 relative z-10">{fmt(grandTotal)}</div>
 
-        <div className="flex items-center gap-6 pt-4 border-t border-white/10 relative z-10 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-6 pt-4 border-t border-slate-100 relative z-10 overflow-x-auto no-scrollbar">
           <div className="flex flex-col gap-0.5 min-w-fit">
-            <span className="text-[9px] uppercase font-black text-slate-500 tracking-wider">DPP (Excl. Tax)</span>
-            <span className="text-[13px] font-bold font-mono">{fmt(netValue)}</span>
+            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">DPP (Excl. Tax)</span>
+            <span className="text-[13px] font-bold font-mono text-slate-700">{fmt(netValue)}</span>
           </div>
-          <div className="w-px h-8 bg-white/10 shrink-0" />
+          <div className="w-px h-8 bg-slate-100 shrink-0" />
           <div className="flex flex-col gap-0.5 min-w-fit">
-            <span className="text-[9px] uppercase font-black text-slate-500 tracking-wider">Ledger Sum</span>
-            <span className={`text-[13px] font-bold font-mono ${(isBalanced && !isExtractionFailed) ? 'text-white/60' : 'text-emerald-300'}`}>{fmt(ledgerSum)}</span>
-            <span className="text-[8px] text-slate-500 mt-0.5">{isExtractionFailed ? '※ Used as Baseline' : (isBalanced ? '✓ Match' : '⚠ Missing Data')}</span>
+            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Ledger Sum</span>
+            <span className={`text-[13px] font-bold font-mono ${(isBalanced && !isExtractionFailed) ? 'text-slate-500' : 'text-emerald-600'}`}>{fmt(ledgerSum)}</span>
+
           </div>
-          <div className="w-px h-8 bg-white/10 shrink-0" />
+          <div className="w-px h-8 bg-slate-100 shrink-0" />
           <div className="flex flex-col gap-0.5 min-w-fit">
-            <span className="text-[9px] uppercase font-black text-slate-500 tracking-wider">Tax (PPN {displayTax}%)</span>
-            <span className="text-[13px] font-bold font-mono text-slate-200">{fmt(totalTax)}</span>
+            <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Tax (PPN {displayTax}%)</span>
+            <span className="text-[13px] font-bold font-mono text-slate-600">{fmt(totalTax)}</span>
           </div>
         </div>
       </div>
 
-      <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-slate-100 rounded-lg"><Info className="h-3.5 w-3.5 text-slate-500" /></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Tax Breakdown</span>
-          </div>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center group">
-              <span className="text-[11px] text-slate-500 font-medium">PPN {displayTax}%</span>
-              <span className="font-mono font-bold text-slate-900 text-[12px] tabular-nums">{fmt(totalTax)}</span>
-            </div>
-          </div>
-        </div>
-        <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-          <p className="text-[9px] text-slate-400 italic leading-relaxed">Derived from Grand Total using intelligent rate snapping.</p>
-        </div>
-      </div>
+
     </div>
   );
 };
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export const FinancialSummaryRenderer: React.FC<FinancialSummaryRendererProps> = ({ text, ledger, financials }) => {
+export const FinancialSummaryRenderer: React.FC<FinancialSummaryRendererProps> = ({ text, ledger, financials, searchQuery }) => {
   const rows = React.useMemo(() => parseFinancialRows(text), [text]);
   const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
 
@@ -395,32 +542,101 @@ export const FinancialSummaryRenderer: React.FC<FinancialSummaryRendererProps> =
         <div className="flex items-center justify-between mb-2">
           <Badge className="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] py-1 px-3 rounded-full">Accounting View</Badge>
         </div>
-        <RecipientFinancialGrid ledger={ledger} financials={financials} />
-        <FinancialTotalsCard financials={financials} ledger={ledger} taxRate={rate} displayTax={displayTax} />
+        <RecipientFinancialGrid ledger={ledger} financials={financials} searchQuery={searchQuery} />
+        <FinancialTotalsCard 
+          financials={financials} 
+          ledger={ledger} 
+          taxRate={rate} 
+          displayTax={displayTax} 
+        />
       </div>
     );
   }
 
   if (rows.length === 0) return <p className="text-[12px] text-slate-400 italic p-4">No financial data detected.</p>;
 
+  // Expert Grouping: Split rows into "Summary" vs "Detail" based on headers
+  const summaryRows = rows.filter(r => !/total transaksi|total ppn|total ppnbm/i.test(r.label));
+  const detailRows = rows.filter(r => /total transaksi|total ppn|total ppnbm/i.test(r.label));
+
   return (
-    <div className="rounded-lg border border-slate-200 overflow-hidden">
-      <table className="w-full text-[12px] border-collapse">
-        <thead className="bg-slate-50">
-          <tr>
-            <th className="px-4 py-2 text-left text-[10px] font-black uppercase text-slate-400 border-b border-slate-200">Keterangan</th>
-            <th className="px-4 py-2 text-right text-[10px] font-black uppercase text-slate-400 border-b border-slate-200 w-[38%]">Harga / Nilai</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className={`border-b border-slate-100 ${row.isTotal ? 'bg-slate-100 font-semibold' : 'bg-white hover:bg-slate-50'}`}>
-              <td className="px-4 py-2.5 align-top leading-snug">{cleanValue(row.label, 'keterangan')}</td>
-              <td className="px-4 py-2.5 text-right align-top font-mono text-slate-800 font-semibold">{row.amount}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="space-y-6 py-2">
+      {/* 1. Ringkasan Pembayaran Block */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 px-1">
+          <Banknote className="h-4 w-4 text-slate-400" />
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Ringkasan Pembayaran</span>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+          <table className="w-full text-[12px] border-collapse">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-[10px] font-medium uppercase text-slate-400 border-b border-slate-200">Keterangan</th>
+                <th className="px-4 py-2 text-right text-[10px] font-medium uppercase text-slate-400 border-b border-slate-200 w-[38%]">Harga</th>
+              </tr>
+            </thead>
+            <tbody>
+              {summaryRows.map((row, i) => (
+                <tr key={i} className={`border-b border-slate-100 last:border-0 ${row.isTotal ? 'bg-slate-50/80' : 'bg-white'}`}>
+                  <td className="px-4 py-3.5 align-top">
+                    <div className={`${row.isTotal ? 'font-medium text-slate-900' : 'text-slate-700'}`}>
+                      <Highlight text={cleanValue(row.label, 'keterangan')} query={searchQuery} />
+                    </div>
+                    {row.isTotal && (
+                      <div className="text-[10px] text-slate-400 mt-0.5 leading-tight italic">
+                        Harga Produk, Ongkos Kirim, PPN
+                      </div>
+                    )}
+                  </td>
+                  <td className={`px-4 py-3.5 text-right align-top font-mono tabular-nums ${row.isTotal ? 'text-slate-900 text-[14px] font-medium' : 'text-slate-600'}`}>
+                    <Highlight text={row.amount} query={searchQuery} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 2. Detail Informasi Block */}
+      {detailRows.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <Info className="h-4 w-4 text-slate-400" />
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Detail Informasi Pembayaran & Pengiriman</span>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Pembayaran</span>
+            </div>
+            
+            {/* Gray Background Block for Totals Breakdown (Matching PDF) */}
+            <div className="bg-slate-100/60 p-5 space-y-6">
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-medium text-slate-500">Ringkasan Pembayaran (dari semua pengiriman)</span>
+              </div>
+
+              <div className="space-y-5">
+                {detailRows.map((row, i) => (
+                  <div key={i} className="flex justify-between items-start group">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[12px] font-medium text-slate-700">
+                        <Highlight text={row.label} query={searchQuery} />
+                      </span>
+                      <span className="text-[10px] text-slate-400 italic">
+                        {row.label.toLowerCase().includes('ppn') ? 'Pajak Produk, Pajak Ongkos Kirim' : 'Harga Produk, Ongkos Kirim'}
+                      </span>
+                    </div>
+                    <span className="font-mono text-[13px] text-slate-900 font-medium tabular-nums">
+                      <Highlight text={row.amount} query={searchQuery} />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
