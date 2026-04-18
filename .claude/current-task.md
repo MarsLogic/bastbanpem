@@ -5,6 +5,7 @@
 ## 🎯 Completed
 - **SSKK Beautification**: Implemented "Stanza-based" layout with double-spacing and bold markers for legal clarity.
 - **Marker Normalization**: Specialized regex to transform `12.a` into `12a.` (Alpha-Numeric ID compression).
+- **Operational UI Sanitization**: Removed technical meta-badges (`p.13`, extraction methods) from all Data Table views.
 - **Copy Sanitization**: Purged marketing-heavy terms like "Neural Engine" and "High-Fidelity" in favor of professional operational SaaS language.
 - **Enterprise Branding**: Implemented monochromatic "Elite Workbench" theme (Slate/Zinc) and a custom SVG 'B' mark favicon.
 - **Build Hardening**: Resolved a critical `dist` folder staleness issue caused by a hidden `tsc` build error (`mode="wait"` typo).
