@@ -138,12 +138,12 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
       const gross = dpp + ppn;
       return {
         '#': item.shipment_id,
-        'Penerima': item.recipient.name,
+        'Penerima': toTitleCase(item.recipient.name),
         'Nomor Telepon': formatPhone(item.recipient.phone),
-        'Provinsi': item.destination.provinsi || '',
-        'Kabupaten': item.destination.kabupaten || '',
-        'Kecamatan': item.destination.kecamatan || '',
-        'Desa': item.destination.desa || '',
+        'Provinsi': item.destination.provinsi ? cleanValue(item.destination.provinsi, 'provinsi') : '',
+        'Kabupaten': item.destination.kabupaten ? cleanValue(item.destination.kabupaten, 'kabupaten') : '',
+        'Kecamatan': item.destination.kecamatan ? cleanValue(item.destination.kecamatan, 'kecamatan') : '',
+        'Desa': item.destination.desa ? cleanValue(item.destination.desa, 'desa') : '',
         'DPP (Excl. Tax)': dpp,
         'PPN (Tax)': ppn,
         'Total (Incl. Tax)': gross
@@ -162,6 +162,7 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
       const dppA = (a.costs?.product_total || 0) + (a.costs?.shipping_total || 0);
       const dppB = (b.costs?.product_total || 0) + (b.costs?.shipping_total || 0);
       switch (sortKey) {
+        case 'shipment_id': va = a.shipment_id; vb = b.shipment_id; break;
         case 'name':     va = a.recipient.name ?? ''; vb = b.recipient.name ?? ''; break;
         case 'phone':    va = a.recipient.phone ?? ''; vb = b.recipient.phone ?? ''; break;
         case 'prov':     va = a.destination.provinsi ?? ''; vb = b.destination.provinsi ?? ''; break;
@@ -173,7 +174,13 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
         case 'gross':    va = dppA * (1 + taxRate); vb = dppB * (1 + taxRate); break;
         default:         va = a.shipment_id; vb = b.shipment_id; break;
       }
-      const cmp = typeof va === 'number' ? va - vb : String(va).localeCompare(String(vb), 'id');
+      
+      if (typeof va === 'string' && typeof vb === 'string') {
+        const cmp = va.localeCompare(vb, 'id');
+        return sortDir === 'asc' ? cmp : -cmp;
+      }
+      
+      const cmp = (va || 0) - (vb || 0);
       return sortDir === 'asc' ? cmp : -cmp;
     });
   }, [filtered, sortKey, sortDir, taxRate]);
