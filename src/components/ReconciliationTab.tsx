@@ -124,7 +124,7 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
     switch (severity) {
       case 'high': return 'text-red-500 bg-red-50 border-red-100';
       case 'medium': return 'text-amber-500 bg-amber-50 border-amber-100';
-      case 'low': return 'text-blue-500 bg-blue-50 border-blue-100';
+      case 'low': return 'text-slate-700 bg-slate-100 border-slate-200';
       default: return 'text-slate-500 bg-slate-50 border-slate-100';
     }
   };
@@ -171,7 +171,7 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
              <Button 
                 variant="outline" 
                 size="sm" 
-                className="h-10 gap-2 font-bold bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white border-indigo-500 shadow-sm"
+                className="h-10 gap-2 font-bold bg-black text-white hover:bg-zinc-800 hover:text-white border-slate-300 shadow-sm"
                 onClick={handleInjectToGov}
                 disabled={isInjecting || isBundling}
              >
@@ -212,7 +212,7 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
         <CardHeader className="px-6 py-4 border-b bg-slate-50/50 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Search className="text-indigo-500 w-5 h-5" />
+              <Search className="text-slate-600 w-5 h-5" />
               Reconciliation Detail
             </CardTitle>
             <CardDescription className="text-slate-500">Cross-checking PDF Delivery Blocks against Excel rows.</CardDescription>

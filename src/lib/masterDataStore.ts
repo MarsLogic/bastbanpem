@@ -16,6 +16,7 @@ interface MasterDataState {
   fetchMasterData: () => Promise<void>;
   findSuggestion: (type: 'provinsi'|'kabupaten'|'kecamatan'|'desa', rawValue: string, parentValue?: string) => string | null;
   resolveHierarchy: (input: { provinsi?: string, kabupaten?: string, kecamatan?: string, desa?: string }) => LocationMaster | null;
+  resolveRawAddress: (raw: string) => LocationMaster | null;
 }
 
 // Global cache to prevent freezing on large Excel files
@@ -247,6 +248,60 @@ export const useMasterDataStore = create<MasterDataState>()(
         const result = bestScore >= 60 ? bestMatch : null;
         resolutionCache.set(cacheKey, result);
         return result;
+      },
+      resolveRawAddress: (raw: string) => {
+        const { locations } = get();
+        if (!raw || locations.length === 0) return null;
+
+        const cleanRaw = raw.toLowerCase().trim();
+        const inputTokens = cleanRaw.split(/[\s,.-]+/).filter(t => t.length >= 3);
+        if (inputTokens.length < 2) return null;
+
+        if (indexedSearchStrings.length === 0) {
+            indexedSearchStrings = locations.map(loc => 
+                (loc.provinsi + " " + loc.kabupaten + " " + loc.kecamatan + " " + loc.desa).toLowerCase()
+            );
+        }
+
+        let bestMatch: LocationMaster | null = null;
+        let bestScore = -1;
+
+        // Prune search space (Finalists)
+        const finalists: number[] = [];
+        for (let i = 0; i < indexedSearchStrings.length; i++) {
+            const searchStr = indexedSearchStrings[i];
+            let hits = 0;
+            for (const t of inputTokens) {
+                if (searchStr.includes(t)) {
+                    hits++;
+                    if (hits >= 2) break;
+                }
+            }
+            if (hits >= 2) finalists.push(i);
+        }
+
+        // Deep scoring for finalists
+        for (const idx of finalists) {
+            const loc = locations[idx];
+            let score = 0;
+            const prov = loc.provinsi.toLowerCase();
+            const kab = loc.kabupaten.toLowerCase();
+            const kec = loc.kecamatan.toLowerCase();
+            const desa = loc.desa.toLowerCase();
+
+            // Check if specific tokens appear in the raw string
+            if (cleanRaw.includes(desa)) score += 100;
+            if (cleanRaw.includes(kec)) score += 60;
+            if (cleanRaw.includes(kab)) score += 40;
+            if (cleanRaw.includes(prov)) score += 20;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = loc;
+            }
+        }
+
+        return bestScore >= 80 ? bestMatch : null;
       }
     }),
     {

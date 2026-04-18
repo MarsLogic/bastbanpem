@@ -1,4 +1,5 @@
 import React from 'react';
+import { ChevronRight, Dot } from 'lucide-react';
 
 interface ProseRendererProps {
   text: string;
@@ -60,7 +61,7 @@ function annotate(line: string, searchQuery?: string): Span[] {
 function SpanEl({ span }: { span: Span }) {
   switch (span.type) {
     case 'rp':        return <span className="text-emerald-700 font-semibold font-mono">{span.text}</span>;
-    case 'date':      return <span className="text-blue-700 font-medium">{span.text}</span>;
+    case 'date':      return <span className="text-slate-700 font-medium">{span.text}</span>;
     case 'id':        return <span className="font-mono text-slate-600 bg-slate-100 px-0.5 rounded text-[11px]">{span.text}</span>;
     case 'highlight': return <mark className="bg-yellow-200 text-yellow-900 rounded px-0.5">{span.text}</mark>;
     default:          return <>{span.text}</>;
@@ -77,18 +78,53 @@ export const ProseRenderer: React.FC<ProseRendererProps> = ({ text, searchQuery 
   return (
     <div className="space-y-4">
       {paragraphs.map((para, pIdx) => {
-        const lines = para.split('\n').filter(l => l.trim());
+        const lines = para.split('\n');
         return (
-          <p key={pIdx} className="text-[13px] text-slate-700 leading-relaxed">
-            {lines.map((line, lIdx) => (
-              <React.Fragment key={lIdx}>
-                {annotate(line, searchQuery).map((span, sIdx) => (
-                  <SpanEl key={sIdx} span={span} />
-                ))}
-                {lIdx < lines.length - 1 && <br />}
-              </React.Fragment>
-            ))}
-          </p>
+          <div key={pIdx} className="text-[12px] text-slate-700 leading-relaxed font-sans">
+            {lines.map((line, lIdx) => {
+              const strLine = line.trim();
+              const isBullet = strLine.startsWith('•') || strLine.startsWith('-');
+              
+              if (isBullet) {
+                const content = strLine.substring(1).trim();
+                return (
+                  <div key={lIdx} className="flex items-start gap-2 mt-1.5 mb-1.5">
+                    <Dot className="h-4 w-4 shrink-0 text-slate-400 mt-[1px]" />
+                    <span className="flex-1">
+                      {annotate(content, searchQuery).map((span, sIdx) => (
+                        <SpanEl key={sIdx} span={span} />
+                      ))}
+                    </span>
+                  </div>
+                );
+              }
+              
+              const isNumbered = /^\d{1,2}[\)\.]\s/.test(strLine);
+              if (isNumbered) {
+                const match = strLine.match(/^(\d{1,2}[\)\.])\s(.*)/);
+                if (match) {
+                  return (
+                    <div key={lIdx} className="flex items-start gap-2 mt-1.5 mb-1.5">
+                      <span className="text-[11px] font-bold text-slate-500 w-5 shrink-0 text-right mt-[2px]">{match[1]}</span>
+                      <span className="flex-1">
+                        {annotate(match[2], searchQuery).map((span, sIdx) => (
+                          <SpanEl key={sIdx} span={span} />
+                        ))}
+                      </span>
+                    </div>
+                  );
+                }
+              }
+
+              return (
+                <div key={lIdx} className={lIdx > 0 ? "mt-1" : ""}>
+                 {annotate(line, searchQuery).map((span, sIdx) => (
+                    <SpanEl key={sIdx} span={span} />
+                  ))}
+                </div>
+              );
+            })}
+          </div>
         );
       })}
     </div>

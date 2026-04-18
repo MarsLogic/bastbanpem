@@ -79,8 +79,24 @@ rtk rg "\[UIUX-001\]"  # Find all refs to API bridge
 ## 4. Tech Stack & Mandates
 - **Memory:** 4GB RAM Target. Use Polars (Lazy), PyMuPDF (with statements), explicit `gc.collect()`.
 - **Backend:** FastAPI (Async) on Port 8000. Use `backend/config.py`.
-- **Frontend:** React 19 + Vite. Base URL in `src/lib/api.ts`.
+- **Frontend (Static/Prod):** Served by backend on **Port 8000** from the `dist/` folder.
+- **Frontend (Live/Dev):** Served by Vite on **Port 5173** from the `src/` folder.
+- **Base URL:** Defined in `src/lib/api.ts`.
 - **Context:** Use `repomix-output.xml` ONLY as a last-resort emergency map.
+
+## 4.5 Design System (MANDATORY)
+**Before creating or editing ANY component, read:** `.claude/design-system.md`
+
+This covers:
+- Color palette (white, grey, light grey, dark grey, very dark grey, black)
+- Typography (Geist Sans/Mono, font weights, sizes)
+- Icons (Lucide React system, sizes)
+- Component patterns (buttons, tables, toasts, badges, highlights)
+- Spacing & layout rules
+- States & transitions
+- Implementation checklist
+
+**Single source of truth** for consistency across all UIs (Claude Code, Claude CLI, Gemini CLI, Antigravity AI).
 
 ## 5. Logic Barcodes
 Every module has a Logical ID. Use them in your plans and commits.
@@ -105,15 +121,13 @@ Every module has a Logical ID. Use them in your plans and commits.
    rtk git diff
    ```
 
-3. **If tests pass + code is clean:**
+3. **Mandatory Commit & Push (Every Change):**
+   ```bash
+   rtk git add .
+   rtk git commit -m "[TYPE]: [LOGICAL-ID] Brief description"
+   rtk git push origin main
    ```
-   REMINDER: Push to GitHub!
-   
-   Should I push these changes to GitHub? 
-   - Review the changes above
-   - Confirm they're correct
-   - Say "yes" or "approve" to push
-   ```
+   **Why?** The user mandates that ALL tiny changes, especially to `.md` files, MUST be pushed to https://github.com/MarsLogic/bastbanpem immediately to ensure all AI sessions stay in sync.
 
 4. **Wait for user approval, then:**
    ```bash
@@ -134,11 +148,30 @@ Every module has a Logical ID. Use them in your plans and commits.
 
 ---
 
+## 🚨 CRITICAL RULE: Always Rebuild Before Session Ends
+
+**When you make ANY code changes:**
+1. ✅ **ALWAYS run:** `npm run build`
+2. ✅ **VERIFY:** Build completes with ✓
+3. ✅ **INFORM USER:** "Build passes ✓ - Changes will show when you run start.bat"
+4. ✅ **NEVER assume** changes will appear without explicit build
+
+**This ensures changes appear in ALL modes:**
+- Option 1: Production Mode (serves `dist/` on Port 8000 - requires build)
+- Option 2: Dev Mode (serves `src/` on Port 5173 - requires build for initial state consistency)
+- Option 3: Debug Mode (requires build)
+
+> [!WARNING]
+> If you view the app on Port 8000, you are looking at a static build. Changes in `src` will NOT appear there until you run `npm run build`. Always use Port 5173 for live development.
+
+---
+
 ## 📍 Key Reminders for Every Session
 
 ✅ Load project knowledge first (architecture, patterns, decisions)  
 ✅ Use task templates for context (not whole codebase)  
 ✅ Always ripgrep before reading files  
+✅ **BUILD & VERIFY before finishing ANY code changes** ← CRITICAL!
 ✅ Test before closing session  
 ✅ **Push to GitHub if user approves** ← Important!  
 ✅ Update lessons-learned.md if you discover something new

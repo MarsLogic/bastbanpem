@@ -89,6 +89,20 @@ result = address_parser.parse(raw_address_string)
 
 **Key Pattern:** Always use [UIUX-001] for API calls, Tailwind styling, responsive design
 
+### Frontend Serving Logic (The Port Split)
+
+The system operates in two distinct modes for the frontend:
+
+1.  **Development Mode (Port 5173)**:
+    - Standard Vite dev server running on port 5173.
+    - Provides Hot Module Replacement (HMR) for instant updates.
+    - Serves files directly from the `src/` directory.
+
+2.  **Unified Production Mode (Port 8000)**:
+    - The backend FastAPI server (port 8000) serves the `dist/` folder.
+    - Uses a "catch-all" handler to serve `index.html` for frontend routes.
+    - **CRITICAL**: Code changes in `src/` are NOT reflected on port 8000 until `npm run build` is executed.
+
 ## Data Flow Examples
 
 ### Example: Process New Excel File

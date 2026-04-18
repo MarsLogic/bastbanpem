@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Dev Mode (Vite + FastAPI)",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "start.bat"],
+      "port": 5173,
+      "description": "Run Developer Mode - Frontend on Vite, Backend on FastAPI"
+    },
+    {
+      "name": "Production Mode",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "start.bat"],
+      "port": 8000,
+      "description": "Run Production Mode - Full build + FastAPI backend"
+    },
+    {
+      "name": "Debug Mode (No License)",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "start.bat"],
+      "port": 8000,
+      "description": "Run Debug Mode - Bypass license check, full backend"
+    }
+  ]
+}

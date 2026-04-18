@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
-  Search, LayoutDashboard, Users, FileText, Users2,
+  Search, FileText, Users2,
   Building2, ShoppingCart, CreditCard, BookOpen,
   FileSearch, Paperclip, TableIcon, Hash,
 } from 'lucide-react';
@@ -10,26 +10,21 @@ import {
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type NavItemId =
-  | 'overview'
-  | 'recipients'
   | { type: 'section'; key: string }
   | { type: 'table';   index: number };
 
 export type NavItemIdString = string; // serialized form used as React key + active check
 
 function serializeId(id: NavItemId): NavItemIdString {
-  if (id === 'overview' || id === 'recipients') return id;
   if (typeof id === 'object' && id.type === 'section') return `section::${id.key}`;
   if (typeof id === 'object' && id.type === 'table')   return `table::${id.index}`;
   return '';
 }
 
 export function parseNavId(s: NavItemIdString): NavItemId {
-  if (s === 'overview')   return 'overview';
-  if (s === 'recipients') return 'recipients';
   if (s.startsWith('section::')) return { type: 'section', key: s.replace('section::', '') };
   if (s.startsWith('table::'))   return { type: 'table',   index: parseInt(s.replace('table::', ''), 10) };
-  return 'overview';
+  return { type: 'section', key: 'HEADER' };
 }
 
 export interface SidebarSection {
@@ -50,7 +45,6 @@ interface InspectorSidebarProps {
   onSelect:        (id: NavItemIdString) => void;
   sections:        SidebarSection[];
   tables:          SidebarTable[];
-  recipientCount:  number;
   hasIntel:        boolean;
 }
 
@@ -104,20 +98,30 @@ const NavItem: React.FC<{
   badge?:   number;
   disabled?: boolean;
   onClick:  () => void;
-}> = ({ id, active, icon, label, meta, badge, disabled = false, onClick }) => (
+}> = ({ id, active, icon, label, meta, badge, disabled = false, onClick }) => {
+  const ref = useRef<HTMLButtonElement>(null);
+  
+  useEffect(() => {
+    if (active && ref.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [active]);
+
+  return (
   <button
+    ref={ref}
     disabled={disabled}
     onClick={onClick}
     className={`w-full flex items-center gap-2.5 px-3 py-2 text-left transition-colors
                 group rounded-none
                 ${active
-                  ? 'bg-blue-50 border-r-2 border-blue-500 text-blue-700'
+                  ? 'bg-slate-200 border-r-2 border-slate-800 text-slate-900'
                   : disabled
                   ? 'opacity-40 cursor-not-allowed'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
   >
-    <span className={active ? 'text-blue-500' : 'text-slate-400 group-hover:text-slate-600'}>
+    <span className={active ? 'text-slate-700' : 'text-slate-400 group-hover:text-slate-600'}>
       {icon}
     </span>
     <span className={`flex-1 min-w-0 text-[11px] font-medium leading-tight truncate
@@ -127,7 +131,7 @@ const NavItem: React.FC<{
     {badge !== undefined && badge > 0 && (
       <Badge
         className={`shrink-0 h-4 px-1 text-[8px] font-bold
-                    ${active ? 'bg-blue-500 hover:bg-blue-500' : 'bg-slate-200 text-slate-600 hover:bg-slate-200'}`}
+                    ${active ? 'bg-slate-800 text-white hover:bg-slate-800' : 'bg-slate-200 text-slate-600 hover:bg-slate-200'}`}
       >
         {badge}
       </Badge>
@@ -136,7 +140,8 @@ const NavItem: React.FC<{
       <span className="text-[9px] text-slate-300 font-mono shrink-0 tabular-nums">{meta}</span>
     )}
   </button>
-);
+  );
+};
 
 // ─── Divider ──────────────────────────────────────────────────────────────────
 
@@ -149,7 +154,6 @@ export const InspectorSidebar: React.FC<InspectorSidebarProps> = ({
   onSelect,
   sections,
   tables,
-  recipientCount,
   hasIntel,
 }) => {
   const [filter, setFilter] = useState('');
@@ -178,7 +182,7 @@ export const InspectorSidebar: React.FC<InspectorSidebarProps> = ({
             placeholder="Filter..."
             value={filter}
             onChange={e => setFilter(e.target.value)}
-            className="h-7 pl-8 text-[11px] bg-slate-50 border-slate-200 focus-visible:ring-blue-400"
+            className="h-7 pl-8 text-[11px] bg-slate-50 border-slate-200 focus-visible:ring-slate-300"
           />
         </div>
       </div>
@@ -186,33 +190,17 @@ export const InspectorSidebar: React.FC<InspectorSidebarProps> = ({
       {/* Nav items — scrollable */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
 
-        {/* CONTRACT INTEL group — always visible, not filterable */}
-        {!q && (
-          <>
-            <GroupHeader label="Contract Intel" />
-            <NavItem
-              id="overview"
-              active={activeId === 'overview'}
-              icon={<LayoutDashboard className="h-3.5 w-3.5 shrink-0" />}
-              label="Overview"
-              onClick={() => onSelect('overview')}
-            />
-            <NavItem
-              id="recipients"
-              active={activeId === 'recipients'}
-              icon={<Users className="h-3.5 w-3.5 shrink-0" />}
-              label="Recipients"
-              badge={recipientCount}
-              disabled={!hasIntel}
-              onClick={() => onSelect('recipients')}
-            />
-          </>
+        {/* Empty state — show hint if no search and no intel */}
+        {!q && !hasIntel && (
+          <div className="px-3 py-4">
+            <p className="text-[10px] text-slate-400 leading-relaxed italic">
+              AI Scan pending. Content will appear here after extraction.
+            </p>
+          </div>
         )}
 
-        {/* SECTIONS group */}
         {showSections && (
           <>
-            <Divider />
             <GroupHeader label="Sections" count={visibleSections.length} />
             {visibleSections.map(section => (
               <NavItem
@@ -255,15 +243,6 @@ export const InspectorSidebar: React.FC<InspectorSidebarProps> = ({
           <p className="px-4 py-6 text-[11px] text-slate-400 italic text-center">
             No items match "{filter}"
           </p>
-        )}
-
-        {/* Sections not yet extracted */}
-        {!q && !hasIntel && (
-          <div className="px-3 py-4">
-            <p className="text-[10px] text-slate-400 leading-relaxed">
-              Run <strong>AI Scan</strong> to extract sections, tables, and recipients.
-            </p>
-          </div>
         )}
 
       </div>

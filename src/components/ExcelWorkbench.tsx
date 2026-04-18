@@ -300,10 +300,10 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
               </CardDescription>
             </div>
             <div className="flex gap-2">
-               <Button variant="outline" size="sm" onClick={() => setShowMapper(true)} className="h-8 gap-2 text-[10px] font-bold border-indigo-200 text-indigo-600 hover:bg-indigo-50">
+               <Button variant="outline" size="sm" onClick={() => setShowMapper(true)} className="h-8 gap-2 text-[10px] font-bold border-slate-200 text-slate-700 hover:bg-slate-50">
                   <ListTree size={12} /> SMART MAPPER
                </Button>
-               <Button variant="outline" size="sm" onClick={clearWorkbench} className="h-8 gap-2 text-[10px] font-bold border-slate-200 text-red-600 hover:bg-red-50">
+               <Button variant="outline" size="sm" onClick={clearWorkbench} className="h-8 gap-2 text-[10px] font-bold border-slate-200 text-slate-700 hover:bg-slate-50">
                   <Trash2 size={12} /> CLEAR
                </Button>
                <Button variant="outline" size="sm" onClick={resetAll} className="h-8 gap-2 text-[10px] font-bold border-slate-200">
@@ -459,7 +459,7 @@ const StatItem = ({ label, value, subValue, icon, status, isStatus }: any) => {
     const statusStyles: any = {
         default: "bg-white border-slate-200 text-slate-900",
         info: "bg-slate-50 border-slate-200 text-slate-900",
-        success: "bg-slate-950 border-black text-white",
+        success: "bg-slate-200 border-slate-300 text-slate-900",
         warning: "bg-white border-zinc-200 text-slate-900"
     };
     return (

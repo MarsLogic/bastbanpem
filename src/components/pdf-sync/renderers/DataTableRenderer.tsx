@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { cleanValue } from '@/lib/dataCleaner';
+import { useMasterDataStore } from '@/lib/masterDataStore';
 
 interface RawTable {
   page?: number;
@@ -22,8 +24,8 @@ const PAGE_SIZE = 50;
 type SortDir = 'asc' | 'desc' | null;
 
 function SortIcon({ dir }: { dir: SortDir }) {
-  if (dir === 'asc')  return <ChevronUp   className="h-3 w-3 text-blue-500 shrink-0" />;
-  if (dir === 'desc') return <ChevronDown className="h-3 w-3 text-blue-500 shrink-0" />;
+  if (dir === 'asc')  return <ChevronUp   className="h-3 w-3 text-slate-700 shrink-0" />;
+  if (dir === 'desc') return <ChevronDown className="h-3 w-3 text-slate-700 shrink-0" />;
   return <ChevronsUpDown className="h-3 w-3 text-slate-300 shrink-0" />;
 }
 
@@ -63,6 +65,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   const [sortCol,  setSortCol]  = useState<string | null>(null);
   const [sortDir,  setSortDir]  = useState<SortDir>(null);
   const [page,     setPage]     = useState(0);
+  const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
 
   const headers = table.headers.length > 0 ? table.headers : inferHeaders(table.rows);
   const normalized = useMemo(() => normalizeRows(headers, table.rows), [table.rows, headers]);
@@ -167,7 +170,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
               {pageRows.map((row, rIdx) => (
                 <tr
                   key={rIdx}
-                  className={`border-b border-slate-100 hover:bg-blue-50/30 transition-colors
+                  className={`border-b border-slate-100 hover:bg-slate-100/30 transition-colors
                               ${rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
                 >
                   <td className="px-3 py-2 text-[9px] font-mono text-slate-400 tabular-nums">
@@ -188,7 +191,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
                                       ${isEmpty ? 'text-slate-300 italic' : 'text-slate-700'}`}
                           title={strVal}
                         >
-                          {isEmpty ? '—' : strVal}
+                          {isEmpty ? '—' : cleanValue(strVal, h, resolveRawAddress)}
                         </div>
                       </td>
                     );

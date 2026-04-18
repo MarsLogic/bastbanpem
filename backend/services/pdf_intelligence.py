@@ -62,6 +62,54 @@ class PDFIntelligence:
         except ValueError:
             return 0.0
 
+    @staticmethod
+    def _format_text_professional(text: str) -> str:
+        if not text:
+            return ""
+        
+        LEGAL_ACRONYMS = {
+            "PT", "PPK", "SSKK", "SSUK", "CV", "TBK", "NPWP", "PPH", "PPN",
+            "SPK", "BAST", "LKPP", "KPA", "API", "NIK", "NIP", "BCA", "BNI", "BRI", "MANDIRI", "BJB"
+        }
+        
+        def format_word(match):
+            word = match.group(0)
+            if word.upper() in LEGAL_ACRONYMS:
+                return word.upper()
+            if word.isupper() or len(word) > 3:
+                return word.capitalize()
+            return word
+
+        return re.sub(r'\b[A-Za-z0-9]+\b', format_word, text)
+
+    @staticmethod
+    def _clean_legal_section(text: str) -> str:
+        if not text:
+            return ""
+        lines = text.split('\n')
+        out_lines = []
+        for line in lines:
+            line_trim = line.strip()
+            # Strip PDF artifacts like page headers/numbers
+            if not line_trim or "halaman" in line_trim.lower() or "#ep-" in line_trim.lower() or line_trim.lower() == "surat pesanan":
+                continue
+            
+            # Apply professional word casing
+            formatted = PDFIntelligence._format_text_professional(line_trim)
+            
+            # Check if it starts with a numbering list like "1. ", "a. ", "1) "
+            has_numbering = re.match(r'^(\d+[\.\)]|[a-zA-Z][\.\)])\s+', formatted)
+            is_already_bullet = formatted.startswith('-') or formatted.startswith('•')
+            is_colon_key = ":" in formatted and len(formatted.split(":")[0]) < 30
+            
+            # If no numbering, no bullet, and not a short key-value pair, it's "free text", so add a bullet point
+            if not has_numbering and not is_already_bullet and not is_colon_key and len(formatted) > 5:
+                formatted = f"• {formatted}"
+                
+            out_lines.append(formatted)
+            
+        return "\n\n".join(out_lines)
+
     def extract_ultra_robust(self, doc: fitz.Document, full_text: str) -> UltraRobustContract:
         # 1. Header Extraction
         order_id = re.search(self.patterns["order_id"], full_text)
@@ -82,11 +130,15 @@ class PDFIntelligence:
         bank_acc = re.search(self.patterns["bank_account_number"], full_text)
         bank_user = re.search(self.patterns["bank_account_name"], full_text)
 
+        # Better scope PPN rate detection to financial section
+        financial_context = full_text[max(0, full_text.find("Ringkasan Pembayaran")):full_text.find("SYARAT-SYARAT UMUM")]
+        if not financial_context.strip(): financial_context = full_text
+
         financials = Financials(
             grand_total=grand_total,
             tax_logic=FinancialTaxLogic(
                 total_tax=total_tax,
-                ppn_rate=0.12 if "12%" in full_text else 0.11 # Intelligent fallback
+                ppn_rate=0.12 if "12%" in financial_context else 0.11 # Intelligent fallback scoped
             ),
             bank_disbursement=BankDisbursement(
                 account_name=self._clean_string(bank_user.group(1).strip() if bank_user else None),
@@ -151,6 +203,14 @@ class PDFIntelligence:
         if reg: specs["registration_number"] = self._clean_string(reg.group(1).strip())
         if tkdn: specs["tkdn"] = self._clean_string(tkdn.group(1).strip())
 
+        sections = self.extract_sections(full_text)
+        cleaned_sections = {}
+        for k, v in sections.items():
+            if k in ["SSKK", "SSUK"]:
+                cleaned_sections[k] = PDFIntelligence._clean_legal_section(self._clean_string(v))
+            else:
+                cleaned_sections[k] = self._clean_string(v)
+
         return UltraRobustContract(
             contract_header=header,
             financials=financials,
@@ -158,7 +218,7 @@ class PDFIntelligence:
             shipment_ledger=ledger,
             technical_specifications=specs,
             full_text=self._clean_string(full_text),
-            sections={k: self._clean_string(v) for k, v in self.extract_sections(full_text).items()}
+            sections=cleaned_sections
         )
 
     def extract_sections(self, full_text: str) -> Dict[str, str]:

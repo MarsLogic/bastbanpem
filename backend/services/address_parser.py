@@ -33,6 +33,7 @@ def _load_reference() -> dict:
     return data
 
 
+@lru_cache(maxsize=1)
 def _build_normalised_lists():
     """Build lowercase lookup lists for fuzzy matching."""
     ref = _load_reference()

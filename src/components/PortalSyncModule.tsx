@@ -317,7 +317,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
           <Button 
             onClick={() => selectedPortalId && runFullAudit(selectedPortalId)} 
             disabled={!selectedPortalId || isLoading || !!activeBatchId}
-            className="h-8 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase px-6 shadow-md shadow-indigo-100"
+            className="h-8 rounded-full bg-black hover:bg-zinc-800 text-white text-[10px] font-black uppercase px-6 shadow-md shadow-slate-300"
           >
             Run Integrity Audit
           </Button>

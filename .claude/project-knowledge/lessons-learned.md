@@ -60,6 +60,17 @@ This document captures what works and what doesn't. AI uses this to make better 
 
 ## Architecture Insights
 
+### Lesson: The Stale Build Confusion (Port 8000 vs 5173)
+**Category:** Architecture / Debugging
+**Context:** AI makes code changes in `src`, browser reloads on Port 8000, but the UI remains old.
+**Insight:** Port 8000 serves the static `dist/` folder via the FastAPI backend. Changes in `src` are NOT visible there until `npm run build` is executed. Port 5173 (Vite Dev Server) shows changes instantly.
+**Action:** Always verify the Port in the browser. Use Port 5173 for development. Mandated `npm run build` in CLAUDE.md for Port 8000 visibility.
+**Date:** 2026-04-17
+
+---
+
+## Architecture Insights
+
 ### Lesson: API Bridge ([UIUX-001]) Prevents Chaos
 **Category:** Architecture  
 **Context:** Early version had React calling FastAPI directly  
@@ -127,7 +138,6 @@ See: `pdf_blob_persistence_pattern.md` memory file + commit 140f46ac
 
 ## Things to Avoid
 
-- ❌ Reading entire files without specifying line ranges
 - ❌ Using `grep` instead of `rg`
 - ❌ Blocking I/O in FastAPI endpoints
 - ❌ Eager loading of large CSV/Excel files
@@ -135,6 +145,7 @@ See: `pdf_blob_persistence_pattern.md` memory file + commit 140f46ac
 - ❌ Hardcoding config values
 - ❌ Forgetting context managers for file handles
 - ❌ Generic exception handling (use custom exceptions)
+- ❌ **Viewing Port 8000 during active development** (use 5173 instead)
 
 ---
 

@@ -31,8 +31,11 @@ This document tracks the milestones and development velocity of the project.
 
 ### 🔴 Milestone 5: Portal Injection (Native Automation)
 - **Objective**: The "Inject to Portal" button.
-- [ ] Build Playwright + Stealth headless driver.
-- [ ] Implement strict "Validation Gate" before injection.
+- ### [UIUX-005] Vertical Stream Layout
+- [x] Full-width PDF section (Top)
+- [x] Sticky Intelligence Workspace (Bottom)
+- [x] Coordinated sticky navigation sidebar
+- [ ] Floating PDF "Peep-hole" overlay
 - [ ] 4GB RAM Optimization for Chromium browser.
 
 ### 🔴 Milestone 6: Professional Reporting

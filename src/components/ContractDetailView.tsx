@@ -23,7 +23,7 @@ interface ContractDetailViewProps {
 }
 
 const DashboardSection = ({ id, icon: Icon, title, subtitle, badge, actions, children, viewportClassName }: any) => (
-  <section id={id} className="admin-section border-slate-200 bg-white shadow-sm rounded-xl overflow-hidden mb-8">
+  <section id={id} className="admin-section !overflow-visible border-slate-200 bg-white shadow-sm rounded-xl mb-8">
     <div className="px-6 py-4 border-b bg-slate-50/50 flex justify-between items-center">
       <div className="flex items-center gap-4">
         <div className="p-2 bg-white rounded-lg border border-slate-200 shadow-sm">
@@ -103,44 +103,31 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
             <ArrowLeft className="h-5 w-5 text-slate-600" />
           </Button>
           <div>
-            <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Workspace Pipeline</div>
+            <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Contract Detail</div>
             <h1 className="text-base font-black text-slate-900 uppercase tracking-tight">{contract.name}</h1>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <NavButton icon={FileText} label="PDF Sync" target="sec-pdf" />
-          <NavButton icon={Server} label="Workbench" target="sec-excel" />
-          <NavButton icon={ShieldCheck} label="Audit" target="sec-audit" className="bg-indigo-50 border-indigo-100 text-indigo-700" />
-          <NavButton icon={ImageIcon} label="Evidence" target="sec-ktp" />
-          <NavButton icon={RefreshCw} label="Portal Sync" target="sec-portal" className="bg-emerald-50 border-emerald-100 text-emerald-700" />
+          <NavButton icon={FileText} label="Contract PDF" target="sec-pdf" />
+          <NavButton icon={Server} label="Recipients" target="sec-excel" />
+          <NavButton icon={ShieldCheck} label="Audit" target="sec-audit" />
+          <NavButton icon={ImageIcon} label="Documents" target="sec-ktp" />
+          <NavButton icon={RefreshCw} label="Portal Sync" target="sec-portal" />
           <div className="w-px h-6 bg-slate-200 mx-2" />
           <Button className="gap-2 bg-black hover:bg-zinc-800 text-white font-bold h-8 px-4 rounded-full shadow-lg text-[10px] uppercase tracking-widest">
-            <Server className="h-3.5 w-3.5" /> Portal Injection
+            <Server className="h-3.5 w-3.5" /> Submit to Portal
           </Button>
         </div>
       </header>
 
       <div className="flex-1 overflow-auto p-8 max-w-[1600px] mx-auto w-full space-y-2 pb-24 scroll-smooth">
         
-        {/* Elite Contract Summary Grid */}
-        <ContractSummary metadata={contract.metadata || {
-            nomor_kontrak: contract.nomorKontrak,
-            tanggal_kontrak: contract.tanggalKontrak,
-            vendor_name: contract.namaPenyedia,
-            satker: "PSP - KEMENTAN"
-        }} />
-
-        <DashboardSection 
+        <DashboardSection
           id="sec-pdf"
           icon={FileText}
-          title="1. Master PDF Sync"
-          subtitle="Contract Intelligence & Extraction"
-          actions={
-            <Button variant="outline" size="sm" className="h-7 gap-2 rounded-full border-slate-200 text-[9px] font-black uppercase">
-              <FileUp className="h-3 w-3 text-slate-400"/> Attach Contract
-            </Button>
-          }
+          title="1. Contract PDF"
+          subtitle="Document Viewer & Data Extraction"
         >
           <PdfSyncModule 
             contract={contract} 
@@ -151,8 +138,8 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         <DashboardSection 
           id="sec-excel"
           icon={Server}
-          title="2. Distribution Workbench"
-          subtitle="Data Cleaning & Auto-Balancing"
+          title="2. Recipients"
+          subtitle="Distribution Data & Allocation"
         >
           <ExcelWorkbench 
             recipients={contract.recipients}
@@ -167,8 +154,8 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         <DashboardSection 
           id="sec-audit"
           icon={ShieldCheck}
-          title="3. Integrity Audit"
-          subtitle="Reconciliation Discrepancy Report"
+          title="3. Audit & Reconciliation"
+          subtitle="Data Discrepancy Report"
         >
           <div className="p-6">
             <ReconciliationTab contract={contract} />
@@ -179,8 +166,8 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
             <DashboardSection 
               id="sec-ktp"
               icon={ImageIcon}
-              title="4. Identity Vault"
-              subtitle="KTP Auto-Matching & Tagging"
+              title="4. ID Documents (KTP)"
+              subtitle="KTP Matching & Verification"
               viewportClassName="min-h-[600px]"
             >
               <ImageTaggerWorkspace 
@@ -197,8 +184,8 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
             <DashboardSection 
               id="sec-proof"
               icon={ImageIcon}
-              title="5. Logistical Proof"
-              subtitle="Photo Delivery Binding"
+              title="5. Delivery Photos"
+              subtitle="Photo Evidence & Binding"
               viewportClassName="min-h-[600px]"
             >
               <ImageTaggerWorkspace 
@@ -216,14 +203,14 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         <DashboardSection 
           id="sec-docs"
           icon={Scissors}
-          title="6. Expert Slicer & Report Factory"
-          subtitle="Generate BASTB, SJ, and Uji LAB Bundles"
+          title="6. Document Generator"
+          subtitle="Generate BASTB, SJ, and Lab Reports"
           actions={
             <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="h-7 gap-2 rounded-full border-slate-200 text-[9px] font-black uppercase">
                   <Printer className="h-3 w-3 text-slate-400"/> Batch Print
                 </Button>
-                <Button size="sm" className="h-7 gap-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] font-black uppercase shadow-md shadow-indigo-200">
+                <Button size="sm" className="h-7 gap-2 rounded-full bg-black hover:bg-zinc-800 text-white text-[9px] font-black uppercase shadow-md shadow-slate-300">
                   <FileCheck className="h-3 w-3"/> Bundle All
                 </Button>
             </div>
@@ -235,8 +222,7 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
              </div>
              <div className="bg-slate-50/30 overflow-hidden flex flex-col">
                 <div className="px-6 py-3 border-b flex justify-between items-center bg-white/50">
-                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Master Slicer Console</span>
-                   <Badge variant="outline" className="text-[9px] font-black border-indigo-200 text-indigo-600 bg-indigo-50 px-3">ELITE MODE</Badge>
+                   <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Document Slicer</span>
                 </div>
                 <div className="flex-1 overflow-hidden">
                    <SlicerWorkspace farmers={farmers} setFarmers={setFarmersProxyByNik} />
@@ -248,8 +234,8 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         <DashboardSection 
           id="sec-portal"
           icon={RefreshCw}
-          title="7. Portal Intelligence & Sync"
-          subtitle="Bidirectional Government Data Reconciliation"
+          title="7. Portal Sync"
+          subtitle="Government Portal Data Submission"
           viewportClassName="min-h-[600px]"
         >
           <PortalSyncModule 

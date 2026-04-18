@@ -173,11 +173,11 @@ export const LegalAccordionRenderer: React.FC<LegalAccordionRendererProps> = ({ 
                            hover:bg-slate-50 transition-colors"
               >
                 {isOpen
-                  ? <ChevronDown  className="h-4 w-4 text-blue-500 shrink-0" />
+                  ? <ChevronDown  className="h-4 w-4 text-slate-700 shrink-0" />
                   : <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
                 }
                 <span className={`text-[12px] font-bold leading-snug flex-1
-                                  ${isOpen ? 'text-blue-700' : 'text-slate-800'}`}>
+                                  ${isOpen ? 'text-slate-700' : 'text-slate-800'}`}>
                   {q ? (
                     // Highlight search term in title
                     highlightText(article.title, q)
