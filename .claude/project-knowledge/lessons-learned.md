@@ -148,6 +148,16 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Action**: Built `address_parser.py` using `rapidfuzz` + Kemendagri Master Data.
 **Consequences**: Catching 90% of typo-mangled locations.
 
+## 🛠️ Tooling & CLI Golden Syntax (Anti-Friction Registry)
+
+| Component/Tool | Wrong/Invalid Format | Golden/Correct Format (This Env) | Why? |
+| :--- | :--- | :--- | :--- |
+| **Command Chaining** | `cmd1 && cmd2` | `cmd1; cmd2` | PowerShell does not support `&&` for sequencing. |
+| **Search Engine** | `rtk grep` / `grep` | `rtk rg` (ripgrep) | 100x faster and native to the expert stack. |
+| **Framer Motion** | `mode="white"` | `mode="wait"` | Typos in props block `tsc` and freeze the `dist` folder. |
+| **File Reading** | `view_file` (Full File) | `view_file` (Range: 50L) | Compliance with the **Surgical Mandate** (Token ROI). |
+| **Pathing** | `/abs/path/` (Linux) | `C:\Users\...` (Windows) | System is Windows; uses backslashes and drive letters. |
+
 ---
 
 ## 📍 Rules & Best Practices (Summary)
