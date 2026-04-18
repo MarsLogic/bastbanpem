@@ -136,10 +136,12 @@ export const useMasterDataStore = create<MasterDataState>()(
         const cacheKey = `${input.provinsi}|${input.kabupaten}|${input.kecamatan}|${input.desa}`;
         if (resolutionCache.has(cacheKey)) return resolutionCache.get(cacheKey)!;
 
-        // One-time Indexing check (Very important for performance)
+        // One-time Indexing check (Hardened for expert fuzzy matching)
         if (indexedSearchStrings.length !== locations.length) {
             indexedSearchStrings = locations.map(loc => 
-                (loc.provinsi + " " + loc.kabupaten + " " + loc.kecamatan + " " + loc.desa).toLowerCase()
+                (loc.provinsi + loc.kabupaten + loc.kecamatan + loc.desa)
+                  .toLowerCase()
+                  .replace(/[^a-z0-9]/g, '')
             );
         }
 
@@ -177,18 +179,20 @@ export const useMasterDataStore = create<MasterDataState>()(
         let bestMatch: LocationMaster | null = null;
         let bestScore = -1;
 
-        // ACCELERATION: Filter search space using pre-calculated strings
+        // ACCELERATION: Filter search space using pre-calculated hardened strings
         const finalists: number[] = [];
+        const hardenedTokens = allInputTokens.map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(t => t.length >= 2);
+        
         for (let i = 0; i < indexedSearchStrings.length; i++) {
             const searchStr = indexedSearchStrings[i];
-            let hasAnyToken = false;
-            for (const t of allInputTokens) {
+            let hits = 0;
+            for (const t of hardenedTokens) {
                 if (searchStr.includes(t)) {
-                    hasAnyToken = true;
-                    break;
+                    hits++;
+                    if (hits >= 1) break; // Early exit for performance
                 }
             }
-            if (hasAnyToken) finalists.push(i);
+            if (hits >= 1) finalists.push(i);
         }
 
         // If even with tokens we have too many, or 0, we can safely prune.
