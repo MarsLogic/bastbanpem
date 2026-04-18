@@ -238,15 +238,20 @@ class PDFIntelligence:
     def extract_lampiran_tables(self, doc: fitz.Document) -> List[Dict[str, Any]]:
         """
         Extracts and merges fragmented tables from Lampiran pages into a single master table.
-        Uses heuristics to discard UI/Layout artifacts and merge truly tabular rows.
+        Uses Pandas heuristics to forward-fill merged columns and drop UI artifacts.
         """
+        import pandas as pd
+        import numpy as np
+
         master_table = {
             "page": None,
             "page_end": None,
             "headers": [],
             "rows": [],
-            "method": "Intelligently Merged"
+            "method": "Intelligently Merged with Multi-Page Forward Fill"
         }
+
+        accumulated_dfs = []
 
         for page_idx, page in enumerate(doc):
             tabs = page.find_tables()
@@ -255,56 +260,97 @@ class PDFIntelligence:
                 if df.empty:
                     continue
 
-                # Strip whitespace and capitalize for clean professional formatting
-                headers = [self._clean_string(str(h)).title() for h in df.columns]
+                # Strip whitespace and normalize headers for structural detection
+                headers = [str(h).replace('\n', '').strip().lower() for h in df.columns]
                 
-                # Rule 1: A legitimate table must have multiple columns, NOT just one
+                # A legitimate table must have multiple columns
                 if len(headers) < 2:
                     continue
 
-                # Remove aggressive > 50 header rule, because "poktan/gapoktan/..." can be longer than 50 chars.
+                headers_lower = " ".join(headers)
 
-                headers_lower = " ".join(headers).lower()
-
-                # Rule 3: We specifically want the product/distribution list, NOT the payment summary block
+                # Specifically exclude payment summary blocks
                 if "pembayaran" in headers_lower and ("estimasi" in headers_lower or "total" in headers_lower):
                     continue
 
-                # Rule 4: Must have some keyword identifying it as a product/catalog or delivery distribution table
-                # Typical Lampiran data columns: No, Produk, Varian, Jumlah, Harga, Total, Catatan
-                # Or Delivery blocks: Kabupaten, Kecamatan, Desa, Poktan, Kelompok, NIK, Luas
+                # Must contain some distribution-table identifying keyword
                 valid_keywords = ["produk", "varian", "jumlah", "harga", "catatan", "nama", "kabupaten", "kecamatan", "desa", "poktan", "nik", "ketua", "luas"]
-                
                 is_valid_header = any(k in headers_lower for k in valid_keywords)
 
-                # Allow continuation pages (where PyMuPDF gives Col0, Col1...) if the column count matches
-                is_continuation = bool(master_table["headers"]) and len(headers) == len(master_table["headers"]) and "col0" in headers_lower
+                # Check for continuation pages where headers might just be PyMuPDF default Col0, Col1...
+                is_continuation = bool(accumulated_dfs) and len(headers) == len(accumulated_dfs[0].columns) and "col0" in headers_lower
 
                 if not is_valid_header and not is_continuation:
                     continue
 
-                # This is a valid chunk of the Lampiran table
-                if not master_table["headers"] and is_valid_header:
-                    master_table["headers"] = headers
+                if master_table["page"] is None:
                     master_table["page"] = page_idx + 1
-
                 
                 master_table["page_end"] = page_idx + 1
 
-                for _, row in df.iterrows():
-                    cleaned_row = {}
-                    for i, (col_name, val) in enumerate(row.items()):
-                        clean_val = self._clean_string(str(val))
-                        # Title-case all-caps values for better readability without forcing lowercase everywhere
-                        if len(clean_val) > 2 and clean_val.isupper():
-                            clean_val = clean_val.title()
-                        
-                        if i < len(master_table["headers"]):
-                            cleaned_row[master_table["headers"][i]] = clean_val
+                # Align columns for seamless pd.concat accumulation
+                if not accumulated_dfs:
+                    df.columns = headers
+                else:
+                    df.columns = accumulated_dfs[0].columns
                     
-                    if any(cleaned_row.values()):
-                        master_table["rows"].append(cleaned_row)
+                accumulated_dfs.append(df)
 
+        if not accumulated_dfs:
+            return []
+            
+        # ─── 1. Squash DataFrames Together ───
+        monolithic_df = pd.concat(accumulated_dfs, ignore_index=True)
+        
+        # ─── 2. Clean values ───
+        monolithic_df = monolithic_df.fillna('')
+        for col in monolithic_df.columns:
+            monolithic_df[col] = monolithic_df[col].apply(lambda x: str(x).replace('\n', ' ').strip() if str(x).lower() != 'nan' else '')
+            
+        # ─── 3. Detect and Merge Broken Columns ───
+        # Frequently, 'Kabupaten' gets split to 'Kabup' and 'Aten' vertically due to PDF lines
+        new_cols = list(monolithic_df.columns)
+        if 'kabup' in new_cols and 'aten' in new_cols:
+            k_idx = new_cols.index('kabup')
+            a_idx = new_cols.index('aten')
+            monolithic_df.iloc[:, k_idx] = monolithic_df.iloc[:, k_idx] + monolithic_df.iloc[:, a_idx]
+            new_cols[k_idx] = 'kabupaten'
+            monolithic_df = monolithic_df.drop(monolithic_df.columns[a_idx], axis=1)
+            new_cols.pop(a_idx)
+            monolithic_df.columns = new_cols
+
+        # ─── 4. Forward Fill Region Hierarchy ───
+        # In multi-page distribution tables, regions are listed once and left blank until they change
+        ffill_targets = ['provinsi', 'kabupaten', 'kecamatan', 'desa']
+        for target in ffill_targets:
+            if target in monolithic_df.columns:
+                monolithic_df[target] = monolithic_df[target].replace('', np.nan)
+                monolithic_df[target] = monolithic_df[target].ffill().fillna('')
+                
+        # ─── 5. Filter Array Junk ───
+        # Discard sub-total or total rows based on user directive
+        mask_no_total = ~monolithic_df.apply(lambda row: row.astype(str).str.lower().str.contains('total').any(), axis=1)
+        monolithic_df = monolithic_df[mask_no_total]
+        
+        # Ensure row represents actual distribution recipient (must have name or NIK)
+        identifier_cols = [c for c in monolithic_df.columns if 'poktan' in c or 'gapoktan' in c or 'kelompok' in c or 'nik' in c or 'ketua' in c or 'nama' in c or 'produk' in c]
+        if identifier_cols:
+            mask_has_data = monolithic_df[identifier_cols].apply(lambda row: any(str(val).strip() for val in row), axis=1)
+            monolithic_df = monolithic_df[mask_has_data]
+            
+        # Title-case all-caps values for better readability without destroying lowercase
+        def format_val(v):
+            v = str(v).strip()
+            return v.title() if len(v) > 2 and v.isupper() else v
+            
+        master_table["headers"] = [h.title() for h in monolithic_df.columns]
+        
+        for _, row in monolithic_df.iterrows():
+            cleaned_row = {}
+            for col_name, val in row.items():
+                cleaned_row[str(col_name).title()] = format_val(val)
+            master_table["rows"].append(cleaned_row)
+            
         if master_table["rows"]:
             return [master_table]
             
