@@ -235,6 +235,44 @@ changes
 
 ---
 
+## Intelligence & Data Repair Patterns
+
+### 1. The "Deep Healing" Phone Pattern
+**Standard**: All Indonesian phone numbers must be normalized to a standard `08...` format, even when truncated or double-prefixed.
+```typescript
+// ✅ DO THIS (src/lib/dataCleaner.ts)
+// 1. Detect common truncated prefixes (missing '8') in 10-digit segments
+const mobileTruncatedPrefixes = ['1', '2', '3', '5', '7', '9'];
+if (clean.length === 10 && mobileTruncatedPrefixes.includes(clean[0])) {
+    clean = '8' + clean;
+}
+// 2. Format to 08...
+return `0${clean}`;
+```
+- Restores all major carriers (Telkomsel, Indosat, XL, etc.).
+- Eliminates "Double 62" artifacts.
+
+### 2. High Confidence Regional Bridge
+**Standard**: Resolve fragmented location data by bridging missing tiers when top and bottom matches are strong.
+- If **Kabupaten** confidence > 0.6 AND **Desa** confidence > 0.6:
+- **FORCE** resolve the **Kecamatan** from the master dataset bridge.
+- **Why**: Prevents UI "blank spots" caused by typos in a single tier.
+
+### 3. Reactive Data Hydration
+**Standard**: Background intelligence components (Triangulation) MUST observe the `isLoaded` state of master data stores.
+```typescript
+// ✅ DO THIS
+const { isLoaded } = useMasterDataStore();
+const results = useMemo(() => {
+    if (!isLoaded) return initial_data;
+    return triangulate(data);
+}, [data, isLoaded]); // Reactive dependency on load state
+```
+- Provides visual feedback ("Analyzing Locations...") during hydration.
+- Automatically re-calculates data once the 83k-record master set is ready.
+
+---
+
 ## Checklist Before Submitting Code
 
 - [ ] No hardcoded config values

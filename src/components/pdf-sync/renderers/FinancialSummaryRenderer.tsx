@@ -249,31 +249,29 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ 
               const ppn = Math.round(dpp * taxRate);
               const gross = dpp + ppn;
               return (
-                <tr key={idx} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
+                <tr key={idx} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}>
                   <td className="px-3 py-2.5 font-mono text-slate-400 tabular-nums text-[10px]">{item.shipment_id}</td>
                   <td className="px-3 py-2.5">
-                    <div className="font-bold text-slate-800 leading-snug truncate max-w-[150px]">{item.recipient.name}</div>
+                    <div className="font-bold text-slate-900 leading-snug truncate max-w-[150px]">{item.recipient.name}</div>
                   </td>
                   <td className="px-3 py-2.5">
-                    <div className="text-[10px] font-mono text-slate-500 tabular-nums">{formatPhone(item.recipient.phone)}</div>
+                    <div className="text-[11px] font-mono text-slate-500 font-medium tabular-nums">{formatPhone(item.recipient.phone)}</div>
                   </td>
-                  <td className="px-3 py-2.5">
-                    <div className="text-[10px] font-black uppercase text-slate-500 whitespace-nowrap">
-                      {item.destination.provinsi ? cleanValue(item.destination.provinsi, 'provinsi') : '—'}
-                    </div>
+                  <td className="px-3 py-2.5 text-slate-700 whitespace-nowrap">
+                    {item.destination.provinsi ? cleanValue(item.destination.provinsi, 'provinsi') : '—'}
                   </td>
                   <td className="px-3 py-2.5 text-slate-600 truncate max-w-[120px]">
                     {item.destination.kabupaten ? cleanValue(item.destination.kabupaten, 'kabupaten') : '—'}
                   </td>
-                  <td className="px-3 py-2.5 text-slate-500 truncate max-w-[100px]">
+                  <td className="px-3 py-2.5 text-slate-600 truncate max-w-[100px]">
                     {item.destination.kecamatan ? cleanValue(item.destination.kecamatan, 'kecamatan') : '—'}
                   </td>
-                  <td className="px-3 py-2.5 text-slate-400 truncate max-w-[100px] text-[10px]">
+                  <td className="px-3 py-2.5 text-slate-500 truncate max-w-[100px]">
                     {item.destination.desa ? cleanValue(item.destination.desa, 'desa') : '—'}
                   </td>
                   <td className="px-3 py-2.5 text-right font-mono text-slate-600 tabular-nums">{fmt(dpp)}</td>
                   <td className="px-3 py-2.5 text-right font-mono text-slate-400 tabular-nums">{fmt(ppn)}</td>
-                  <td className="px-3 py-2.5 text-right font-mono font-black text-slate-900 tabular-nums">{fmt(gross)}</td>
+                  <td className="px-3 py-2.5 text-right font-mono font-bold text-slate-900 tabular-nums">{fmt(gross)}</td>
                 </tr>
               );
             })}

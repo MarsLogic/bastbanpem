@@ -244,7 +244,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
                         style={{ maxWidth: 300 }}
                       >
                         <div
-                          className={`truncate text-[11px]
+                          className={`truncate text-[11px] leading-relaxed
                                       ${isEmpty ? 'text-slate-300 italic' : 'text-slate-700'}`}
                           title={strVal}
                         >
