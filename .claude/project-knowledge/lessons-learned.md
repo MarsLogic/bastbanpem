@@ -83,6 +83,13 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Consequences**: Standardized, predictable clause IDs regardless of OCR inconsistencies.
 **Expert Insight**: Document "Dialects" vary; build normalization transforms to force a project-specific "Golden Format".
 
+### Improvement: [LEARN-014] Reflexive Tooling Stabilization
+**Context**: Tooling calls (like `rtk`, `grep`, or `tsc`) occasionally fail due to environment-specific syntax or version mismatches. Without documentation, these errors are often repeated in new sessions.
+**Action**: Established a **Zero-Repeat Failure** mandate. Any syntax-based tool failure must be converted into a `[LEARN]` entry that defines the "Golden Format" for that tool in this repository.
+**Risk Identified**: Categorizing these as "minor glitches" leads to recurring friction. High-fidelity agents must treat tooling reliability as a primary code quality metric.
+**Consequences**: Continual hardening of the agent's interaction with the local OS and toolchain.
+**Expert Insight**: The agent's ability to drive the CLI is the foundation of the workbench. Document every "ParserError" as a permanent architectural boundary.
+
 ### Improvement: [LEARN-013] Windows Shell Reliability (RTK vs. PowerShell)
 **Context**: Chaining commands with `&&` (a bash-ism) fails in PowerShell with a `ParserError`. When using `rtk` as a prefix, the agent must adhere to Windows-specific command separators.
 **Action**: Codified the mandatory use of `;` for command chaining in `CLAUDE.md`. 
