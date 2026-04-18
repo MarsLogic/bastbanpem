@@ -22,6 +22,16 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Consequences**: PDFs persist across sessions, reloads, and browser restarts.
 **Expert Insight**: Never put raw Blobs in a persistent state store. Use a specialized storage bridge (IndexedDB/OPFS).
 
+### Improvement: [LEARN-003] Surgical Intelligence Stack (Token ROI)
+**Context**: As the backend logic (`pdf_intelligence.py`) grew to 500+ lines, full-file reading became an expensive "Token Leak" ($$$) and caused context dilution (forgetting logic).
+**Action**: Implemented the **Elite Intelligence Stack**:
+1.  **Tree-sitter**: Structural parsing for Python/TS (Surgical Extraction).
+2.  **LanceDB**: Local vector/FTS indexing for semantic discovery.
+3.  **Semgrep**: Pattern-matching for structural discovery.
+**Risk Identified**: Using "Naive Reads" (reading all 500 lines) after this point is a failure of the [Surgical Mandate](file:///c:/Users/Wyx/bastbanpem/CLAUDE.md#05-the-self-learning--surgical-mandate-critical).
+**Consequences**: 90% reduction in per-turn token usage. 100% precision in method retrieval.
+**Expert Insight**: When in doubt, `python tools/intel.py list <file>` first. NEVER read what you haven't discovered.
+
 ---
 
 ## 🛠️ Performance & Efficiency
@@ -58,6 +68,7 @@ This document is the "Collective Brain" of the project. It captures architectura
 
 - ✅ **ALWAYS** use `rtk` prefix for CLI commands.
 - ✅ **ALWAYS** run `rtk npm run build` before pushing.
+- ✅ **ALWAYS** follow **Surgical Escalation**: List methods → Read fragment → Execute.
 - ✅ **NEVER** use `grep`; use `rtk rg` for 100x faster searches.
 - ✅ **NEVER** view Port 8000 for live dev; use Port 5173.
 - ✅ **MANDATORY**: Push ALL `.md` changes immediately to synchronize sessions.

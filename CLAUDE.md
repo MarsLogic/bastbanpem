@@ -16,12 +16,21 @@ Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 
 
 ---
 
-## 0.5 The Self-Learning Mandate (CRITICAL)
+## 0.5 The Self-Learning & Surgical Mandate (CRITICAL)
 
-To ensure this project becomes "smarter" every session, you MUST contribute to the collective intelligence:
+### 🧠 Cumulative Self-Learning
+1.  **Strict CRC Protocol**: Every session MUST contribute to `.claude/project-knowledge/lessons-learned.md`.
+2.  **Immediate Pull/Push**: Documentation (CLAUDE.md, lessons-learned.md) MUST be synchronized to GitHub immediately after any rule update or major [LEARN] entry.
 
-1. **Document Every Major Fix**: After every successful feature or hardening task, update `.claude/project-knowledge/lessons-learned.md`.
-2. **The High-Fidelity Structure**: Use the following "Expert Format" for learning entries:
+### ✂️ Surgical Context (Token ROI)
+1.  **Surgical Escalation**: NEVER read a full file > 200 lines if a specific method is the target.
+2.  **Tooling Protocol**: 
+    -   **Discovery**: `python tools/intel.py list <file>` to map method boundaries.
+    -   **Capture**: `python tools/intel.py read <file> <method>` to ingest ONLY the required code.
+    -   **Intelligence**: `python tools/indexer.py search <query>` to find logic snippets across the codebase.
+3.  **Caveman Ingestion**: For large logs or text files, use a scrubbing script to strip noise (headers, repeated metadata) BEFORE ingestion to prevent context pollution.
+
+**The High-Fidelity Structure**: Use the following "Expert Format" for learning entries:
    ```markdown
    ### Improvement: [LEARN-###] Title
    **Context**: Why was this needed? State of the system before the fix.
