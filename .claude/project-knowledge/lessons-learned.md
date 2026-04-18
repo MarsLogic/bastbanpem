@@ -83,6 +83,13 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Consequences**: Standardized, predictable clause IDs regardless of OCR inconsistencies.
 **Expert Insight**: Document "Dialects" vary; build normalization transforms to force a project-specific "Golden Format".
 
+### Improvement: [LEARN-012] Operational UI Sanitization (Meta Badge Removal)
+**Context**: Table views included technical metadata badges (e.g., `p.13`, `Ultra-Clean v2`). While useful for debugging, they represented "Fancy Noise" that cluttered the UI for administrative users.
+**Action**: Removed meta-badge rendering logic from `DataTableRenderer.tsx` and sanitized the call sites in `DocumentView.tsx`.
+**Risk Identified**: Disabling these badges globally might make it harder to trace the source page of a table during developer debugging. Logic is preserved in the data structure, only hidden from the UI.
+**Consequences**: A cleaner, operational interface focused strictly on data content.
+**Expert Insight**: Professional SaaS UIs for admin users should prioritize "Information Density" over "System Visibility." Hide the "Under the Hood" details to maintain an expert, focused workspace.
+
 ### Improvement: [LEARN-011] SVG-Only Branding (Favicon ROI)
 **Context**: Project favicons are often generic React icons or missing entirely. Adding external `.ico` or `.png` assets adds deployment complexity and asset-missing risks.
 **Action**: Implemented an inline, data-URI SVG favicon in `index.html`. Used a Slate-900 rounded square (`rx='8'`) and a bold, high-contrast 'B' glyph centered at high precision (`y='21.5'`).
