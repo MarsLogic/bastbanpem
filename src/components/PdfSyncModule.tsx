@@ -447,21 +447,30 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
   // ── Handle PDF file selection ─────────────────────────────────────────────
   const handleFileSelect = useCallback(async (file: File) => {
-    if (blobUrl) URL.revokeObjectURL(blobUrl);
-    const url = URL.createObjectURL(file);
-    setBlobUrl(url);
-    setPdfError(null);
-    onUpdate({
-      contractPdfPath: file.name,
-      pdfBlob:         file,
-      ultraRobust:     undefined,
-      sections:        {},
-      fullText:        '',
-      tables:          [],
-      deliveryBlocks:  [],
-      recipients:      [],
-    });
-    await savePdfBlob(contract.id, file, file.name);
+    setIsExtracting(true); // [UIUX-016] Show intelligence pulse immediately
+    try {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      const url = URL.createObjectURL(file);
+      setBlobUrl(url);
+      setPdfError(null);
+      
+      onUpdate({
+        contractPdfPath: file.name,
+        pdfBlob:         file,
+        ultraRobust:     undefined,
+        sections:        {},
+        fullText:        '',
+        tables:          [],
+        deliveryBlocks:  [],
+        recipients:      [],
+      });
+      
+      await savePdfBlob(contract.id, file, file.name);
+      
+    } finally {
+      setIsExtracting(false);
+    }
+
     toast.info(`PDF loaded: ${file.name}`, {
       style: {
         backgroundColor: '#6b7280',
@@ -618,13 +627,34 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
 
   // ── Active content ────────────────────────────────────────────────────────
   const renderContent = () => {
-    // If we are currently scanning/extracting, show the premium loader
+    // 1. Scanning/Hydrating State
     if (isExtracting || isHydrating) {
       return <ScanningLoader />;
     }
 
-    // Sections and tables → unified scrollable document view.
-    // Clicking a sidebar item scrolls to that section/table; all content visible in one page.
+    // 2. Ready to Scan (PDF attached but no intelligence extracted)
+    const hasData = (Object.keys(contract.sections ?? {}).length > 0) || (contract.tables ?? []).length > 0;
+    if (!hasData) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[500px] p-8 text-center bg-slate-50/20 backdrop-blur-sm">
+          <div className="w-20 h-20 rounded-3xl bg-white shadow-xl shadow-slate-200 flex items-center justify-center mb-6 border border-slate-100">
+            <Zap className="h-10 w-10 text-slate-300 animate-pulse" />
+          </div>
+          <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Intelligence Ready</h3>
+          <p className="text-[13px] text-slate-500 max-w-sm leading-relaxed mb-8 font-medium">
+            Contract PDF is securely loaded. Please trigger the <span className="text-slate-900 font-black">PDF SCAN</span> above to reconstruct the document structure and extract SSKK articulations.
+          </p>
+          <Button 
+            onClick={handleAutoExtract}
+            className="h-12 px-8 bg-slate-900 hover:bg-black text-white rounded-xl shadow-xl shadow-slate-300 transition-all active:scale-95 flex items-center gap-2"
+          >
+            <Zap className="h-4 w-4 fill-white" /> Launch Intelligence Engine
+          </Button>
+        </div>
+      );
+    }
+
+    // 3. Document View
     return (
       <DocumentView
         sections={contract.sections ?? {}}

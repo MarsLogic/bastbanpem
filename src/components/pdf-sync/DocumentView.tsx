@@ -363,15 +363,14 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
 
   if (!hasSections && !hasTables) {
     return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex items-center justify-center p-16 text-center"
-      >
-        <p className="text-[12px] text-slate-400 italic">
-          No content extracted yet. Run PDF Scan to populate sections and tables.
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-12">
+        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
+          <FileText className="h-6 w-6 text-slate-300" />
+        </div>
+        <p className="text-[12px] text-slate-400 font-medium max-w-[200px] leading-relaxed italic">
+          No displayable sections available. Run Intelligence Scan to populate.
         </p>
-      </motion.div>
+      </div>
     );
   }
 
