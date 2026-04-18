@@ -132,10 +132,17 @@ export function formatPhone(raw: string): string {
   if (clean.startsWith('62')) clean = clean.substring(2);
   if (clean.startsWith('0')) clean = clean.substring(1);
 
-  // 4. SELF-HEALING: Detect common truncated prefixes (Telkomsel 853 -> 53)
-  // If we have 10 digits starting with '53', it's almost certainly a mangled Telkomsel '853'
-  if (clean.length === 10 && clean.startsWith('53')) {
-    clean = '8' + clean;
+  // 4. SELF-HEALING: Detect common truncated prefixes (e.g. 53... instead of 853...)
+  // In previous versions, numbers were truncated to 10 digits, losing the leading '8'.
+  // Mobile prefixes: 81x, 82x, 83x, 85x, 87x, 88x, 89x.
+  // Truncated: 1x, 2x, 3x, 5x, 7x, 8x, 9x
+  const mobileTruncatedPrefixes = ['1', '2', '3', '5', '7', '8', '9'];
+  if (clean.length === 10 && mobileTruncatedPrefixes.includes(clean[0])) {
+    // If it starts with '8' and is 10 digits, it's already a valid sequence (e.g. 812...)
+    // But if it starts with 1, 2, 3, 5, 7, 9, it needs the '8' restored.
+    if (clean[0] !== '8') {
+      clean = '8' + clean;
+    }
   }
   
   // 5. Format based on sequence
