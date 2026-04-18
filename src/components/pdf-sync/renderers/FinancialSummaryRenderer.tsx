@@ -261,9 +261,6 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
                     <div className="text-[10px] font-mono text-slate-500 tabular-nums">{formatPhone(item.recipient.phone)}</div>
                   </td>
                   <td className="px-3 py-2.5">
-                    <div className="text-[10px] font-mono text-slate-500 tabular-nums">{formatPhone(item.recipient.phone)}</div>
-                  </td>
-                  <td className="px-3 py-2.5">
                     <div className="text-[10px] font-black uppercase text-slate-500 whitespace-nowrap">
                       {item.destination.provinsi ? cleanValue(item.destination.provinsi, 'provinsi') : '—'}
                     </div>
