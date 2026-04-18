@@ -195,12 +195,6 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
           </div>
         )}
         <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
-          {showMeta && table.page && (
-            <Badge variant="outline" className="text-[9px] h-5">p.{table.page}</Badge>
-          )}
-          {showMeta && table.method && (
-            <Badge variant="outline" className="text-[9px] h-5">{table.method}</Badge>
-          )}
           <Badge variant="secondary" className="text-[10px] h-5 font-mono">
             {filtered.length}/{normalized.length} rows · {headers.length} cols
           </Badge>
