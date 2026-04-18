@@ -2,7 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, FileDown } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { cleanValue } from '@/lib/dataCleaner';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 
@@ -19,7 +20,8 @@ interface DataTableRendererProps {
   showMeta?: boolean;
 }
 
-const PAGE_SIZE = 50;
+// Initial default
+const DEFAULT_PAGE_SIZE = 20;
 
 type SortDir = 'asc' | 'desc' | null;
 
@@ -64,7 +66,8 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   const [search,   setSearch]   = useState('');
   const [sortCol,  setSortCol]  = useState<string | null>(null);
   const [sortDir,  setSortDir]  = useState<SortDir>(null);
-  const [page,     setPage]     = useState(0);
+  const [pageSize,  setPageSize]  = useState<number | 'all'>(DEFAULT_PAGE_SIZE);
+  const [page,      setPage]      = useState(0);
   const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
 
   const headers = table.headers.length > 0 ? table.headers : inferHeaders(table.rows);
@@ -97,11 +100,19 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
     });
   }, [filtered, sortCol, sortDir]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-  const pageRows   = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const actualPageSize = pageSize === 'all' ? sorted.length : pageSize;
+  const totalPages = Math.max(1, Math.ceil(sorted.length / actualPageSize));
+  const pageRows   = sorted.slice(page * actualPageSize, (page + 1) * actualPageSize);
 
-  // Reset to page 0 when filter changes
-  React.useEffect(() => { setPage(0); }, [search, sortCol, sortDir]);
+  // Reset to page 0 when filter or page size changes
+  React.useEffect(() => { setPage(0); }, [search, sortCol, sortDir, pageSize]);
+
+  const handleExportExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(normalized);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Lampiran Data');
+    XLSX.writeFile(workbook, `lampiran_data_${new Date().getTime()}.xlsx`);
+  };
 
   if (headers.length === 0) {
     return <p className="text-sm text-slate-400 italic p-4">No columns detected in this table.</p>;
@@ -132,6 +143,16 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
           <Badge variant="secondary" className="text-[10px] h-5 font-mono">
             {filtered.length}/{normalized.length} rows · {headers.length} cols
           </Badge>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportExcel}
+            className="h-7 text-[10px] gap-1.5 px-2 border-slate-200 hover:bg-slate-100"
+          >
+            <FileDown className="h-3 w-3" />
+            Export Excel
+          </Button>
         </div>
       </div>
 
@@ -174,7 +195,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
                               ${rIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'}`}
                 >
                   <td className="px-3 py-2 text-[9px] font-mono text-slate-400 tabular-nums">
-                    {page * PAGE_SIZE + rIdx + 1}
+                    {page * actualPageSize + rIdx + 1}
                   </td>
                   {headers.map(h => {
                     const val = row[h] ?? '—';
@@ -206,9 +227,28 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="px-4 py-2 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-          <span className="text-[10px] text-slate-400 tabular-nums">
-            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, sorted.length)} of {sorted.length}
-          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] text-slate-400 tabular-nums">
+              {page * actualPageSize + 1}–{Math.min((page + 1) * actualPageSize, sorted.length)} of {sorted.length}
+            </span>
+            
+            <div className="flex items-center gap-1.5 ml-2 border-l border-slate-200 pl-4">
+              <span className="text-[10px] text-slate-400 uppercase tracking-tight font-bold">Show:</span>
+              {[20, 50, 'all'].map(size => (
+                <button
+                  key={size}
+                  onClick={() => setPageSize(size as any)}
+                  className={`text-[10px] px-1.5 py-0.5 rounded transition-colors font-mono
+                             ${pageSize === size 
+                               ? 'bg-slate-800 text-white font-bold' 
+                               : 'text-slate-500 hover:bg-slate-200'}`}
+                >
+                  {size === 'all' ? 'All' : size}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center gap-1">
             <Button
               variant="ghost" size="icon"

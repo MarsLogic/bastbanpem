@@ -248,10 +248,11 @@ class PDFIntelligence:
             "page_end": None,
             "headers": [],
             "rows": [],
-            "method": "Intelligently Merged with Multi-Page Forward Fill"
+            "method": "Ultra-Clean v2 (ffill + stitch)"
         }
 
         accumulated_dfs = []
+        print(f"[PDF_INTEL] Starting extraction for {len(doc)} pages...")
 
         for page_idx, page in enumerate(doc):
             tabs = page.find_tables()
@@ -310,33 +311,50 @@ class PDFIntelligence:
         # ─── 3. Detect and Merge Broken Columns ───
         # Frequently, 'Kabupaten' gets split to 'Kabup' and 'Aten' vertically due to PDF lines
         new_cols = list(monolithic_df.columns)
-        if 'kabup' in new_cols and 'aten' in new_cols:
-            k_idx = new_cols.index('kabup')
-            a_idx = new_cols.index('aten')
-            monolithic_df.iloc[:, k_idx] = monolithic_df.iloc[:, k_idx] + monolithic_df.iloc[:, a_idx]
-            new_cols[k_idx] = 'kabupaten'
-            monolithic_df = monolithic_df.drop(monolithic_df.columns[a_idx], axis=1)
-            new_cols.pop(a_idx)
+        
+        # Substring matching for split columns
+        k_col = next((c for c in new_cols if 'kabup' in str(c).lower()), None)
+        a_col = next((c for c in new_cols if 'aten' in str(c).lower() and c != k_col), None)
+        
+        if k_col and a_col:
+            print(f"[PDF_INTEL] Merging columns: {k_col} + {a_col} -> Kabupaten")
+            monolithic_df[k_col] = monolithic_df[k_col].astype(str) + monolithic_df[a_col].astype(str)
+            monolithic_df = monolithic_df.drop(columns=[a_col])
+            new_cols = [c if c != k_col else 'kabupaten' for c in monolithic_df.columns]
             monolithic_df.columns = new_cols
 
         # ─── 4. Forward Fill Region Hierarchy ───
         # In multi-page distribution tables, regions are listed once and left blank until they change
         ffill_targets = ['provinsi', 'kabupaten', 'kecamatan', 'desa']
         for target in ffill_targets:
-            if target in monolithic_df.columns:
-                monolithic_df[target] = monolithic_df[target].replace('', np.nan)
-                monolithic_df[target] = monolithic_df[target].ffill().fillna('')
+            # Match target using substring
+            actual_col = next((c for c in monolithic_df.columns if target in str(c).lower()), None)
+            if actual_col:
+                print(f"[PDF_INTEL] Forward-filling: {actual_col}")
+                monolithic_df[actual_col] = monolithic_df[actual_col].replace('', np.nan)
+                monolithic_df[actual_col] = monolithic_df[actual_col].ffill().fillna('')
                 
         # ─── 5. Filter Array Junk ───
         # Discard sub-total or total rows based on user directive
-        mask_no_total = ~monolithic_df.apply(lambda row: row.astype(str).str.lower().str.contains('total').any(), axis=1)
-        monolithic_df = monolithic_df[mask_no_total]
+        def is_junk_row(row):
+            s = " ".join(row.astype(str)).lower()
+            if 'total' in s or 'subtotal' in s: return True
+            # Check if it is a truly empty row (just spaces, dashes, or nans)
+            if not any(val.strip().replace('-', '').replace('.', '') for val in row.astype(str)): return True
+            return False
+
+        mask_pure = ~monolithic_df.apply(is_junk_row, axis=1)
+        monolithic_df = monolithic_df[mask_pure]
         
-        # Ensure row represents actual distribution recipient (must have name or NIK)
-        identifier_cols = [c for c in monolithic_df.columns if 'poktan' in c or 'gapoktan' in c or 'kelompok' in c or 'nik' in c or 'ketua' in c or 'nama' in c or 'produk' in c]
-        if identifier_cols:
-            mask_has_data = monolithic_df[identifier_cols].apply(lambda row: any(str(val).strip() for val in row), axis=1)
+        # Ensure row represents actual distribution recipient
+        identifier_keys = ['poktan', 'gapoktan', 'kelompok', 'nik', 'ketua', 'nama', 'produk']
+        id_cols = [c for c in monolithic_df.columns if any(k in str(c).lower() for k in identifier_keys)]
+        
+        if id_cols:
+            mask_has_data = monolithic_df[id_cols].apply(lambda row: any(str(val).strip() for val in row), axis=1)
             monolithic_df = monolithic_df[mask_has_data]
+            
+        print(f"[PDF_INTEL] Extraction complete: {len(monolithic_df)} final rows.")
             
         # Title-case all-caps values for better readability without destroying lowercase
         def format_val(v):
