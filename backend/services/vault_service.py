@@ -34,8 +34,16 @@ class VaultService:
         tables: Optional[list] = None,
     ):
         meta_json   = metadata.model_dump_json() if metadata else "{}"
-        ultra_json  = json.dumps(ultra_robust,  ensure_ascii=False) if ultra_robust  is not None else None
-        tables_json = json.dumps(tables,        ensure_ascii=False) if tables        is not None else None
+        
+        if hasattr(ultra_robust, 'model_dump_json'):
+            ultra_json = ultra_robust.model_dump_json()
+        elif hasattr(ultra_robust, 'json'):
+            ultra_json = ultra_robust.json()
+        else:
+            ultra_json = json.dumps(ultra_robust, ensure_ascii=False) if ultra_robust is not None else None
+            
+        tables_json = json.dumps(tables, ensure_ascii=False) if tables is not None else None
+        
         with db.get_cursor() as cursor:
             cursor.execute(
                 """INSERT OR REPLACE INTO contracts
