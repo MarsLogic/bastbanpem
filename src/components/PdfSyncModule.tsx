@@ -9,7 +9,7 @@ import {
 import { Document, Page, pdfjs } from 'react-pdf';
 import { toast } from 'sonner';
 
-import { ContractData } from '@/lib/contractStore';
+import { ContractData, useContractStore } from '@/lib/contractStore';
 import { parsePdfFile, saveContract, loadContractIntelligence } from '@/lib/api';
 import { getPdfBlob, savePdfBlob } from '@/lib/pdfStorage';
 
@@ -372,29 +372,37 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
   const [activeNavId,  setActiveNavId]  = useState<NavItemIdString>('section::HEADER');
   const fileInputRef                    = useRef<HTMLInputElement>(null);
 
+  const pdfBlobUrls                     = useContractStore(state => state.pdfBlobUrls);
+  const preloadPdfBlob                  = useContractStore(state => state.preloadPdfBlob);
+
   // ── Hydrate PDF blob from IndexedDB ──────────────────────────────────────
   useEffect(() => {
     let url: string | null = null;
 
     const hydrate = async () => {
-      if (blobUrl) return;
+      // 1. Check if already globally hydrated [UIUX-015]
+      const cachedUrl = pdfBlobUrls[contract.id];
+      if (cachedUrl) {
+        setBlobUrl(cachedUrl);
+        return;
+      }
+
+      // 2. Fallback to local state blob
       if (contract.pdfBlob instanceof Blob) {
         url = URL.createObjectURL(contract.pdfBlob);
         setBlobUrl(url);
-      } else if (contract.contractPdfPath) {
-        const stored = await getPdfBlob(contract.id).catch(() => null);
-        if (stored instanceof Blob) {
-          url = URL.createObjectURL(stored);
-          setBlobUrl(url);
-        } else {
-          setPdfError('PDF not found in local storage. Please re-upload.');
-        }
+      } 
+      // 3. Last resort: Hydrate from IndexedDB
+      else if (contract.contractPdfPath) {
+        await preloadPdfBlob(contract.id);
+        // The pdfBlobUrls dependency will trigger a re-run or 
+        // we can just check it again if needed.
       }
     };
 
     hydrate();
-    return () => { if (url) URL.revokeObjectURL(url); };
-  }, [contract.id, contract.pdfBlob, contract.contractPdfPath]);
+    // Note: We don't revoke here because the global store manages its own URLs [UIUX-015]
+  }, [contract.id, contract.pdfBlob, contract.contractPdfPath, pdfBlobUrls, preloadPdfBlob]);
 
   // ── Load saved intelligence from SQLite on mount ──────────────────────────
   useEffect(() => {

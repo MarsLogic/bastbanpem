@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ContractData } from '../lib/contractStore';
+import { ContractData, useContracts } from '../lib/contractStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -9,13 +9,14 @@ import { reconcileFiles } from '../lib/api';
 import { toast } from 'sonner';
 
 interface ContractListViewProps {
-  contracts: ContractData[];
+  contracts?: ContractData[]; // Optional since we use the hook
   onCreateContract: (name: string, data?: any) => void;
   onSelectContract: (id: string) => void;
   onDeleteContract: (id: string) => void;
 }
 
-export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, onCreateContract, onSelectContract, onDeleteContract }) => {
+export const ContractListView: React.FC<ContractListViewProps> = ({ onCreateContract, onSelectContract, onDeleteContract }) => {
+  const { contracts, preloadPdfBlob } = useContracts();
   const [searchTerm, setSearchTerm] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
@@ -51,7 +52,7 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
     setIsModalOpen(false);
   };
 
-  const filtered = contracts.filter(c => {
+  const filtered = (contracts || []).filter((c: ContractData) => {
     const searchLower = searchTerm.toLowerCase();
     const nomorStr = (c.nomorKontrak || "").toLowerCase();
     const penyedia = (c.namaPenyedia || "").toLowerCase();
@@ -110,11 +111,16 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ contracts, o
                   </TableCell>
                 </TableRow>
               ) : (
-                filtered.map(contract => {
-                  const totalAnggaran = contract.recipients.reduce((sum, r) => sum + (r.calculatedValue || 0), 0);
+                filtered.map((contract: ContractData) => {
+                  const totalAnggaran = (contract.recipients || []).reduce((sum: number, r: any) => sum + (r.calculatedValue || 0), 0);
                   
                   return (
-                    <TableRow key={contract.id} className="cursor-pointer hover:bg-slate-50 group border-b border-slate-100" onClick={() => onSelectContract(contract.id)}>
+                    <TableRow 
+                      key={contract.id} 
+                      className="cursor-pointer hover:bg-slate-50 group border-b border-slate-100" 
+                      onClick={() => onSelectContract(contract.id)}
+                      onMouseEnter={() => preloadPdfBlob(contract.id)}
+                    >
                       <TableCell className="font-black text-slate-900 px-6">{contract.name}</TableCell>
                       <TableCell className="text-slate-400 font-mono text-[11px] font-medium">{contract.nomorKontrak || 'PENDING'}</TableCell>
                       <TableCell className="text-center">

@@ -3,6 +3,7 @@
 **Reference**: SSKK Layout High-Fidelity Refinement & UI/UX Sanitization
 
 ## 🎯 Completed
+- **Predatory Hydration**: Implemented hover-based background pre-fetching for PDF blobs, achieving instant contract opening.
 - **SSKK Beautification**: Implemented "Stanza-based" layout with double-spacing and bold markers for legal clarity.
 - **Marker Normalization**: Specialized regex to transform `12.a` into `12a.` (Alpha-Numeric ID compression).
 - **Operational UI Sanitization**: Removed technical meta-badges (`p.13`, extraction methods) from all Data Table views.

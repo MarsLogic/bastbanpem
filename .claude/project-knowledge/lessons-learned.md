@@ -83,6 +83,19 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Consequences**: Standardized, predictable clause IDs regardless of OCR inconsistencies.
 **Expert Insight**: Document "Dialects" vary; build normalization transforms to force a project-specific "Golden Format".
 
+### Improvement: [LEARN-015] Predatory Hydration (Hover-Based Preloading)
+**Context**: Loading large PDF blobs (>5MB) from IndexedDB on component mount caused a visible 1-2s delay and "Loading PDF..." spinner.
+**Action**: Implemented a non-persisted `pdfBlobUrls` cache in the global store. Triggered `preloadPdfBlob` on `ContractListView` row hover (`onMouseEnter`).
+**Risk Identified**: Memory pressure if too many blobs are kept in memory.
+**Consequences**: Opening a contract becomes **instant** as the blob is already hydrated by the time the user clicks.
+**Expert Insight**: Utilize the "Human Idle Gap" (time between hover and click) to mask asynchronous IO. High-performance UIs should "predict" the next user action.
+
+### Improvement: [LEARN-016] Reactive Cache Invalidation
+**Context**: Introducing a global blob cache creates the risk of stale data (showing an old PDF after re-uploading).
+**Action**: Added strict invalidation hooks to `updateContract` and `deleteContract`. Any modification to a contract's PDF path or blob data immediately revokes and purges the associated memory cache entry.
+**Consequences**: Guaranteed data freshness without sacrificing performance.
+**Expert Insight**: Performance optimizations (like caching) must always be paired with atomic invalidation logic to maintain system trust.
+
 ### Improvement: [LEARN-014] Reflexive Tooling Stabilization
 **Context**: Tooling calls (like `rtk`, `grep`, or `tsc`) occasionally fail due to environment-specific syntax or version mismatches. Without documentation, these errors are often repeated in new sessions.
 **Action**: Established a **Zero-Repeat Failure** mandate. Any syntax-based tool failure must be converted into a `[LEARN]` entry that defines the "Golden Format" for that tool in this repository.

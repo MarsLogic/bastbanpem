@@ -8,6 +8,9 @@ localforage.config({
   storeName: 'contracts_v2'
 });
 
+// Import for predatory hydration [UIUX-015]
+import { getPdfBlob } from './pdfStorage';
+
 export interface ContractMetadata {
   nomorKontrak?: string;
   tanggalKontrak?: string;
@@ -256,10 +259,16 @@ export interface ContractData {
 
 interface ContractStore {
   contracts: ContractData[];
+  pdfBlobUrls: Record<string, string>; // [UIUX-015] Non-persisted Blob URL cache
+  
   createContract: (name: string, initialData?: any) => string;
   updateContract: (id: string, updates: Partial<ContractData>) => void;
   deleteContract: (id: string) => void;
   setContracts: (contracts: ContractData[]) => void;
+  
+  // [UIUX-015] Predatory Hydration Actions
+  preloadPdfBlob: (id: string) => Promise<void>;
+  purgePdfCache: (id: string) => void;
 }
 
 // [UIUX-005] Custom storage adapter that strips Blobs before persistence
@@ -303,8 +312,33 @@ export const useContractStore = create<ContractStore>()(
   persist(
     (set, get) => ({
       contracts: [],
+      pdfBlobUrls: {}, // Non-persisted
 
       setContracts: (contracts) => set({ contracts }),
+
+      purgePdfCache: (id) => {
+        const url = get().pdfBlobUrls[id];
+        if (url) {
+          URL.revokeObjectURL(url);
+          const newUrls = { ...get().pdfBlobUrls };
+          delete newUrls[id];
+          set({ pdfBlobUrls: newUrls });
+        }
+      },
+
+      preloadPdfBlob: async (id) => {
+        // 1. Skip if already loaded in memory
+        if (get().pdfBlobUrls[id]) return;
+
+        // 2. Fetch from IndexedDB
+        const blob = await getPdfBlob(id).catch(() => null);
+        if (blob instanceof Blob) {
+          const url = URL.createObjectURL(blob);
+          set((state) => ({
+            pdfBlobUrls: { ...state.pdfBlobUrls, [id]: url }
+          }));
+        }
+      },
 
       createContract: (name, initialData) => {
         const id = crypto.randomUUID();
@@ -336,6 +370,12 @@ export const useContractStore = create<ContractStore>()(
       },
 
       updateContract: (id, updates) => {
+        // [UIUX-015] Reactive Cache Invalidation
+        // If the update includes a new PDF path or blob, purge the old cache entry
+        if (updates.contractPdfPath || updates.pdfBlob) {
+          get().purgePdfCache(id);
+        }
+
         set((state) => ({
           contracts: state.contracts.map((c) =>
             c.id === id ? { ...c, ...updates, lastModified: Date.now() } : c
@@ -344,6 +384,9 @@ export const useContractStore = create<ContractStore>()(
       },
 
       deleteContract: (id) => {
+        // [UIUX-015] Cleanup memory
+        get().purgePdfCache(id);
+
         set((state) => ({
           contracts: state.contracts.filter((c) => c.id !== id),
         }));
@@ -351,7 +394,12 @@ export const useContractStore = create<ContractStore>()(
     }),
     {
       name: 'bast-automator-storage',
-      storage: createBlobSafeStorage()
+      storage: createBlobSafeStorage(),
+      // [UIUX-015] Exclude pdfBlobUrls from persistence (must be fresh every session)
+      partialize: (state) => {
+        const { pdfBlobUrls, ...rest } = state;
+        return rest;
+      }
     }
   )
 );
@@ -362,6 +410,7 @@ export function useContracts() {
   const createContract = useContractStore((state) => state.createContract);
   const updateContract = useContractStore((state) => state.updateContract);
   const deleteContract = useContractStore((state) => state.deleteContract);
+  const preloadPdfBlob = useContractStore((state) => state.preloadPdfBlob);
 
   const globalNIKRegistry = useMemo(() => {
     const map = new Map<string, { id: string, name: string }[]>();
@@ -378,5 +427,5 @@ export function useContracts() {
     return map;
   }, [contracts]);
 
-  return { contracts, globalNIKRegistry, createContract, updateContract, deleteContract };
+  return { contracts, globalNIKRegistry, createContract, updateContract, deleteContract, preloadPdfBlob };
 }
