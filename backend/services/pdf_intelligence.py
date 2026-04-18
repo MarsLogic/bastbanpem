@@ -2,13 +2,18 @@ import fitz  # PyMuPDF
 import re
 import datetime
 import json
+import zipfile
+import tempfile
+import os
 from typing import List, Dict, Any, Optional
 from backend.services.address_parser import address_parser
 from backend.models import (
     UltraRobustContract, ContractHeader, Financials, FinancialTaxLogic,
     BankDisbursement, ComplianceFlags, ShipmentLedgerItem, ShipmentRecipient,
-    ShipmentDestination, ShipmentCosts, ContractMetadata
+    ShipmentDestination, ShipmentCosts, ContractMetadata,
+    PipelineRow, BundleRequest
 )
+from backend.services.diagnostics import diagnostics
 
 class PDFIntelligence:
     SECTION_ANCHORS = {
@@ -476,5 +481,134 @@ class PDFIntelligence:
     def _clean_string(self, val: str) -> str:
         if not val: return ""
         return val.strip()
+
+    # --- Generation & Utility Methods (Merged from legacy pdf_service) ---
+
+    def generate_bastb_pdf(self, metadata: Dict, recipient: PipelineRow) -> bytes:
+        """Expert Template: Berita Acara Serah Terima Barang (BASTB)."""
+        with fitz.open() as doc:
+            page = doc.new_page(width=595, height=842)
+            page.insert_text((150, 60), "BERITA ACARA SERAH TERIMA BARANG (BASTB)", fontsize=12, fontname="helv-bold")
+            
+            poktan = recipient.group or "Umum"
+            page.insert_text((50, 90), f"POKTAN / KELOMPOK: {poktan.upper()}", fontsize=9, fontname="helv-bold")
+            
+            y = 120
+            page.insert_text((50, y), f"No : {metadata.get('nomor_kontrak', '.../BAST/...')}", fontsize=10)
+            y += 20
+            page.insert_text((50, y), f"Pada hari ini ................. tanggal ........ bulan ............ tahun dua ribu dua puluh lima", fontsize=10)
+            
+            y += 30
+            page.insert_text((50, y), "PIHAK PERTAMA (Pemesan)", fontname="helv-bold", fontsize=10)
+            page.insert_text((200, y), f": {metadata.get('satker', 'DITJEN PSP - KEMENTAN')}", fontsize=10)
+            
+            y += 40
+            page.insert_text((50, y), "PIHAK KEDUA (Penerima)", fontname="helv-bold", fontsize=10)
+            
+            p_name = recipient.name
+            if hasattr(recipient, 'proxy') and recipient.proxy:
+                p_name = f"{recipient.name} (Diterima Oleh: {recipient.proxy.name} - {recipient.proxy.relation})"
+                
+            page.insert_text((200, y), f": {p_name}", fontsize=10)
+            page.insert_text((200, y+15), f"NIK : {recipient.nik}", fontsize=10)
+            
+            y += 60
+            page.draw_rect([50, y, 545, y+20], color=(0,0,0), width=1)
+            page.insert_text((55, y+15), "No", fontsize=9)
+            page.insert_text((100, y+15), "Nama Barang", fontsize=9)
+            page.insert_text((400, y+15), "Kuantitas", fontsize=9)
+            
+            y += 20
+            page.draw_rect([50, y, 545, y+25], color=(0,0,0), width=0.5)
+            page.insert_text((55, y+15), "1", fontsize=9)
+            page.insert_text((100, y+15), metadata.get('nama_produk', 'Bantuan Pemerintah'), fontsize=9)
+            qty = recipient.financials.qty if hasattr(recipient, 'financials') else 0
+            page.insert_text((400, y+15), f"{qty} Unit", fontsize=9)
+            
+            y = 650
+            page.insert_text((50, y), "PIHAK KEDUA", fontsize=10, fontname="helv-bold")
+            page.insert_text((400, y), "PIHAK PERTAMA", fontsize=10, fontname="helv-bold")
+            
+            return doc.tobytes()
+
+    def generate_recipient_report(self, request: BundleRequest, recipient: PipelineRow, master_doc: Optional[fitz.Document] = None) -> bytes:
+        """High-Fidelity Report: BASTB + Evidence Slicing + KTP Proof."""
+        with fitz.open() as report:
+            bastb_bytes = self.generate_bastb_pdf({
+                "nomor_kontrak": request.contract_no,
+                "tanggal_kontrak": request.contract_date,
+                "nama_produk": request.contract_name,
+                "satker": "DITJEN PSP"
+            }, recipient)
+            
+            with fitz.open("pdf", bastb_bytes) as bastb_doc:
+                report.insert_pdf(bastb_doc)
+
+            page = report.new_page(width=595, height=842)
+            page.insert_text((50, 50), "DOKUMENTASI PENYALURAN", fontsize=14, fontname="helv-bold")
+            
+            y = 100
+            page.draw_rect([50, y, 280, y+180], color=(0,0,0), width=1)
+            page.insert_text((60, y-10), "KTP / IDENTITAS", fontsize=9, fontname="helv-bold")
+            page.draw_rect([310, y, 540, y+180], color=(0,0,0), width=1)
+            page.insert_text((320, y-10), "FOTO PENYERAHAN BARANG", fontsize=9, fontname="helv-bold")
+
+            def find_img(directory, bindings, nik):
+                if not directory: return None
+                for img_name, bound_nik in bindings.items():
+                    if bound_nik == nik and "_edited_" in img_name:
+                        return os.path.join(directory, img_name)
+                for img_name, bound_nik in bindings.items():
+                    if bound_nik == nik:
+                        return os.path.join(directory, img_name)
+                return None
+
+            ktp_p = find_img(request.ktp_dir, request.ktp_bindings, recipient.nik)
+            proof_p = find_img(request.proof_dir, request.proof_bindings, recipient.nik)
+
+            if ktp_p and os.path.exists(ktp_p):
+                page.insert_image([60, y+10, 270, y+170], filename=ktp_p, keep_proportion=True)
+            if proof_p and os.path.exists(proof_p):
+                page.insert_image([320, y+10, 530, y+170], filename=proof_p, keep_proportion=True)
+
+            if master_doc and recipient.page_source > 0:
+                report.insert_pdf(master_doc, from_page=recipient.page_source-1, to_page=recipient.page_source-1)
+                ev_page = report[-1]
+                ev_page.draw_rect([0, 0, ev_page.rect.width, 25], fill=(0, 0, 0), color=(0, 0, 0))
+                ev_page.insert_text((20, 17), f"LAMPIRAN KONTRAK: HALAMAN {recipient.page_source}", color=(1, 1, 1), fontsize=9)
+
+            return report.tobytes()
+
+    def split_pdf_pages(self, input_path: str, pages: List[int], output_dir: str, prefix: str) -> List[str]:
+        if not os.path.exists(output_dir): os.makedirs(output_dir)
+        created = []
+        with fitz.open(input_path) as doc:
+            for p_num in pages:
+                with fitz.open() as new_doc:
+                    new_doc.insert_pdf(doc, from_page=p_num-1, to_page=p_num-1)
+                    out_p = os.path.join(output_dir, f"{prefix}_page_{p_num}.pdf")
+                    new_doc.save(out_p)
+                    created.append(out_p)
+        return created
+
+    def create_contract_bundle_zip(self, request: BundleRequest) -> str:
+        """Bundles all recipients into a single ZIP file."""
+        diagnostics.log_breadcrumb("BUNDLER", f"Streaming ZIP generation for {len(request.recipients)} recipients")
+        
+        fd, temp_path = tempfile.mkstemp(suffix=".zip")
+        os.close(fd)
+        
+        try:
+            with fitz.open(request.master_pdf_path) if request.master_pdf_path and os.path.exists(request.master_pdf_path) else None as master_doc:
+                with zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                    for recipient in request.recipients:
+                        pdf_b = self.generate_recipient_report(request, recipient, master_doc)
+                        safe_n = "".join([c if c.isalnum() else "_" for c in recipient.name])
+                        zf.writestr(f"{recipient.nik}_{safe_n}.pdf", pdf_b)
+            return temp_path
+        except Exception as e:
+            if os.path.exists(temp_path): os.remove(temp_path)
+            diagnostics.log_error("ZIP-BUNDLE-ERR", str(e))
+            raise e
 
 pdf_intel = PDFIntelligence()

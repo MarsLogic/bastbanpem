@@ -5,7 +5,7 @@ import threading
 import logging
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from backend.services.pdf_service import extract_pdf_text
+from backend.services.pdf_intelligence import pdf_intel
 
 logger = logging.getLogger("watcher_service")
 
@@ -22,7 +22,8 @@ class DocumentHandler(FileSystemEventHandler):
         if filename.endswith(".pdf"):
             # Background processing for new PDFs
             try:
-                text = extract_pdf_text(filepath)
+                # Use unified high-fidelity logic
+                text = pdf_intel.analyze_document(filepath).get("metadata").full_text
                 logger.info(f"Processed PDF: {filename} ({len(text)} chars extracted)")
             except Exception as e:
                 logger.error(f"Error processing {filename}: {e}")

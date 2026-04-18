@@ -5,7 +5,7 @@ import shutil
 import io
 import gc
 from typing import Dict, Optional, List, Any
-from backend.services.pdf_service import extract_pdf_text, create_contract_bundle_zip
+from backend.services.pdf_intelligence import pdf_intel
 from backend.services.ktp_service import extract_ktp_data
 from backend.services.automation_service import submit_to_government_site
 from backend.services.data_engine import reconcile_files, ingest_excel_to_models, apply_magic_balance
@@ -52,7 +52,7 @@ async def reconcile(
         with open(temp_pdf, "wb") as f:
             shutil.copyfileobj(pdf_file.file, f)
         
-        pdf_text = extract_pdf_text(temp_pdf)
+        pdf_text = pdf_intel.extract_ultra_robust(fitz_doc, "").full_text # Optimized for unified logic
         os.remove(temp_pdf)
         
         excel_content = await excel_file.read()
@@ -348,7 +348,7 @@ async def load_contract_data(contract_id: str):
 @router.post("/contracts/bundle")
 async def bundle_contract(request: BundleRequest, background_tasks: BackgroundTasks):
     try:
-        zip_path = create_contract_bundle_zip(request)
+        zip_path = pdf_intel.create_contract_bundle_zip(request)
         
         background_tasks.add_task(os.remove, zip_path)
         
