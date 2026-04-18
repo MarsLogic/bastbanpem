@@ -179,7 +179,7 @@ class PDFIntelligence:
                 shipment_id=i + 1,
                 recipient=ShipmentRecipient(
                     name=self._clean_string(name_m.group(1).strip()),
-                    phone=f"62{name_m.group(2).strip()[-10:]}", # Standardize to 62
+                    phone=f"62{name_m.group(2).strip().lstrip('0')}", # Take full number, strip leading zero, prefix 62
                     group=self._clean_string(poktan_match.group(1).strip() if poktan_match else None)
                 ),
                 destination=ShipmentDestination(

@@ -263,8 +263,11 @@ export const useMasterDataStore = create<MasterDataState>()(
             if (hitCount >= 3) score += 100; // Increased boost
             else if (hitCount >= 2) score += 60; // Increased boost
 
-            // Special Triangulation: Missing middle-tier (Threshold lowered to 0.7 for expert resilience)
-            if (hits.kab >= 0.7 && hits.desa >= 0.7 && (iKecHard === '' || iKecHard === '-')) score += 120; // Increased boost for Kab+Desa match
+            // Special Triangulation v3: Missing middle-tier (Threshold lowered for master resilience)
+            // If we have high confidence on Kab + Desa (both > 0.6), adopt the master kecamatan
+            if (hits.kab >= 0.6 && hits.desa >= 0.6 && (iKecHard === '' || iKecHard === '-')) {
+                score += 200; // Major boost to force adoption
+            }
             if (hits.kab > 0 && hits.kec > 0) score += 40;
             if (hits.kec > 0 && hits.desa > 0) score += 50;
 
