@@ -49,7 +49,8 @@ Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 
 1. **Global Prefix:** ALWAYS use `rtk` for all shell commands (e.g., `rtk git status`).
 2. **Search First:** Always use `rtk rg` (ripgrep) for searching before reading large files.
 3. **Build & Verify:** NEVER conclude a code change without running `rtk npm run build` and verifying completion.
-4. **Port Awareness:** 
+4. **Windows Reliability:** When chaining commands on Windows/PowerShell, ALWAYS use `;` as a separator. NEVER use `&&`. (Example: `rtk git add .; rtk git commit`).
+5. **Port Awareness:** 
    - Port **5173** = Live Development (reflects `src` changes instantly).
    - Port **8000** = Static Production (requires `npm run build` to reflect changes).
 

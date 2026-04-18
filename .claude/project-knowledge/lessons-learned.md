@@ -83,6 +83,13 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Consequences**: Standardized, predictable clause IDs regardless of OCR inconsistencies.
 **Expert Insight**: Document "Dialects" vary; build normalization transforms to force a project-specific "Golden Format".
 
+### Improvement: [LEARN-013] Windows Shell Reliability (RTK vs. PowerShell)
+**Context**: Chaining commands with `&&` (a bash-ism) fails in PowerShell with a `ParserError`. When using `rtk` as a prefix, the agent must adhere to Windows-specific command separators.
+**Action**: Codified the mandatory use of `;` for command chaining in `CLAUDE.md`. 
+**Risk Identified**: Forgetting the environment context (Windows) leads to broken execution and "Token Waste" as the agent retries bad syntax.
+**Consequences**: 100% reliable multi-command execution via `rtk` on the host system.
+**Expert Insight**: Environment-aware CLI usage is a core reliability mandate. On Windows, `&&` is illegal for sequential execution; always use `;`.
+
 ### Improvement: [LEARN-012] Operational UI Sanitization (Meta Badge Removal)
 **Context**: Table views included technical metadata badges (e.g., `p.13`, `Ultra-Clean v2`). While useful for debugging, they represented "Fancy Noise" that cluttered the UI for administrative users.
 **Action**: Removed meta-badge rendering logic from `DataTableRenderer.tsx` and sanitized the call sites in `DocumentView.tsx`.
