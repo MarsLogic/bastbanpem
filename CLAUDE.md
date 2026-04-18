@@ -51,11 +51,10 @@ Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 
 2. **Search First:** Always use `rtk rg` (ripgrep) for searching before reading large files.
 3. **Build & Verify:** NEVER conclude a code change without running `rtk npm run build` and verifying completion.
 4. **Windows Reliability:** When chaining commands on Windows/PowerShell, ALWAYS use `;` as a separator. NEVER use `&&`. (Example: `rtk git add .; rtk git commit`).
-5. **Port Awareness:** 
-   - Port **5173** = Live Development (reflects `src` changes instantly).
-   - Port **8000** = Static Production (requires `npm run build` to reflect changes).
-
----
+6. **Port-Aware Reload Protocol:** ALWAYS guide the user on how to reflect changes:
+   - **Port 5173 (Dev):** Changes reflect instantly via HMR. No action needed.
+   - **Port 8000 (Prod):** REQUIRES `rtk npm run build` + **Browser Hard-Reload (Ctrl+Shift+R)**.
+   - **Service Staleness:** If changes on Port 8000 are not visible after a build, the user MUST be instructed to restart the `start.bat` process to clear any locked file descriptors.
 
 ## 2. Design System & Component Mandates
 

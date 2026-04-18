@@ -116,7 +116,7 @@ This document is the "Collective Brain" of the project. It captures architectura
 **Action**: Discovered that a single TypeScript error (e.g., `mode="white"`) blocked `npm run build`, causing the backend to serve stale assets from the last successful build in the `dist` folder.
 **Risk Identified**: Port 8000 is **Static**; it is the most common cause of "My change isn't working" frustration.
 **Consequences**: Established a mandatory Build success verification before concluding sessions.
-**Expert Insight**: NEVER assume code is live on Port 8000 until `npm run build` completes with 0 errors. A failed build leaves the system in a "Frozen/Zombie" state.
+**Expert Insight**: NEVER assume code is live on Port 8000 until `npm run build` completes with 0 errors. **MANDATORY**: Any agent working on Port 8000 MUST instruct the user to: 1) Run `rtk npm run build` and 2) Perform a **Browser Hard-Reload (Ctrl+Shift+R)**.
 
 ---
 
