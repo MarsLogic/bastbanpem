@@ -114,6 +114,28 @@ export function formatNPWP(str: string): string {
 }
 
 /**
+ * Strips redundant regional prefixes like "Kabupaten", "Kecamatan", etc.
+ */
+export function stripRegionalPrefix(str: string, type?: string): string {
+  if (!str || str === '—') return str;
+  
+  // Pattern to catch prefix + optional colon/space
+  // e.g. "Kabupaten: Labuhan Batu" or "Kabupaten Labuhan Batu"
+  const patterns = [
+    /^\s*(kabupaten|kab\.?)\s*:?\s+/i,
+    /^\s*(kecamatan|kec\.?)\s*:?\s+/i,
+    /^\s*(provinsi|prov\.?)\s*:?\s+/i,
+    /^\s*(desa|kelurahan|kel\.?)\s*:?\s+/i,
+    /^\s*(kota|kt\.?)\s*:?\s+/i,
+  ];
+
+  let cleaned = str;
+  patterns.forEach(p => { cleaned = cleaned.replace(p, ''); });
+  
+  return cleaned.trim();
+}
+
+/**
  * Orchestrates cleaning based on the field type/label.
  */
 export function cleanValue(
@@ -175,6 +197,11 @@ export function cleanValue(
     cleaned = cleaned.replace(/\s/g, ''); // Collapse phone spaces
   }
 
-  // 3. Final polish
+  // 3. Strip redundant regional prefixes for location fields
+  if (key.includes('provinsi') || key.includes('kabupaten') || key.includes('kecamatan') || key.includes('desa')) {
+    cleaned = stripRegionalPrefix(cleaned, key);
+  }
+
+  // 4. Final polish
   return cleaned.trim().replace(/\s+/g, ' ');
 }

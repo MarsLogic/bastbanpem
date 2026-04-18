@@ -101,20 +101,44 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
   const [sortKey, setSortKey] = React.useState<string>('shipment_id');
   const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
 
+  const resolveHierarchy = useMasterDataStore(state => state.resolveHierarchy);
+
   const provinces = React.useMemo(() => {
     const set = new Set<string>();
     ledger.forEach(i => { if (i.destination.provinsi) set.add(i.destination.provinsi); });
     return Array.from(set).sort();
   }, [ledger]);
 
+  // Expert Triangulation: Hydrate ledger with missing regional data
+  const hydratedLedger = React.useMemo(() => {
+    return ledger.map(item => {
+      const { provinsi, kabupaten, kecamatan, desa } = item.destination;
+      // If either kecamatan or desa is missing, try to resolve from master data
+      if (!kecamatan || kecamatan === '—' || !desa || desa === '—') {
+        const resolved = resolveHierarchy({ provinsi, kabupaten, kecamatan, desa });
+        if (resolved) {
+          return {
+            ...item,
+            destination: {
+              ...item.destination,
+              kecamatan: (kecamatan === '—' || !kecamatan) ? resolved.kecamatan : kecamatan,
+              desa: (desa === '—' || !desa) ? resolved.desa : desa,
+            }
+          };
+        }
+      }
+      return item;
+    });
+  }, [ledger, resolveHierarchy]);
+
   const filtered = React.useMemo(() => {
     const q = search.toLowerCase().trim();
-    return ledger.filter(item => {
+    return hydratedLedger.filter(item => {
       const matchSearch = !q || [item.recipient.name, item.destination.kabupaten, item.destination.provinsi].some(v => v?.toLowerCase().includes(q));
       const matchProv = !province || item.destination.provinsi === province;
       return matchSearch && matchProv;
     });
-  }, [ledger, search, province]);
+  }, [hydratedLedger, search, province]);
 
   const handleExportExcel = () => {
     const exportData = sorted.map(item => {
@@ -237,13 +261,22 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
                     <div className="text-[10px] font-mono text-slate-500 tabular-nums">{formatPhone(item.recipient.phone)}</div>
                   </td>
                   <td className="px-3 py-2.5">
-                    <Badge variant="outline" className="text-[8px] h-4 px-1.5 font-bold uppercase text-slate-400 border-slate-200 whitespace-nowrap">
-                      {item.destination.provinsi?.substring(0,20) || '—'}
-                    </Badge>
+                    <div className="text-[10px] font-mono text-slate-500 tabular-nums">{formatPhone(item.recipient.phone)}</div>
                   </td>
-                  <td className="px-3 py-2.5 text-slate-600 truncate max-w-[120px]">{item.destination.kabupaten || '—'}</td>
-                  <td className="px-3 py-2.5 text-slate-500 truncate max-w-[100px]">{item.destination.kecamatan || '—'}</td>
-                  <td className="px-3 py-2.5 text-slate-400 truncate max-w-[100px] text-[10px]">{item.destination.desa || '—'}</td>
+                  <td className="px-3 py-2.5">
+                    <div className="text-[10px] font-black uppercase text-slate-500 whitespace-nowrap">
+                      {item.destination.provinsi ? cleanValue(item.destination.provinsi, 'provinsi') : '—'}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2.5 text-slate-600 truncate max-w-[120px]">
+                    {item.destination.kabupaten ? cleanValue(item.destination.kabupaten, 'kabupaten') : '—'}
+                  </td>
+                  <td className="px-3 py-2.5 text-slate-500 truncate max-w-[100px]">
+                    {item.destination.kecamatan ? cleanValue(item.destination.kecamatan, 'kecamatan') : '—'}
+                  </td>
+                  <td className="px-3 py-2.5 text-slate-400 truncate max-w-[100px] text-[10px]">
+                    {item.destination.desa ? cleanValue(item.destination.desa, 'desa') : '—'}
+                  </td>
                   <td className="px-3 py-2.5 text-right font-mono text-slate-600 tabular-nums">{fmt(dpp)}</td>
                   <td className="px-3 py-2.5 text-right font-mono text-slate-400 tabular-nums">{fmt(ppn)}</td>
                   <td className="px-3 py-2.5 text-right font-mono font-black text-slate-900 tabular-nums">{fmt(gross)}</td>

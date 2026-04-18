@@ -69,9 +69,43 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   const [pageSize,  setPageSize]  = useState<number | 'all'>(DEFAULT_PAGE_SIZE);
   const [page,      setPage]      = useState(0);
   const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
+  const resolveHierarchy = useMasterDataStore(state => state.resolveHierarchy);
 
   const headers = table.headers.length > 0 ? table.headers : inferHeaders(table.rows);
-  const normalized = useMemo(() => normalizeRows(headers, table.rows), [table.rows, headers]);
+  const normalizedRows = useMemo(() => normalizeRows(headers, table.rows), [table.rows, headers]);
+
+  // Expert Triangulation: Hydrate rows with missing regional data
+  const normalized = useMemo(() => {
+    return normalizedRows.map(row => {
+      // Identify regional columns
+      const hProv = headers.find(h => /provinsi|prov/i.test(h));
+      const hKab  = headers.find(h => /kabupaten|kab/i.test(h));
+      const hKec  = headers.find(h => /kecamatan|kec/i.test(h));
+      const hDesa = headers.find(h => /desa|kelurahan/i.test(h));
+
+      if (hKab || hProv) {
+        const provinsi = hProv ? String(row[hProv] || '') : '';
+        const kabupaten = hKab ? String(row[hKab] || '') : '';
+        const kecamatan = hKec ? String(row[hKec] || '') : '';
+        const desa = hDesa ? String(row[hDesa] || '') : '';
+
+        // If either kecamatan or desa is missing, try to resolve from master data
+        const isKecEmpty = !kecamatan || kecamatan === '—' || kecamatan.trim() === '';
+        const isDesaEmpty = !desa || desa === '—' || desa.trim() === '';
+
+        if (isKecEmpty || isDesaEmpty) {
+          const resolved = resolveHierarchy({ provinsi, kabupaten, kecamatan, desa });
+          if (resolved) {
+            const newRow = { ...row };
+            if (isKecEmpty && hKec) newRow[hKec] = resolved.kecamatan;
+            if (isDesaEmpty && hDesa) newRow[hDesa] = resolved.desa;
+            return newRow;
+          }
+        }
+      }
+      return row;
+    });
+  }, [normalizedRows, headers, resolveHierarchy]);
 
   const toggleSort = (col: string) => {
     if (sortCol !== col) { setSortCol(col); setSortDir('asc'); }
