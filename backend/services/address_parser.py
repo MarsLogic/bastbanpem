@@ -115,50 +115,61 @@ class InaprocAddressParser:
     def clean_raw(self, raw: str) -> str:
         """
         Fix extreme PDF extraction artifacts and butchered Indonesian address formats.
+        Refined: Removes redundant labels (Kota, Prov, etc.) and fixes 'Jl. .' artifacts.
         """
         text = raw
 
         # 1. Expand "Jalan / Jl / jln" -> "Jl. "
-        # First remove existing dots to prevent "Jl. . "
-        text = re.sub(r'\b(jalan|jl\.?|jln)\s*', r'Jl. ', text, flags=re.IGNORECASE)
-        text = re.sub(r'Jl\.\s*\.', 'Jl.', text) # Cleanup double dots if any
-
+        # We strip existing dots/spaces to prevent "Jl. . "
+        text = re.sub(r'\b(jalan|jl\.?|jln|jlan)\s*[:,\.-]*\s*', r'Jl. ', text, flags=re.IGNORECASE)
+        
         # 2. Standardize "Nomor / No / nmr" -> "No. "
-        text = re.sub(r'\b(nomor|nomo|nmr|nomer|no\.?)\s*(?=\d)', r'No. ', text, flags=re.IGNORECASE)
+        text = re.sub(r'\b(nomor|nomo|nmr|nomer|no\.?)\s*[:,\.-]*\s*(?=\d)', r'No. ', text, flags=re.IGNORECASE)
         text = re.sub(r'\b(nomor|nomo|nmr|nomer)\b', r'No. ', text, flags=re.IGNORECASE)
-        text = re.sub(r'No\.\s*\.', 'No.', text)
 
         # 3. Standardize RT/RW and force UPPERCASE
         # Handles: rt/rw 04/08, rt02rw10, rt 02 / rw 10, rt:02, rw-10
         
-        # FIRST: Handle the joined "rt/rw 04/08" or "rt/rw 04 / 08" special case
+        # FIRST: Handle the joined "rt/rw 04/08" special case
         text = re.sub(r'\bRT\s*/?\s*RW\s*[:,\.-]?\s*(\d+)\s*/\s*(\d+)\b', r'RT. \1 / RW. \2', text, flags=re.IGNORECASE)
         
         # SECOND: Individual matches
         text = re.sub(r'\bRT(?:\s*[:,\.-]?\s*|\s*)(\d+)\b', r'RT. \1 ', text, flags=re.IGNORECASE)
         text = re.sub(r'\bRW(?:\s*[:,\.-]?\s*|\s*)(\d+)\b', r'RW. \1 ', text, flags=re.IGNORECASE)
         
-        # THIRD: Cleanup any joined pairs that were caught individually
+        # THIRD: Cleanup joined pairs
         text = re.sub(r'RT\.\s*(\d+)\s*\/\s*RW\.\s*(\d+)', r'RT. \1 / RW. \2', text, flags=re.IGNORECASE)
 
         # 4. Standardize Blok (Handles merges like BlokD121)
         text = re.sub(r'\b(blok|blk|block)(?:\s*[:,\.-]?\s*|\s*)(?=[A-Z\d/])', r'Blok ', text, flags=re.IGNORECASE)
 
-        # 5. Expand Regional Keywords
-        text = re.sub(r'\b(provinsi|prov|insi|prv)\b(?:\s*[:,\.-]?\s*|\s*)', r'Provinsi: ', text, flags=re.IGNORECASE)
-        text = re.sub(r'\b(kabupaten|kab|kab\.?)\b(?:\s*[:,\.-]?\s*|\s*)', r'Kabupaten: ', text, flags=re.IGNORECASE)
-        text = re.sub(r'\b(kota|kt)\b(?:\s*[:,\.-]?\s*|\s*)', r'Kota: ', text, flags=re.IGNORECASE)
-        text = re.sub(r'\b(kecamatan|kec|kcmt|kc)\b(?:\s*[:,\.-]?\s*|\s*)', r'Kecamatan: ', text, flags=re.IGNORECASE)
-        text = re.sub(r'\b(kelurahan|desa|kl|ds|kel)\b(?:\s*[:,\.-]?\s*|\s*)', r'Desa: ', text, flags=re.IGNORECASE)
+        # 5. Normalize Regional Keywords (Strip the labels, keep the potential markers for context)
+        # We replace the markers with space to avoid "Kota: " artifacts
+        text = re.sub(r'\b(provinsi|prov|insi|prv)\b(?:\s*[:,\.-]?\s*|\s*)', r' ', text, flags=re.IGNORECASE)
+        text = re.sub(r'\b(kabupaten|kab|kab\.?)\b(?:\s*[:,\.-]?\s*|\s*)', r' ', text, flags=re.IGNORECASE)
+        text = re.sub(r'\b(kota|kt)\b(?:\s*[:,\.-]?\s*|\s*)', r' ', text, flags=re.IGNORECASE)
+        text = re.sub(r'\b(kecamatan|kec|kcmt|kc)\b(?:\s*[:,\.-]?\s*|\s*)', r' ', text, flags=re.IGNORECASE)
+        text = re.sub(r'\b(kelurahan|desa|kl|ds|kel)\b(?:\s*[:,\.-]?\s*|\s*)', r' ', text, flags=re.IGNORECASE)
 
-        # 6. PDF specific hyphenation artifacts
+        # 6. Hyphen Normalization (e.g., ciledug-tangerang -> ciledug tangerang)
+        # only replace if between words to avoid breaking negative numbers or NIK
+        text = re.sub(r'(?<=[a-zA-Z])-(?=[a-zA-Z])', ' ', text)
+
+        # 7. PDF specific hyphenation artifacts (hard breaks)
         text = re.sub(r'([a-z])-\s*\n\s*([a-z])', r'\1\2', text, flags=re.IGNORECASE)
         text = re.sub(r'-\s*\n\s*', ' ', text)
         text = text.replace('\n', ' ')
 
-        # 7. Final Spacing & Dot Polish
+        # 8. Final Spacing & Punctuation Polish
         text = re.sub(r'  +', ' ', text)
-        text = re.sub(r': \.', ': ', text)
+        text = re.sub(r'\s+\.', '.', text)  # remove space before dot
+        text = re.sub(r'\.{2,}', '.', text) # collapse double dots
+        text = re.sub(r'(: \s*\.)|(: \.\s*)', ': ', text)
+        
+        # Specific fix for Jl. . -> Jl.
+        text = re.sub(r'Jl\.\s*\.', 'Jl.', text)
+        text = re.sub(r'No\.\s*\.', 'No.', text)
+
         return text.strip()
 
     # ------------------------------------------------------------------

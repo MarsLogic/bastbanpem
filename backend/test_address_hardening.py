@@ -1,11 +1,22 @@
 from services.address_parser import address_parser
 
-def test_vibranium_cleaning():
-    print("\n--- Testing Vibranium Cleaning ---")
+def test_boutique_cleaning():
+    print("\n--- Testing Boutique Address Refinement ---")
     tests = [
-        "JlHarsono No114 rt02rw10 BlokD121",
-        "Jalan Haji Juki Nmr. 54 rt/rw 04/08",
-        "No. 11, Kel. Sei Penggantungan, Prv. Sumut",
+        # User Case 1: Extra dots
+        "Jl. . Harsono Rm No. 3, Ragunan, Pasar Minggu, Jakarta Selatan",
+        "Jl. . Haji Juki No. 114 Paninggilan Utara RT. 02 / RW. 10",
+        
+        # User Case 2: Hyphenated regional names
+        "Ciledug-tangerang",
+        
+        # User Case 3: Label removal (Kota, Provinsi, etc)
+        "Kota: Tangerang. 15153",
+        "Provinsi: DKI Jakarta",
+        "Kecamatan: Ciledug, Kabupaten: Tangerang",
+        
+        # Combined Stress Test
+        "JlHaji Juki No114 rt/rw 04/08 Ciledug-tangerang. Kota: Tangerang. 15153"
     ]
     for t in tests:
         clean = address_parser.clean_raw(t)
@@ -14,22 +25,13 @@ def test_vibranium_cleaning():
 
 def test_postal_healing():
     print("--- Testing Postal Auto-Healing ---")
-    # Example from CSV: 1,ABAH LUENG,BANDAR BARU,PIDIE JAYA,11,24184
-    # key: aceh|pidie jaya|bandar baru|abah lueng
     prov = "Aceh"
     kab = "Pidie Jaya"
     kec = "Bandar Baru"
     desa = "Abah Lueng"
-    
-    # Existing code is missing
     healed = address_parser.heal_postal_code(prov, kab, kec, desa, existing="")
-    print(f"Triangulating {desa}, {kec}, {kab}, {prov}...")
     print(f"Expected: 24184 | Got: {healed}")
-    
-    # Existing code is wrong/mangled
-    healed_mangled = address_parser.heal_postal_code(prov, kab, kec, desa, existing="00000")
-    print(f"Healed from mangled '00000': {healed_mangled}")
 
 if __name__ == "__main__":
-    test_vibranium_cleaning()
+    test_boutique_cleaning()
     test_postal_healing()

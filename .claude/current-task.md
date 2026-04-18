@@ -1,50 +1,41 @@
-# Task Status: Hardening Indonesian Address Intelligence [COMPLETED]
+# Task Status: Boutique Address Refinement [COMPLETED]
 **Date:** 2026-04-18
-**Reference**: Vibranium-Grade Normalization & Postal Auto-Healing
+**Reference**: UI/UX Polish - Redundant Labels & Punctuation Clean-up
 
 ## 🎯 Completed
-- Integrated 2025 Indonesian Postal Code database (81,225 entries)
-- Implemented "Vibranium-Grade" address cleaning in both Backend & Frontend
-- Automated Postal Code auto-healing via administrative triangulation
-- Forced RT/RW standardization and UPPERCASE formatting
-- Fixed extreme PDF extraction artifacts (merged strings like JlHaji, No114)
+- Resolved "Ghost Dot" artifacts (e.g., `Jl. .` → `Jl.`) across the full stack
+- Simplified address rendering by removing administrative labels (`Kota:`, `Provinsi:`, etc.)
+- Implemented hyphen normalization for regional names (`Ciledug-tangerang` → `Ciledug Tangerang`)
+- Synchronized Python and TypeScript cleaning engines
+- Verified against user-provided screenshot edge cases
 
 ## 📝 Implementation Details
 
-### Part 1: High-Performance Postal Reference
-**File**: `backend/data/kodepos_reference.json`
-- Created from authoritative 2025 pentagonal/Indonesia-Postal-Code dataset
-- Optimized piped lookup structure: `{ "[prov]|[kab]|[kec]|[desa]": "postal_code" }`
-- Enables O(1) triangulation speed
+### Part 1: Boutique Punctuation Polish
+**Files**: `backend/services/address_parser.py` + `src/lib/dataCleaner.ts`
+- Aggressive prefix normalization: Strips existing dots/spaces *before* applying standardized `Jl. ` and `No. `
+- Punctuation-collapse: Collapses multiple dots and removes spaces before dots
+- Unified single-dot enforcement logic
 
-### Part 2: Backend Address Parser
-**File**: `backend/services/address_parser.py`
-- Added `heal_postal_code` logic to inject or repair codes
-- Upgraded `clean_raw` with robust regex handling for:
-  - Spacing merges (`JlHaji`, `No114`, `BlokD121`)
-  - Joined RT/RW formats (`rt/rw 04/08`)
-  - Single-dot and single-space enforcement
-- Integrated logic into `parse()` entry point
+### Part 2: Label Stripping
+**Files**: `backend/services/address_parser.py` + `src/lib/dataCleaner.ts`
+- Removed descriptive tags from regional keywords
+- Example: Instead of rendering `Kota: Tangerang`, it now renders just `Tangerang`
+- Maintains clean values while improving visual readability
 
-### Part 3: Frontend Data Cleaning
-**File**: `src/lib/dataCleaner.ts`
-- Synchronized `cleanAddress` logic with backend Vibranium standards
-- Implemented strict RT/RW UPPERCASE forcing
-- Integrated standardized spacing for regional keywords (Provinsi, Kabupaten, etc.)
+### Part 3: Regional Hyphen Resolution
+**Files**: `backend/services/address_parser.py` + `src/lib/dataCleaner.ts`
+- Regex-based hyphen replacement specifically for regional context (between letters)
+- Preserves hyphens for non-regional data (e.g., NIK or NPWP)
+- Ensures Title Case formatting in the UI
 
 ## ✅ Verification Results
-- **Cleaning**: `rt/rw 04/08` → `RT. 04 / RW. 08` ✓
-- **Cleaning**: `JlHarsono No114` → `Jl. Harsono No. 114` ✓
-- **Auto-Healing**: Missing code for `Abah Lueng` → `24184` ✓
+- **Boutique Check**: `Jl. . Harsono` → `Jl. Harsono` ✓
+- **Boutique Check**: `ciledug-tangerang` → `Ciledug Tangerang` ✓
+- **Boutique Check**: `Kota: Tangerang` → `Tangerang` ✓
 - **Build Status**: `npm run build` ✓
 - **Type Check**: `npx tsc --noEmit` ✓
 
 ## ⏭️ Next Steps
-- Monitor extraction accuracy for complex multi-line addresses
-- Ensure new regional keywords (e.g., 'Kec') are captured consistently
-- Prepare for potential bulk address re-validation batch jobs
-
-## 🎨 Design System Compliance
-- Punctuation standardized (single dot, single space)
-- Proper case preserved for names via `toTitleCase`
-- RT/RW forced UPPERCASE for visual clarity in tables
+- Final user review of consolidated address display
+- Ready for full dataset extraction
