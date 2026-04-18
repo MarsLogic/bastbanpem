@@ -21,6 +21,7 @@ Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 
 ### 🧠 Cumulative Self-Learning
 1.  **Strict CRC Protocol**: Every session MUST contribute to `.claude/project-knowledge/lessons-learned.md`.
 2.  **Immediate Pull/Push**: Documentation (CLAUDE.md, lessons-learned.md) MUST be synchronized to GitHub immediately after any rule update or major [LEARN] entry.
+3.  **Knowledge Debt Auditor**: NEVER commit a major logic refactor or bugfix without an accompanying `[LEARN-###]` entry. Code without documentation is "Amnesia-prone" and is considered an expert-level failure.
 
 ### ✂️ Surgical Context (Token ROI)
 1.  **Surgical Escalation**: NEVER read a full file > 200 lines if a specific method is the target.
