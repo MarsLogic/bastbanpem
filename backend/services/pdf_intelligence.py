@@ -262,9 +262,7 @@ class PDFIntelligence:
                 if len(headers) < 2:
                     continue
 
-                # Rule 2: Exclude garbage (if any header is insanely long, it's a paragraph, not a header)
-                if any(len(h) > 50 for h in headers):
-                    continue
+                # Remove aggressive > 50 header rule, because "poktan/gapoktan/..." can be longer than 50 chars.
 
                 headers_lower = " ".join(headers).lower()
 
@@ -272,39 +270,39 @@ class PDFIntelligence:
                 if "pembayaran" in headers_lower and ("estimasi" in headers_lower or "total" in headers_lower):
                     continue
 
-                # Rule 4: Must have some keyword identifying it as a product/catalog table
+                # Rule 4: Must have some keyword identifying it as a product/catalog or delivery distribution table
                 # Typical Lampiran data columns: No, Produk, Varian, Jumlah, Harga, Total, Catatan
-                if not any(k in headers_lower for k in ["produk", "varian", "jumlah", "harga", "catatan", "nama"]):
+                # Or Delivery blocks: Kabupaten, Kecamatan, Desa, Poktan, Kelompok, NIK, Luas
+                valid_keywords = ["produk", "varian", "jumlah", "harga", "catatan", "nama", "kabupaten", "kecamatan", "desa", "poktan", "nik", "ketua", "luas"]
+                
+                is_valid_header = any(k in headers_lower for k in valid_keywords)
+
+                # Allow continuation pages (where PyMuPDF gives Col0, Col1...) if the column count matches
+                is_continuation = bool(master_table["headers"]) and len(headers) == len(master_table["headers"]) and "col0" in headers_lower
+
+                if not is_valid_header and not is_continuation:
                     continue
 
                 # This is a valid chunk of the Lampiran table
-                if not master_table["headers"]:
+                if not master_table["headers"] and is_valid_header:
                     master_table["headers"] = headers
                     master_table["page"] = page_idx + 1
+
                 
                 master_table["page_end"] = page_idx + 1
 
                 for _, row in df.iterrows():
-                    is_garbage = False
                     cleaned_row = {}
-                    
-                    # Merge the current row into the active master_table headers
-                    # In case of column mismatch due to page breaks, we map by index
                     for i, (col_name, val) in enumerate(row.items()):
                         clean_val = self._clean_string(str(val))
-                        
-                        # Apply Title Case but preserve acronyms and numeric structures
+                        # Title-case all-caps values for better readability without forcing lowercase everywhere
                         if len(clean_val) > 2 and clean_val.isupper():
                             clean_val = clean_val.title()
                         
-                        if len(clean_val) > 150:
-                            is_garbage = True
-                            
-                        # Map to master header if within bounds, otherwise ignore extra stray columns
                         if i < len(master_table["headers"]):
                             cleaned_row[master_table["headers"][i]] = clean_val
                     
-                    if not is_garbage and any(cleaned_row.values()):
+                    if any(cleaned_row.values()):
                         master_table["rows"].append(cleaned_row)
 
         if master_table["rows"]:

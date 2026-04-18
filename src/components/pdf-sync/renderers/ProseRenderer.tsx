@@ -116,6 +116,23 @@ export const ProseRenderer: React.FC<ProseRendererProps> = ({ text, searchQuery 
                 }
               }
 
+              const isLettered = /^[a-z][\)\.]\s/.test(strLine);
+              if (isLettered) {
+                const match = strLine.match(/^([a-z][\)\.])\s(.*)/);
+                if (match) {
+                  return (
+                    <div key={lIdx} className="flex items-start gap-2 mt-1.5 mb-1.5">
+                      <span className="text-[11px] font-bold text-slate-500 w-5 shrink-0 text-right mt-[2px]">{match[1]}</span>
+                      <span className="flex-1">
+                        {annotate(match[2], searchQuery).map((span, sIdx) => (
+                          <SpanEl key={sIdx} span={span} />
+                        ))}
+                      </span>
+                    </div>
+                  );
+                }
+              }
+
               return (
                 <div key={lIdx} className={lIdx > 0 ? "mt-1" : ""}>
                  {annotate(line, searchQuery).map((span, sIdx) => (

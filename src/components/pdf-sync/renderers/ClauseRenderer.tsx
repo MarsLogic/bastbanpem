@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { KeyValueRenderer, canRenderAsKeyValue } from './KeyValueRenderer';
+import { ProseRenderer } from './ProseRenderer';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -212,13 +213,13 @@ const SubClauseItem: React.FC<{ sub: SubClause; q: string }> = ({ sub, q }) => {
       </button>
 
       {open && hasContent && (
-        <div className={`ml-5 pb-2 leading-relaxed border-slate-50 ${canRenderAsKeyValue(sub.content) ? '' : 'text-[11.5px] text-slate-600 whitespace-pre-wrap'}`}>
+        <div className={`ml-5 pb-2 border-slate-50 ${canRenderAsKeyValue(sub.content) ? '' : ''}`}>
             {canRenderAsKeyValue(sub.content) ? (
                 <div className="bg-slate-50/30 p-2 rounded-xl mt-2">
                     <KeyValueRenderer text={sub.content} />
                 </div>
             ) : (
-                q ? highlight(sub.content, q) : sub.content
+                <ProseRenderer text={sub.content} searchQuery={q} />
             )}
         </div>
       )}
@@ -265,13 +266,13 @@ const MainClauseItem: React.FC<{ clause: MainClause; q: string; defaultOpen: boo
       {open && hasBody && (
         <div className="bg-white">
           {clause.content && (
-            <div className={`px-4 py-3 leading-relaxed border-b border-slate-50 ${canRenderAsKeyValue(clause.content) ? '' : 'text-[12px] text-slate-600 whitespace-pre-wrap'}`}>
+            <div className={`px-4 py-3 border-b border-slate-50 ${canRenderAsKeyValue(clause.content) ? '' : ''}`}>
               {canRenderAsKeyValue(clause.content) ? (
                 <div className="bg-slate-50/30 p-2 rounded-xl">
                     <KeyValueRenderer text={clause.content} />
                 </div>
               ) : (
-                q ? highlight(clause.content, q) : clause.content
+                <ProseRenderer text={clause.content} searchQuery={q} />
               )}
             </div>
           )}
