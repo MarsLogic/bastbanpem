@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { cleanValue } from '@/lib/dataCleaner';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 import { Badge } from '@/components/ui/badge';
@@ -95,13 +95,17 @@ function parseFinancialRows(text: string): FinancialRow[] {
 
 // ─── Sub-Components ───────────────────────────────────────────────────────────
 
-const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ ledger, taxRate }) => {
-  const [search, setSearch] = React.useState('');
-  const [province, setProvince] = React.useState<string>('');
-  const [sortKey, setSortKey] = React.useState<string>('shipment_id');
-  const [sortDir, setSortDir] = React.useState<'asc' | 'desc'>('asc');
+const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any }> = ({ ledger, financials }) => {
+  const [search, setSearch] = useState('');
+  const [province, setProvince] = useState('');
+  const [sortKey, setSortKey] = useState<string>('shipment_id');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const { resolveHierarchy, fetchMasterData, isLoaded } = useMasterDataStore();
+  const taxRate = financials.tax_logic.vat_rate || 0.11;
 
-  const resolveHierarchy = useMasterDataStore(state => state.resolveHierarchy);
+  useEffect(() => {
+    fetchMasterData();
+  }, [fetchMasterData]);
 
   const provinces = React.useMemo(() => {
     const set = new Set<string>();
@@ -136,7 +140,7 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
       }
       return item;
     });
-  }, [ledger, resolveHierarchy]);
+  }, [ledger, resolveHierarchy, isLoaded]);
 
   const filtered = React.useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -216,6 +220,12 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; taxRate: number }> = ({ 
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
           <Input placeholder="Search recipients..." value={search} onChange={e => setSearch(e.target.value)} className="h-7 pl-8 py-0 text-[10px] bg-slate-50 border-slate-200" />
         </div>
+        {!isLoaded && (
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 border border-black animate-pulse shrink-0">
+            <div className="w-1.5 h-1.5 rounded-full bg-white" />
+            <span className="text-[9px] font-black text-white uppercase tracking-tighter">Analyzing Locations...</span>
+          </div>
+        )}
         <Select value={province} onValueChange={(v) => setProvince(v || '')}>
           <SelectTrigger className="h-7 w-40 text-[10px] bg-slate-50 border-slate-200">
             <SelectValue placeholder="All Provinces" />
@@ -400,7 +410,7 @@ export const FinancialSummaryRenderer: React.FC<FinancialSummaryRendererProps> =
         <div className="flex items-center justify-between mb-2">
           <Badge className="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] py-1 px-3 rounded-full">Accounting View</Badge>
         </div>
-        <RecipientFinancialGrid ledger={ledger} taxRate={rate} />
+        <RecipientFinancialGrid ledger={ledger} financials={financials} />
         <FinancialTotalsCard financials={financials} ledger={ledger} taxRate={rate} displayTax={displayTax} />
       </div>
     );

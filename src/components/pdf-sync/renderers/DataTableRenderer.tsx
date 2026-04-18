@@ -70,6 +70,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   const [page,      setPage]      = useState(0);
   const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
   const resolveHierarchy = useMasterDataStore(state => state.resolveHierarchy);
+  const isLoaded = useMasterDataStore(state => state.isLoaded);
 
   const headers = table.headers.length > 0 ? table.headers : inferHeaders(table.rows);
   const normalizedRows = useMemo(() => normalizeRows(headers, table.rows), [table.rows, headers]);
@@ -105,7 +106,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       }
       return row;
     });
-  }, [normalizedRows, headers, resolveHierarchy]);
+  }, [normalizedRows, headers, resolveHierarchy, isLoaded]);
 
   const toggleSort = (col: string) => {
     if (sortCol !== col) { setSortCol(col); setSortDir('asc'); }
@@ -160,14 +161,15 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[160px]">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-          <Input
-            placeholder="Search rows..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="h-8 pl-8 text-[11px] bg-white border-slate-200"
-          />
+          <Input placeholder="Search rows..." value={search} onChange={e => setSearch(e.target.value)} className="h-7 pl-8 py-0 text-[10px] bg-slate-50 border-slate-200" />
         </div>
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+        {!isLoaded && (
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900 border border-black animate-pulse">
+            <div className="w-1.5 h-1.5 rounded-full bg-white" />
+            <span className="text-[9px] font-black text-white uppercase tracking-tighter">Analyzing...</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
           {showMeta && table.page && (
             <Badge variant="outline" className="text-[9px] h-5">p.{table.page}</Badge>
           )}
