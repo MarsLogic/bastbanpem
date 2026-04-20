@@ -226,4 +226,27 @@ This document is the "Collective Brain" of the project. It captures architectura
 
 ---
 
-*Last Updated: 2026-04-20 (Phase 3 Sovereign Completion: Forensic Repair Suite Deployed)*
+### Improvement: [LEARN-022] Zustand Persist Storage Level Trap (Blank Screen)
+**Context**: The app went blank after upgrading the schema (adding `recipients` field to `ContractData`). Old stored contracts in IndexedDB lacked the field; accessing `contract.recipients.forEach()` or `contract.recipients.length` caused a React root-level crash with no error overlay in production.
+**Action**:
+1. Fixed `contractStore.ts` `getItem`/`setItem` to operate on `parsed.state.contracts` (correct Zustand persist nesting level), NOT `parsed.contracts` (always undefined).
+2. Added `recipients: c.recipients || []` migration guard in `getItem` so old-schema blobs are silently upgraded on hydration.
+3. Added `(c.recipients || [])` defensive guards in `useContracts` useMemo and `ContractListView:127`.
+**Risk Identified**: Zustand persist wraps state as `{ state: { ...yourStore }, version: 0 }`. Any custom storage adapter operating at the wrong level silently no-ops without error.
+**Consequences**: Zero-crash schema migration for field additions. Old stored data hydrated safely without manual purge.
+**Expert Insight**: **Golden Rule for Zustand Persist Adapters**: contracts (and all state) live at `parsed.state.<key>`, NOT `parsed.<key>`. Always test storage adapters by logging getItem output before assuming they work. Any new required field on a persisted interface MUST have a `|| defaultValue` fallback in `getItem` and at every render-time access site.
+
+### Improvement: [LEARN-023] Blank White Page Diagnosis Protocol (Production SPA)
+**Context**: Production mode (Port 8000, no Vite error overlay) shows a blank white page with zero on-screen hints when React crashes at the root level.
+**Action**: Established a repeatable diagnosis chain:
+1. Check browser console — look for `TypeError: Cannot read properties of undefined`
+2. Inspect `#root` innerHTML via devtools — empty root confirms React crash vs. rendering issue
+3. Test with fresh browser profile (no IDB data) — if it works, root cause is stored data schema mismatch
+4. Identify the crashing accessor; add `|| []` / `|| {}` / `|| 0` guard at that site
+5. Rebuild (`npm run build`) then hard refresh (`Ctrl+Shift+R`)
+**Risk Identified**: Port 8000 caching can mask the rebuild; always hard-refresh after `npm run build`.
+**Expert Insight**: Production blank = React root crash. Debug order: console errors → root innerHTML → fresh-profile test → schema diff between old stored data and new interface.
+
+---
+
+*Last Updated: 2026-04-20 (LEARN-022/023: Zustand persist adapter fix + blank screen diagnosis protocol)*

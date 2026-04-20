@@ -281,24 +281,31 @@ const createBlobSafeStorage = () => {
       const item = await baseStorage.getItem(name);
       if (!item) return null;
 
-      // Parse and strip pdfBlobs
+      // Parse and strip pdfBlobs — contracts live at parsed.state.contracts
       const parsed = typeof item === 'string' ? JSON.parse(item) : item;
       return {
         ...parsed,
-        contracts: (parsed.contracts || []).map((c: any) => ({
-          ...c,
-          pdfBlob: null // PdfSyncModule will restore from IndexedDB
-        }))
+        state: {
+          ...parsed.state,
+          contracts: (parsed.state?.contracts || []).map((c: any) => ({
+            ...c,
+            recipients: c.recipients || [], // Guard old schema without recipients
+            pdfBlob: null
+          }))
+        }
       };
     },
     setItem: async (name: string, value: any) => {
-      // Strip Blobs from value before storing
+      // Strip Blobs — contracts live at value.state.contracts
       const cleaned = {
         ...value,
-        contracts: (value.contracts || []).map((c: any) => ({
-          ...c,
-          pdfBlob: null // Don't persist Blobs in JSON storage
-        }))
+        state: {
+          ...value.state,
+          contracts: (value.state?.contracts || []).map((c: any) => ({
+            ...c,
+            pdfBlob: null
+          }))
+        }
       };
       await baseStorage.setItem(name, JSON.stringify(cleaned));
     },
@@ -415,7 +422,7 @@ export function useContracts() {
   const globalNIKRegistry = useMemo(() => {
     const map = new Map<string, { id: string, name: string }[]>();
     contracts.forEach(c => {
-      c.recipients.forEach(r => {
+      (c.recipients || []).forEach(r => {
         if (!r.nik) return;
         const existing = map.get(r.nik) || [];
         if (!existing.find(e => e.id === c.id)) {

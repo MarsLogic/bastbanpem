@@ -124,7 +124,7 @@ export const ContractListView: React.FC<ContractListViewProps> = ({ onCreateCont
                       <TableCell className="font-black text-slate-900 px-6">{contract.name}</TableCell>
                       <TableCell className="text-slate-400 font-mono text-[11px] font-medium">{contract.nomorKontrak || 'PENDING'}</TableCell>
                       <TableCell className="text-center">
-                         <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold text-[10px]">{contract.recipients.length}</span>
+                         <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold text-[10px]">{(contract.recipients || []).length}</span>
                       </TableCell>
                       <TableCell className="text-right font-mono font-black text-slate-900">{totalAnggaran.toLocaleString('id-ID')}</TableCell>
                       <TableCell className="text-center text-[10px] font-bold text-slate-400 uppercase">

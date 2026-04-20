@@ -76,14 +76,26 @@ if os.path.exists(DIST_PATH):
     
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
-        # Allow API and specific routes to pass through
-        if full_path.startswith("api/") or full_path.startswith("portal/") or full_path.startswith("docs/"):
-            return None # FastAPI will handle via router
+        # [EXPERT-006] SPA Catch-all: If it's not a file, serve index.html
+        # We exclude common API prefixes to ensure they 404 properly if rotation fails
+        api_prefixes = ("api/", "portal/", "docs/", "health", "license/")
+        if any(full_path.startswith(p) for p in api_prefixes):
+            # This indicates an API call fell through the router. 
+            # We must NOT return index.html here, nor None.
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Not Found", "message": f"API endpoint '{full_path}' not found."}
+            )
             
         file_path = os.path.join(DIST_PATH, full_path)
         if os.path.isfile(file_path):
             return FileResponse(file_path)
-        return FileResponse(os.path.join(DIST_PATH, "index.html"))
+            
+        # Fallback to index.html for SPA client-side routing
+        return FileResponse(
+            os.path.join(DIST_PATH, "index.html"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+        )
 
 def open_browser():
     """Wait for server to start then launch default browser."""
