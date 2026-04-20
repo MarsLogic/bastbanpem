@@ -6,7 +6,7 @@ import {
   Table as TableIcon, LayoutGrid, Download, Activity,
   CheckSquare, RefreshCw, UserCheck, MapPin, XCircle
 } from 'lucide-react';
-import { ingestExcel, probeExcel } from '../lib/api';
+import { ingestExcel, probeExcel, generateBast, dispatchBundle } from '../lib/api';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
   const [isIngesting, setIsIngesting] = useState(false);
   const [parsingStats, setParsingStats] = useState<ParsingStats | null>(null);
   const [ingestProgress, setIngestProgress] = useState(0);
-  const [viewMode, setViewMode] = useState<'ringkasan' | 'lampiran' | 'validation'>('validation');
+  const [viewMode, setViewMode] = useState<'ringkasan' | 'lampiran' | 'validation' | 'fulfillment'>('validation');
   const [data, setData] = useState<any>(null);
   
   // Expert Phase 1 State
@@ -190,6 +190,51 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
+  };
+
+  const handlePrintBast = async (row: any) => {
+    const payload = {
+        nomor_bast: `BAST-${row.nik.slice(-4)}/${contract?.metadata?.nomor_kontrak || '2026'}`,
+        nomor_kontrak: contract?.metadata?.nomor_kontrak || 'N/A',
+        nama_kegiatan: contract?.metadata?.pekerjaan || 'Penyaluran Bantuan',
+        penerima_nama: row.name,
+        penerima_nik: row.nik,
+        penerima_alamat: `${row.location.desa}, ${row.location.kecamatan}`,
+        volume: row.financials.qty,
+        nilai: row.financials.calculated_value,
+        nama_vendor: contract?.metadata?.penyedia || 'PT. BASTBANPEM JAYA',
+    };
+
+    const printToast = toast.loading(`Generating BAST for ${row.name}...`);
+    try {
+        const blob = await generateBast(payload);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `BAST_${row.nik}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success("BAST Generated", { id: printToast });
+    } catch (e) {
+        toast.error("Generation Failed", { id: printToast });
+    }
+  };
+
+  const handleGetBundle = async () => {
+    const bundleToast = toast.loading("Packaging Portal Dispatch Bundle...");
+    try {
+        const result = await dispatchBundle(contract?.id || 'CONTRACT-01', data.rows);
+        const blob = new Blob([JSON.stringify(result.bundle, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Dispatch_Bundle_${contract?.id || 'BAST'}.json`;
+        a.click();
+        toast.success("Dispatch Bundle Ready", { id: bundleToast });
+    } catch (e) {
+        toast.error("Bundle Packaging Failed", { id: bundleToast });
+    }
   };
 
   return (
@@ -468,6 +513,15 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
                 >
                    <Activity className="h-3.5 w-3.5" /> Validation Hub
                 </div>
+                <div 
+                  onClick={() => setViewMode('fulfillment')}
+                  className={cn(
+                    "flex items-center gap-1 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer",
+                    viewMode === 'fulfillment' ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-800 text-slate-400 hover:text-white"
+                  )}
+                >
+                   <CheckCircle2 className="h-3.5 w-3.5" /> Fulfillment Sovereign
+                </div>
               </div>
 
             <div className="max-h-[600px] overflow-auto border-t border-slate-200 bg-slate-50/30">
@@ -642,17 +696,90 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
                     <tbody className="divide-y divide-slate-100">
                       {data?.rows.map((row: any, idx: number) => (
                         <tr key={idx} className="hover:bg-slate-50 transition-colors group">
-                          <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-900 border-r border-slate-100">{row.nik}</td>
-                          <td className="px-4 py-3 text-[11px] font-black text-slate-700 uppercase border-r border-slate-100">{row.name}</td>
-                          <td className="px-4 py-3 text-[11px] font-mono text-slate-500 border-r border-slate-100">{row.phone || '-'}</td>
-                          <td className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase border-r border-slate-100">{row.location.desa}</td>
-                          <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-700 text-right border-r border-slate-100">{row.financials.qty.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-900 text-right bg-slate-50/30 group-hover:bg-transparent">{formatCurrency(row.financials.calculated_value)}</td>
+                           <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-900 border-r border-slate-100">{row.nik}</td>
+                           <td className="px-4 py-3 text-[11px] font-black text-slate-700 uppercase border-r border-slate-100">{row.name}</td>
+                           <td className="px-4 py-3 text-[11px] font-mono text-slate-500 border-r border-slate-100">{row.phone || '-'}</td>
+                           <td className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase border-r border-slate-100">{row.location.desa}</td>
+                           <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-700 text-right border-r border-slate-100">{row.financials.qty.toLocaleString()}</td>
+                           <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-900 text-right bg-slate-50/30 group-hover:bg-transparent">{formatCurrency(row.financials.calculated_value)}</td>
                         </tr>
                       ))}
                     </tbody>
-                 </table>
-               ) : null}
+                  </table>
+                ) : viewMode === 'fulfillment' ? (
+                  <div className="p-6 space-y-6">
+                     <div className="flex items-center justify-between">
+                        <div>
+                           <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">The Sovereign Fulfillment Hub</h4>
+                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Generate Digital Assets & Portal Bundles</p>
+                        </div>
+                        <Button 
+                           onClick={handleGetBundle}
+                           className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] h-9 px-6 rounded-xl shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all"
+                        >
+                           <Download className="mr-2 h-4 w-4" /> Get Dispatch Bundle
+                        </Button>
+                     </div>
+
+                     <div className="grid grid-cols-1 gap-4">
+                        <div className="border border-slate-200 rounded-2xl bg-white overflow-hidden shadow-sm">
+                           <table className="w-full border-collapse">
+                              <thead className="bg-slate-50 border-b border-slate-200">
+                                 <tr>
+                                    <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Penerima</th>
+                                    <th className="px-4 py-3 text-center text-[9px] font-black text-slate-500 uppercase tracking-widest">Identity Match</th>
+                                    <th className="px-4 py-3 text-center text-[9px] font-black text-slate-500 uppercase tracking-widest">Photo Evidence</th>
+                                    <th className="px-4 py-3 text-right text-[9px] font-black text-slate-500 uppercase tracking-widest">Document Fulfillment</th>
+                                 </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100">
+                                 {data.rows.map((row: any) => (
+                                    <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                                       <td className="px-4 py-4">
+                                          <p className="text-[11px] font-black text-slate-900 uppercase">{row.name}</p>
+                                          <p className="text-[9px] font-mono font-bold text-slate-400">{row.nik}</p>
+                                       </td>
+                                       <td className="px-4 py-4 text-center">
+                                          {row.hasKtp ? (
+                                             <Badge className="bg-emerald-50 text-emerald-700 border-dashed border-emerald-200 text-[8px] font-black">FORENSIC MATCH</Badge>
+                                          ) : (
+                                             <Badge variant="outline" className="text-[8px] font-black text-slate-400">PENDING</Badge>
+                                          )}
+                                       </td>
+                                       <td className="px-4 py-4 text-center">
+                                          {row.hasPhoto ? (
+                                             <Badge className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[8px] font-black uppercase">LINKED</Badge>
+                                          ) : (
+                                             <Badge variant="outline" className="text-[8px] font-black text-slate-400">NO MEDIA</Badge>
+                                          )}
+                                       </td>
+                                       <td className="px-4 py-4 text-right">
+                                          <div className="flex gap-2 justify-end">
+                                             <Button 
+                                               size="sm" 
+                                               variant="outline" 
+                                               className="h-8 text-[9px] font-black uppercase rounded-lg border-slate-200"
+                                               onClick={() => handlePrintBast(row)}
+                                             >
+                                                Print BAST
+                                             </Button>
+                                             <Button 
+                                               size="sm" 
+                                               variant="outline" 
+                                               className="h-8 text-[9px] font-black uppercase rounded-lg border-slate-200"
+                                             >
+                                                Print S. Jalan
+                                             </Button>
+                                          </div>
+                                       </td>
+                                    </tr>
+                                 ))}
+                              </tbody>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+                 ) : null}
             </div>
           </CardContent>
         </Card>

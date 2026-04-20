@@ -11,7 +11,7 @@ from rapidfuzz import process, fuzz
 import fastexcel
 from backend.models import (
     ReconciliationResult, PipelineRow, LocationData, 
-    FinancialData, ExcelIngestResult
+    FinancialData, ExcelIngestResult, ExcelSheetProbe
 )
 from backend.services.diagnostics import diagnostics
 from backend.services.location_service import location_service

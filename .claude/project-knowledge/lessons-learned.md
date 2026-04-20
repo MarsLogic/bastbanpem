@@ -196,14 +196,6 @@ This document is the "Collective Brain" of the project. It captures architectura
 - **Classes**: `(class_declaration name: (type_identifier) @name) @class`
 - **Arrows**: `(variable_declarator name: (identifier) @name value: (arrow_function) @func) @func`
 - **Methods**: `(method_definition name: (property_identifier) @name) @func`
-### Improvement: [LEARN-018] Forensic 'Pre-Flight' Excel Discovery Hub
-**Context**: Complex Excel workbooks with multiple tables (Subtotals, Headers, hidden sheets) were causing "Blind Ingestion" errors where the wrong data was being parsed as the primary payload.
-**Action**:
-1. Implemented a **structural probe** (`probe_excel_structure` in `backend/services/data_engine.py`) that scores sheets by keyword density (NIK, Nama, etc.).
-2. Redesigned the UI into a **three-stage discovery workflow**: Physical Probe -> Sheet Selection (UI Hub) -> Targeted Ingestion (`src/components/DistributionIntelligence.tsx`).
-3. Enforced **string-strict coercion** in the Polars pipeline to prevent 16-digit ID (NIK) corruption by Excel's float engine.
-**Risk Identified**: Selection of subtotal/summary sheets as payload. Mitigated by adding "Detected Payload" badges and structural previews (row/col counts, header samples) in the Discovery Hub.
-**Consequences**: Eliminated ingestion errors caused by multi-sheet workbooks. 100% precision for 16-digit Indonesian IDs and regional regional codes.
 **Expert Insight**: NEVER ingest multi-sheet Excel workbooks blindly. Always wrap ingestion in a "Discovery Hub" that exposes the physical structure to the user for structural validation BEFORE the parser runs.
 
 ---

@@ -23,8 +23,11 @@ class KtpExpertRepair:
     def validate_nik(data: Dict[str, Any]):
         nik = data.get("nik", "")
         if not nik or len(nik) < 15: return
-        nik = nik.replace("L", "1").replace("I", "1").replace("O", "0").replace("B", "8").replace("S", "5")
+        nik = nik.replace("L", "1").replace("I", "1").replace("O", "0").replace("B", "8").replace("S", "5").replace("?", "7").replace("g", "9").replace("b", "6")
         digits = "".join(filter(str.isdigit, nik))
+        
+        # [EXPERT-NIK] Precision targeting for Indonesian 16-digit pattern
+        # If we have 15 or 17 digits, try to recover the 16-digit sequence
         if len(digits) >= 16:
             data["nik"] = digits[:16]
             try:
@@ -81,8 +84,16 @@ class KtpSpatialParser:
     def extract(self) -> Dict[str, Any]:
         if not self.boxes: return {}
         for b in self.boxes:
-            clean = b["text"].replace(" ", "").replace("O", "0").replace("L", "1").replace("I", "1")
+            # Aggressive character recovery for NIK row
+            clean = b["text"].replace(" ", "").replace("O", "0").replace("L", "1").replace("I", "1").replace("?", "7").replace("S", "5")
             match = re.search(r'(\d{16})', clean)
+            if not match:
+                # Try partial match if exactly 16 chars long but contains non-digits
+                if len(clean) == 16:
+                    recovered = "".join(c if c.isdigit() else "7" if c == "?" else "1" if c in "LI" else "0" if c == "O" else c for c in clean)
+                    if recovered.isdigit():
+                        self.data["nik"] = recovered
+                        break
             if match:
                 self.data["nik"] = match.group(1)
                 break

@@ -188,4 +188,16 @@ export const cancelPortalBatch = async (batchId: string) => {
   return data;
 };
 
+export const generateBast = async (payload: any) => {
+    const { data } = await api.post('/contracts/generate-bast', payload, {
+        responseType: 'blob'
+    });
+    return data;
+};
+
+export const dispatchBundle = async (idkontrak: string, rows: any[]) => {
+    const { data } = await api.post('/contracts/dispatch-bundle', { idkontrak, rows });
+    return data;
+};
+
 export default api;

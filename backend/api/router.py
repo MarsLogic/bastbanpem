@@ -22,6 +22,7 @@ from backend.services.cpcl_extractor import cpcl_extractor
 from backend.services.watcher_service import watcher_service
 from backend.services.portal_service import portal_service
 from backend.services.batch_worker import batch_worker
+from backend.services.generate_bast import bast_generator
 
 router = APIRouter()
 
@@ -381,5 +382,52 @@ async def search_vault(q: str, contract_id: Optional[str] = None):
     try:
         results = vault_service.master_search(q, contract_id)
         return {"results": results}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/contracts/generate-bast")
+async def generate_bast_endpoint(data: Dict[str, Any] = Body(...)):
+    """Generate a high-fidelity BAST PDF for a specific recipient."""
+    try:
+        output_dir = os.path.join(settings.BASE_DIR, "output", "bast")
+        os.makedirs(output_dir, exist_ok=True)
+        
+        nik = data.get("penerima_nik", "unknown")
+        filename = f"BAST_{nik}_{int(time.time())}.pdf"
+        output_path = os.path.join(output_dir, filename)
+        
+        import asyncio
+        # Playwright requires a running loop, but FastAPI provides one. 
+        # However, for simplicity in this expert context, we'll run it sync-wrapped or use a dedicated task.
+        from backend.services.generate_bast import bast_generator
+        await bast_generator.generate_pdf(data, output_path)
+        
+        return FileResponse(
+            path=output_path,
+            filename=filename,
+            media_type="application/pdf"
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/contracts/dispatch-bundle")
+async def dispatch_bundle(idkontrak: str = Body(...), rows: List[Dict] = Body(...)):
+    """Package all distribution data into a portal-ready JSON/ZIP bundle."""
+    try:
+        bundle = {
+            "idkontrak": idkontrak,
+            "timestamp": datetime.now().isoformat(),
+            "payload": [
+                {
+                    "nik": r.get("nik"),
+                    "nama": r.get("name"),
+                    "nominal": r.get("financials", {}).get("calculated_value", 0),
+                    "status_verifikasi": "FORENSIC_MATCH" if r.get("hasKtp") else "PENDING"
+                } for r in rows
+            ]
+        }
+        return {"status": "success", "bundle": bundle}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

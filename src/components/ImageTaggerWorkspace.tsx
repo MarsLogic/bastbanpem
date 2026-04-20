@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import {
   Search, FolderOpen, Image as ImageIcon, Link, CheckCircle2,
   Crop, RotateCcw, RotateCw, Save, X, Sparkles, Loader2,
-  ChevronDown, Scan, UserCheck, Users, Users2, Filter, Cpu, FileUp
+  ChevronDown, Scan, UserCheck, Users, Users2, Filter, Cpu, FileUp,
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,8 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [poktanFilter, setPoktanFilter] = useState('ALL');
   const [ocrVersion, setOcrVersion] = useState<'v4' | 'v5'>('v4');
+  const [ocrData, setOcrData] = useState<any>(null);
+  const [isProcessingOcr, setIsProcessingOcr] = useState(false);
   
   // Editor State
   const [isEditing, setIsEditing] = useState(false);
@@ -110,6 +113,12 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
     setIsQuadMode(false);
     setRotation(0);
     setIsProxyMode(false);
+    setOcrData(null);
+    
+    // Auto-trigger OCR for selected image if it's KTP and not yet scanned
+    if (selectedImage && type === 'ktp' && !bindings[selectedImage.name]) {
+        handleSingleOcr(selectedImage);
+    }
   }, [selectedImage]);
 
   const handleSelectFolder = () => {
@@ -219,6 +228,35 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
       if (images[currentIndex + 1]) setSelectedImage(images[currentIndex + 1]);
     }
     setIsProxyMode(false);
+  };
+
+  const handleSingleOcr = async (image: ImageEntry) => {
+    setIsProcessingOcr(true);
+    try {
+        let file: File;
+        if ((image as any)._file) {
+            file = (image as any)._file;
+        } else {
+            const response = await fetch(image.assetUrl);
+            const blob = await response.blob();
+            file = new File([blob], image.name, { type: 'image/jpeg' });
+        }
+        const res = await ocrKtp(file);
+        setOcrData(res);
+        
+        // Auto-Link: If 100% confidence match to a farmer, auto-bind
+        if (res.nik) {
+            const match = farmers.find(f => f.nik === res.nik);
+            if (match && !bindings[image.name]) {
+                handleTag(match.nik);
+                toast.success(`Auto-Stapled to ${match.name}`);
+            }
+        }
+    } catch (e) {
+        console.error("OCR Auto-fetch failed", e);
+    } finally {
+        setIsProcessingOcr(false);
+    }
   };
 
   const handleScanAI = async (scope: 'current' | 'unbound' | 'all') => {
@@ -357,7 +395,7 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
                    )}
                </div>
 
-               {isEditing ? (
+                {isEditing ? (
                   <div className="w-full h-full rounded-2xl overflow-hidden bg-zinc-900/50">
                      <Cropper
                        src={selectedImage.assetUrl}
@@ -368,7 +406,42 @@ export const ImageTaggerWorkspace: React.FC<ImageTaggerWorkspaceProps> = ({
                      />
                   </div>
                ) : (
-                 <img src={selectedImage.assetUrl} className="object-contain max-h-[75vh] rounded-lg shadow-2xl ring-1 ring-white/10" />
+                 <div className="relative group">
+                    <img src={selectedImage.assetUrl} className="object-contain max-h-[75vh] rounded-lg shadow-2xl ring-1 ring-white/10" />
+                    
+                    {/* Verification Shield Overlay */}
+                    {ocrData && (
+                        <div className="absolute top-4 left-4 p-4 bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl max-w-xs animate-in fade-in slide-in-from-left-4 duration-500">
+                             <div className="flex items-center gap-3 mb-3">
+                                <div className={cn("p-1.5 rounded-lg", ocrData.nik ? "bg-emerald-500/10" : "bg-red-500/10")}>
+                                   <ShieldCheck className={cn("size-5", ocrData.nik ? "text-emerald-500" : "text-red-500")} />
+                                </div>
+                                <div>
+                                    <h4 className="text-white font-black text-[10px] uppercase tracking-widest leading-none">OCR Insight</h4>
+                                    <p className="text-white/40 text-[9px] font-bold mt-1">Identity Intelligence</p>
+                                </div>
+                             </div>
+                             
+                             <div className="space-y-2">
+                                <div className="p-2 bg-white/5 rounded-lg border border-white/5">
+                                    <div className="text-[8px] font-black uppercase text-white/40 mb-0.5">Detected NIK</div>
+                                    <div className="text-xs font-mono text-white tracking-wider">{ocrData.nik || 'Not Found'}</div>
+                                </div>
+                                <div className="p-2 bg-white/5 rounded-lg border border-white/5">
+                                    <div className="text-[8px] font-black uppercase text-white/40 mb-0.5">Detected Name</div>
+                                    <div className="text-xs font-bold text-white uppercase">{ocrData.nama || 'N/A'}</div>
+                                </div>
+                             </div>
+
+                             {ocrData.nik && bindings[selectedImage.name] === ocrData.nik && (
+                                <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-2">
+                                   <div className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                                   <span className="text-[9px] font-black uppercase text-emerald-500">Forensically Verified</span>
+                                </div>
+                             )}
+                        </div>
+                    )}
+                 </div>
                )}
              </div>
           ) : (
