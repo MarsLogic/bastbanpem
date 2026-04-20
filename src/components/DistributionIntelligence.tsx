@@ -198,33 +198,69 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
         </Card>
       )}
 
-      {/* STAGE 5: READY */}
-      {stage === 'READY' && (
-        <Card className="border-slate-900 bg-slate-900 shadow-xl overflow-hidden rounded-2xl animate-in zoom-in-95 duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-400" />
+      {/* STAGE 5: READY (DATA TABLE VIEW) */}
+      {stage === 'READY' && data && (
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <Card className="border-slate-200 shadow-xl rounded-2xl overflow-hidden bg-white">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-black text-white uppercase tracking-widest">Data Uploaded</h4>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">
-                    Sheet: <span className="text-white">{selectedSheet}</span> • File: {currentFile?.name}
-                  </p>
+                  <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-tight">Verified Distribution List</h3>
+                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Source: {selectedSheet} • {data.rows.length} records</p>
                 </div>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handleReset}
-                className="bg-transparent border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 text-[10px] font-black uppercase h-8 px-4"
+                className="h-8 text-[9px] font-black uppercase text-slate-500 hover:text-slate-900 border-slate-200"
               >
                 Change File
               </Button>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="max-h-[500px] overflow-auto">
+              <table className="w-full border-collapse text-left">
+                <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 z-10">
+                  <tr>
+                    <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">NIK</th>
+                    <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Name</th>
+                    <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Location</th>
+                    <th className="px-6 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest">Quantity</th>
+                    <th className="px-6 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.rows.map((row: any, idx: number) => (
+                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <span className="text-[11px] font-mono font-bold text-slate-900">{row.nik}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-[11px] font-black text-slate-700 uppercase">{row.name}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-slate-900 uppercase">{row.location.desa}</span>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase">{row.location.kecamatan}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="text-[11px] font-mono font-bold text-slate-900">{row.financials.qty.toLocaleString()}</span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Badge variant="outline" className="text-[8px] h-4 font-black border-slate-200 text-slate-400">LOADED</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
       )}
 
       {/* ERROR HINT */}
