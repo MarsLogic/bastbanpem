@@ -249,4 +249,25 @@ This document is the "Collective Brain" of the project. It captures architectura
 
 ---
 
-*Last Updated: 2026-04-20 (LEARN-022/023: Zustand persist adapter fix + blank screen diagnosis protocol)*
+### Improvement: [LEARN-024] Schema Guard: Missing `name` Field on Old Contracts
+**Context**: Opening a contract caused `TypeError: can't access property "toLowerCase", e.name is undefined`. Old IndexedDB-stored contracts predated the `name` field on `ContractData`.
+**Action**: Added `name: c.name || 'Untitled Contract'` guard in `contractStore.ts` `getItem` alongside the existing `recipients` guard.
+**Risk Identified**: Any new required field added to `ContractData` without a corresponding fallback in `getItem` will crash the app for users with stored data. Pattern repeats silently.
+**Consequences**: Zero-crash hydration for all old stored contracts.
+**Expert Insight**: Every new required field on a persisted Zustand interface MUST have a `|| defaultValue` fallback in both `getItem` AND every render-time access site. Treat `getItem` as a migration layer.
+
+### Improvement: [LEARN-025] Section 2 Rebuild — Clean Recipient Table (No ExcelWorkbench)
+**Context**: `DistributionIntelligence.tsx` wrapped `ExcelWorkbench` (Smart Mapper, balance tools, financial cards, audit columns) — far too heavy for a basic recipient list view.
+**Action**: Rewrote `DistributionIntelligence.tsx` from scratch as a self-contained component:
+- Stages: IDLE (dropzone) → ANALYZING → SELECTING (sheet picker) → LOADING → READY (table only)
+- Removed `ExcelWorkbench` dependency entirely
+- Clean data table: #, Nama, NIK, Poktan, Desa, Kecamatan, QTY, Target Val, Jadwal
+- Pagination (20/50/100), search filter, sheet tabs, cache per sheet
+- All edge cases handled: stale closure on `ingestSheet` via `fileOverride` + `freshCache` pass-through; `safePage` clamped to `totalPages`; `useEffect` resets page on search; empty-state UI
+**Risk Identified**: `handleSheetSelect` called from `onDrop` before `currentFile` state updates (React batching). Fixed by passing `file` and `freshCache` explicitly instead of relying on closure state.
+**Consequences**: Bundle dropped 160 KB. Section 2 is now a clean, focused table.
+**Expert Insight**: When a component wraps a heavy workbench tool it doesn't fully need, replace it entirely rather than hiding parts. Stale-closure bugs in `useCallback` chains: always pass fresh state explicitly when calling async functions from event handlers before state has committed.
+
+---
+
+*Last Updated: 2026-04-20 (LEARN-024/025: name field guard + Section 2 clean table rebuild)*

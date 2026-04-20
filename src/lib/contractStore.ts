@@ -289,6 +289,7 @@ const createBlobSafeStorage = () => {
           ...parsed.state,
           contracts: (parsed.state?.contracts || []).map((c: any) => ({
             ...c,
+            name: c.name || 'Untitled Contract', // Guard old schema without name
             recipients: c.recipients || [], // Guard old schema without recipients
             pdfBlob: null
           }))
