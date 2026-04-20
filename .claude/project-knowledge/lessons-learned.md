@@ -198,6 +198,32 @@ This document is the "Collective Brain" of the project. It captures architectura
 - **Methods**: `(method_definition name: (property_identifier) @name) @func`
 **Expert Insight**: NEVER ingest multi-sheet Excel workbooks blindly. Always wrap ingestion in a "Discovery Hub" that exposes the physical structure to the user for structural validation BEFORE the parser runs.
 
+### Improvement: [LEARN-018] Polars Expression Syntax (to_lowercase vs lower)
+**Context**: During the transition to Polars v0.20.0 for the location registry, using `.str.lower()` on expressions caused a `LOC-LOAD-FAIL` because the method is not defined on the `ExprStringNameSpace` object.
+**Action**: Corrected `location_service.py` to use `.str.to_lowercase()`.
+**Risk Identified**: Confusing Python string methods with Polars expression methods leads to 500 errors in the data pipeline.
+**Expert Insight**: ALWAYS use `.str.to_lowercase()` for Polars expressions.
+
+### Improvement: [LEARN-019] Dict-vs-Int Indexing Trap
+**Context**: The `smart_detect_header` function was refactored to return a metadata dictionary `{"index": int, "row_indices": List[int]}` instead of a raw integer. 
+**Action**: Fixed `data_engine.py` where it was mistakenly passing the whole dictionary into `df.row()`, causing the "Blank Workbook Selection" bug.
+**Risk Identified**: Refactoring return types in core utility functions requires a recursive audit of all call sites to prevent silent `try-except` masking.
+**Consequences**: Restored the visibility of the sheet selection cards.
+**Expert Insight**: Explicitly destructure metadata returns: `header_idx = smart_detect_header(df)["index"]`.
+
+### Improvement: [LEARN-020] Excel Collision Guard (Deduplication)
+**Context**: Uploading files with empty or redundant headers (e.g. multiple "Jumlah" columns) triggered a `duplicate column names found` 500 error in Polars.
+**Action**: Implemented `make_unique(names)` helper in `data_engine.py` that appends suffixes (`_1`, `_2`) to headers before DataFrame creation.
+**Risk Identified**: Polars strictly forbids duplicate columns in names. Even if columns are unused, they must be unique.
+**Consequences**: Hardened ingestion that can handle "Dirty" or unstructured Excel sheets.
+**Expert Insight**: Never ingest raw headers from an untrusted XLSX without a uniqueness pass.
+
+### Improvement: [LEARN-021] Logger Interface Compliance
+**Context**: Emergency fixes in the ingestion pipeline attempted to call `diagnostics.log_success()`, which existed in code comments but was missing from the `EliteLogger` class implementation.
+**Action**: Formally implemented `log_success` in `diagnostics.py` to match the expected service signature.
+**Risk Identified**: Broken logger methods cause the `except` block itself to crash, losing the original error context.
+**Expert Insight**: Treat your Diagnostic Service as a strict interface; keep it in sync across all service reworks.
+
 ---
 
-*Last Updated: 2026-04-20 (Phase 5: Forensic Excel 'Pre-Flight' Hub Implemented)*
+*Last Updated: 2026-04-20 (Phase 3 Sovereign Completion: Forensic Repair Suite Deployed)*

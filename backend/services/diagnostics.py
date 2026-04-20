@@ -32,6 +32,12 @@ class EliteLogger:
         }
         self.logger.info(f"BREADCRUMB | {category} | {message} | {json.dumps(data or {})}")
 
+    def log_success(self, code: str, message: str):
+        """
+        Log a formal successful operation with code and state message.
+        """
+        self.logger.info(f"SUCCESS | {code} | {message}")
+
     def log_error(self, code: str, message: str, traceback: str = None):
         """
         Log a formal Elite error with code and optional stack trace.

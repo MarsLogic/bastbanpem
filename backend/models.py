@@ -167,7 +167,7 @@ class ExcelSheetProbe(BaseModel):
     name: str
     row_count: int
     col_count: int
-    sample_rows: List[List[Any]] = []
+    sample_rows: List[Dict[str, Any]] = []
     headers: List[str] = []
     discovery_score: float = 0.0
 

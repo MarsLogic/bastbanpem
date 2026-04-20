@@ -52,6 +52,20 @@ def clean_header_text(text: Any) -> str:
     s = re.sub(r'[^\w\s/]', '', s)
     return re.sub(r'\s+', '_', s)
 
+def make_unique(names: List[str]) -> List[str]:
+    """Expert Guard: Ensure all column names are unique for polars compatibility."""
+    seen = {}
+    result = []
+    for name in names:
+        if not name: name = "unnamed"
+        if name in seen:
+            seen[name] += 1
+            result.append(f"{name}_{seen[name]}")
+        else:
+            seen[name] = 0
+            result.append(name)
+    return result
+
 def protect_sci_notation(val: Any) -> str:
     """Elite Pattern: Prevent NIK corruption from Excel scientific notation."""
     s = str(val).strip()
@@ -168,7 +182,8 @@ def probe_excel_structure(excel_content: bytes) -> List[ExcelSheetProbe]:
             match_count = 0
             headers = []
             if len(df_probe) > 0:
-                header_idx = smart_detect_header(df_probe)
+                header_meta = smart_detect_header(df_probe)
+                header_idx = header_meta["index"]
                 raw_headers = df_probe.row(header_idx)
                 headers = [str(h) for h in raw_headers if h is not None]
                 row_vals = [str(x).lower() for x in raw_headers if x is not None]
@@ -220,11 +235,14 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
             clean_headers = [clean_header_text(h) for h in stapled]
         else:
             raw_header_row = df_raw.row(header_idx)
-            clean_headers = [clean_header_text(x) if x is not None else f"unnamed_{i}" for i, x in enumerate(raw_header_row)]
+            clean_headers = [clean_header_text(x) for x in raw_header_row]
             
+        # PRODUCTION GUARD: Ensure clean headers are unique before applying to polars
+        unique_headers = make_unique(clean_headers)
+        
         # Reload with corrected offset and clean headers
         df_data = df_raw.slice(header_idx + 1)
-        df_data.columns = [h if h else f"col_{i}" for i, h in enumerate(clean_headers)]
+        df_data.columns = unique_headers
         
         # 3. BOUNDED FORWARD FILL (Segmented)
         # Detect table breakers (large null gaps) to prevent data bleed
@@ -258,13 +276,16 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
             
         df_segmented = pl.DataFrame(final_rows)
 
-        # 4. Canonical Mapping
+        # Expert Mapping Guard: Prevent duplicate canonical assignments
         rename_map = {}
+        assigned_canonical = set()
         for col in df_segmented.columns:
             col_key = col.lower()
             for canonical, aliases in HEADER_ALIAS_MAP.items():
                 if any(alias in col_key for alias in aliases):
-                    rename_map[col] = canonical
+                    if canonical not in assigned_canonical:
+                        rename_map[col] = canonical
+                        assigned_canonical.add(canonical)
                     break
         
         df_mapped = df_segmented.rename(rename_map)

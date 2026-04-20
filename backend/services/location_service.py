@@ -39,7 +39,7 @@ class EliteLocationService:
             
             # Create a combined search column for rapid broad probing
             self._df = self._df.with_columns([
-                (pl.col("provinsi") + " " + pl.col("kabupaten") + " " + pl.col("kecamatan") + " " + pl.col("desa")).str.lower().alias("search_blob")
+                (pl.col("provinsi") + " " + pl.col("kabupaten") + " " + pl.col("kecamatan") + " " + pl.col("desa")).str.to_lowercase().alias("search_blob")
             ])
             
             self._is_loaded = True
