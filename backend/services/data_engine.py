@@ -33,11 +33,21 @@ HEADER_ALIAS_MAP = {
     "phone": ["no hp", "phone", "telepon", "kontak", "whatsapp"],
 }
 
+def deep_sanitize(val: Any) -> str:
+    """Forensic Scrub: Remove all non-printable and invisible artifacts (\u200b, \r, \t, etc)."""
+    if val is None: return ""
+    s = str(val)
+    # Remove control characters, zero-width spaces, and other invisible pollution
+    s = "".join(ch for ch in s if ch.isprintable() or ch == '\n')
+    # Collapse internal whitespace but preserve newlines for multi-line cells
+    s = re.sub(r'[ \t\f\v]+', ' ', s)
+    return s.strip()
+
 def clean_header_text(text: Any) -> str:
     """Production Pattern: Sanitize headers from structural pollution (newlines, nulls, special chars)."""
     if text is None: return ""
-    # Remove newlines, carriage returns, zero-width spaces, and extra whitespace
-    s = str(text).lower().replace('\r', ' ').replace('\n', ' ').strip()
+    # Use deep_sanitize first
+    s = deep_sanitize(text).lower()
     # Remove non-alphanumeric except underscore and space
     s = re.sub(r'[^\w\s/]', '', s)
     return re.sub(r'\s+', '_', s)
@@ -85,22 +95,38 @@ def normalize_jadwal_tanam(val: Any) -> str:
     # Title case for professionalism
     return s.title()
 
-def smart_detect_header(df: pl.DataFrame) -> int:
-    """Heuristic Fingerprinting: Find row with max schema density."""
+def smart_detect_header(df: pl.DataFrame) -> Dict[str, Any]:
+    """
+    Expert Stapler: Find the primary header row and detect potential multi-row dependencies.
+    Returns {index: int, row_indices: List[int]}
+    """
     keywords = ["nik", "nama", "penerima", "desa", "jumlah", "qty", "harga", "poktan", "kecamatan"]
-    max_scan = min(30, len(df))
+    max_scan = min(40, len(df))
     
-    best_row = 0
+    best_row_idx = 0
     max_matches = 0
     
+    # 1. Identity Primary Header
     for i in range(max_scan):
-        row_vals = [str(x).lower() for x in df.row(i) if x is not None]
+        row_vals = [str(x).lower().strip() for x in df.row(i) if x is not None]
         match_count = sum(1 for k in keywords if any(k in v for v in row_vals))
         if match_count > max_matches:
             max_matches = match_count
-            best_row = i
+            best_row_idx = i
             
-    return best_row
+    # 2. Check for Parent Header (The Stapler logic)
+    # If the row above has sparse labels spanning multiple columns, it's a parent header.
+    row_indices = [best_row_idx]
+    if best_row_idx > 0:
+        parent_row = df.row(best_row_idx - 1)
+        # If parent row has significantly fewer non-null values than the child, it's a categorizer
+        parent_non_null = sum(1 for x in parent_row if x is not None and str(x).strip())
+        child_non_null = sum(1 for x in df.row(best_row_idx) if x is not None and str(x).strip())
+        
+        if 0 < parent_non_null < (child_non_null * 0.6):
+            row_indices.insert(0, best_row_idx - 1)
+            
+    return {"index": best_row_idx, "row_indices": row_indices}
 
 def is_pollution_row(row_dict: Dict[str, Any]) -> bool:
     """Anti-Pollution: Detect subtotal, total, and footnote rows."""
@@ -171,33 +197,77 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
         sheet = excel_file.load_sheet(sheet_name)
         df_raw = sheet.to_polars()
         
-        header_idx = smart_detect_header(df_raw)
+        # 2. Expert Header Stapling
+        header_meta = smart_detect_header(df_raw)
+        header_idx = header_meta["index"]
         
+        # Build stapled headers if multiple rows found
+        if len(header_meta["row_indices"]) > 1:
+            p_row = df_raw.row(header_meta["row_indices"][0])
+            c_row = df_raw.row(header_meta["row_indices"][1])
+            
+            stapled = []
+            last_parent = ""
+            for p, c in zip(p_row, c_row):
+                p_val = deep_sanitize(p)
+                if p_val: last_parent = p_val
+                
+                c_val = deep_sanitize(c)
+                if last_parent and c_val and last_parent.lower() not in c_val.lower():
+                    stapled.append(f"{last_parent}_{c_val}")
+                else:
+                    stapled.append(c_val or last_parent)
+            clean_headers = [clean_header_text(h) for h in stapled]
+        else:
+            raw_header_row = df_raw.row(header_idx)
+            clean_headers = [clean_header_text(x) if x is not None else f"unnamed_{i}" for i, x in enumerate(raw_header_row)]
+            
         # Reload with corrected offset and clean headers
         df_data = df_raw.slice(header_idx + 1)
-        raw_header_row = df_raw.row(header_idx)
-        clean_headers = [clean_header_text(x) if x is not None else f"unnamed_{i}" for i, x in enumerate(raw_header_row)]
-        df_data.columns = clean_headers
+        df_data.columns = [h if h else f"col_{i}" for i, h in enumerate(clean_headers)]
         
-        # 3. BOUNDED FORWARD FILL (Hierarchical)
-        # We fill regionals but protect against bleeding into distinct entities
-        # Polars fill_null with strategy "forward"
+        # 3. BOUNDED FORWARD FILL (Segmented)
+        # Detect table breakers (large null gaps) to prevent data bleed
         regional_cols = [c for c in df_data.columns if any(x in c.lower() for x in ["insi", "kabupaten", "kecamatan", "desa"])]
-        if regional_cols:
-            df_data = df_data.with_columns([
-                pl.col(c).fill_null(strategy="forward") for c in regional_cols
-            ])
+        
+        # We process row by row for the forward fill to detect "Gap Breakers"
+        final_rows = []
+        last_regionals = {c: None for c in regional_cols}
+        consecutive_nulls = 0
+        
+        for row_dict in df_data.to_dicts():
+            is_empty = not any(v for v in row_dict.values() if v is not None and str(v).strip())
+            
+            if is_empty:
+                consecutive_nulls += 1
+                if consecutive_nulls >= 3: # Table Segment Breaker
+                    last_regionals = {c: None for c in regional_cols}
+                continue
+            
+            consecutive_nulls = 0
+            
+            # Apply Bounded Forward-Fill
+            for col in regional_cols:
+                val = row_dict.get(col)
+                if val is not None and str(val).strip():
+                    last_regionals[col] = val
+                else:
+                    row_dict[col] = last_regionals[col]
+            
+            final_rows.append(row_dict)
+            
+        df_segmented = pl.DataFrame(final_rows)
 
         # 4. Canonical Mapping
         rename_map = {}
-        for col in df_data.columns:
+        for col in df_segmented.columns:
             col_key = col.lower()
             for canonical, aliases in HEADER_ALIAS_MAP.items():
                 if any(alias in col_key for alias in aliases):
                     rename_map[col] = canonical
                     break
         
-        df_mapped = df_data.rename(rename_map)
+        df_mapped = df_segmented.rename(rename_map)
         
         # Ensure core columns exist
         for col in ["nik", "nama", "qty", "unit_price", "shipping", "target_value", "phone", "group"]:

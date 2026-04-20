@@ -3,7 +3,8 @@ import { useDropzone } from 'react-dropzone';
 import { 
   FileSpreadsheet, ShieldCheck, AlertTriangle, Search, 
   Settings2, ChevronDown, CheckCircle2, Loader2, Info,
-  Table as TableIcon, LayoutGrid, Download
+  Table as TableIcon, LayoutGrid, Download, Activity,
+  CheckSquare, RefreshCw, UserCheck, MapPin, XCircle
 } from 'lucide-react';
 import { ingestExcel, probeExcel } from '../lib/api';
 import { toast } from 'sonner';
@@ -21,11 +22,11 @@ interface ParsingStats {
   healthScore: number;
 }
 
-export const DistributionIntelligence = ({ onDataLoaded }: { onDataLoaded: (data: any) => void }) => {
+export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?: any, onDataLoaded: (data: any) => void }) => {
   const [isIngesting, setIsIngesting] = useState(false);
   const [parsingStats, setParsingStats] = useState<ParsingStats | null>(null);
   const [ingestProgress, setIngestProgress] = useState(0);
-  const [viewMode, setViewMode] = useState<'ringkasan' | 'lampiran'>('ringkasan');
+  const [viewMode, setViewMode] = useState<'ringkasan' | 'lampiran' | 'validation'>('validation');
   const [data, setData] = useState<any>(null);
   
   // Expert Phase 1 State
@@ -114,6 +115,68 @@ export const DistributionIntelligence = ({ onDataLoaded }: { onDataLoaded: (data
       a.kabupaten.localeCompare(b.kabupaten) || a.kecamatan.localeCompare(b.kecamatan)
     );
   }, [data]);
+
+  // Golden Bridge: Excel vs PDF Reconciliation
+  const reconciliation = React.useMemo(() => {
+    if (!data?.rows || !contract?.metadata?.nilai_kontrak) return null;
+    
+    // Attempt to parse contract value (e.g. "Rp. 1.250.000,00" -> 1250000)
+    const rawContractVal = contract.metadata.nilai_kontrak;
+    const contractTotal = parseFloat(rawContractVal.replace(/[^\d]/g, '')) / 100 || 0;
+    
+    const excelTotal = data.rows.reduce((sum: number, r: any) => sum + r.financials.calculated_value, 0);
+    const gap = excelTotal - contractTotal;
+    
+    return {
+      contractTotal,
+      excelTotal,
+      gap,
+      isBalanced: Math.abs(gap) < 1.0
+    };
+  }, [data, contract]);
+
+  const handleApplyFix = (rowId: string) => {
+    if (!data) return;
+    const newRows = data.rows.map((r: any) => {
+      if (r.id === rowId) {
+        const updated = { ...r };
+        if (r.location.suggested_kecamatan) {
+          updated.location = {
+            ...r.location,
+            kecamatan: r.location.suggested_kecamatan,
+            desa: r.location.suggested_desa || r.location.desa,
+            suggested_kecamatan: undefined,
+            suggested_desa: undefined
+          };
+        }
+        return updated;
+      }
+      return r;
+    });
+    setData({ ...data, rows: newRows });
+    toast.success("Anomaly Repaired");
+  };
+
+  const handleAutoHealLocations = () => {
+    if (!data) return;
+    const newRows = data.rows.map((r: any) => {
+       if (r.location.suggested_kecamatan) {
+          return {
+            ...r,
+            location: {
+               ...r.location,
+               kecamatan: r.location.suggested_kecamatan,
+               desa: r.location.suggested_desa || r.location.desa,
+               suggested_kecamatan: undefined,
+               suggested_desa: undefined
+            }
+          };
+       }
+       return r;
+    });
+    setData({ ...data, rows: newRows });
+    toast.success("Mass Location Healing Complete");
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -283,7 +346,7 @@ export const DistributionIntelligence = ({ onDataLoaded }: { onDataLoaded: (data
           <CardContent className="p-0">
             <div className="p-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+                <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm">
                   <FileSpreadsheet className="h-5 w-5 text-slate-900" />
                 </div>
                 <div>
@@ -334,12 +397,46 @@ export const DistributionIntelligence = ({ onDataLoaded }: { onDataLoaded: (data
               <div className="p-4 py-6 text-center space-y-1">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pollution</p>
                 <p className="text-xl font-black text-slate-900 tabular-nums">{parsingStats.pollutionDropped}</p>
-                <div className="flex items-center justify-center gap-1">
+                 <div className="flex items-center justify-center gap-1">
                   <ShieldCheck className="h-3 w-3 text-slate-400" />
                   <span className="text-[9px] text-slate-400 font-bold uppercase">Excised</span>
                 </div>
               </div>
             </div>
+
+            {/* Reconciliation Bridge Banner */}
+            {reconciliation && (
+              <div className={cn(
+                "px-4 py-2 flex items-center justify-between border-y",
+                reconciliation.isBalanced ? "bg-emerald-50/50 border-emerald-100" : "bg-rose-50/50 border-rose-100"
+              )}>
+                 <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "p-1.5 rounded-lg",
+                      reconciliation.isBalanced ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
+                    )}>
+                       {reconciliation.isBalanced ? <CheckSquare className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">The Golden Bridge (Excel ↔ PDF)</p>
+                      <p className={cn("text-[11px] font-black uppercase", reconciliation.isBalanced ? "text-emerald-800" : "text-rose-800")}>
+                        {reconciliation.isBalanced ? "Precision Match: Data aligns with PDF Contract" : `Financial Discrepancy: ${formatCurrency(reconciliation.gap)} Delta`}
+                      </p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4 text-right">
+                    <div>
+                       <p className="text-[8px] font-black text-slate-400 uppercase">PDF Total</p>
+                       <p className="text-[11px] font-mono font-bold text-slate-600">{formatCurrency(reconciliation.contractTotal)}</p>
+                    </div>
+                    <div className="h-4 w-px bg-slate-200" />
+                    <div>
+                       <p className="text-[8px] font-black text-slate-400 uppercase">Excel Total</p>
+                       <p className="text-[11px] font-mono font-bold text-slate-900">{formatCurrency(reconciliation.excelTotal)}</p>
+                    </div>
+                 </div>
+              </div>
+            )}
             
             <div className="p-3 bg-slate-900 flex items-center justify-between">
               <div className="flex gap-2">
@@ -362,13 +459,152 @@ export const DistributionIntelligence = ({ onDataLoaded }: { onDataLoaded: (data
                    <TableIcon className="h-3.5 w-3.5" /> Lampiran Recipient
                 </div>
               </div>
-              <Button variant="ghost" className="h-6 text-[9px] text-slate-400 hover:text-white font-black uppercase tracking-tight gap-1">
-                <Settings2 className="h-3 w-3" /> Verify Schema
-              </Button>
-            </div>
+                <div 
+                  onClick={() => setViewMode('validation')}
+                  className={cn(
+                    "flex items-center gap-1 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer",
+                    viewMode === 'validation' ? "bg-white text-slate-900 shadow-sm" : "bg-slate-800 text-slate-400 hover:text-white"
+                  )}
+                >
+                   <Activity className="h-3.5 w-3.5" /> Validation Hub
+                </div>
+              </div>
 
-            <div className="max-h-[500px] overflow-auto border-t border-slate-200">
-               {viewMode === 'ringkasan' ? (
+            <div className="max-h-[600px] overflow-auto border-t border-slate-200 bg-slate-50/30">
+               {viewMode === 'validation' ? (
+                 <div className="p-6 space-y-6">
+                    {/* Validation Metrics */}
+                    <div className="grid grid-cols-3 gap-4">
+                       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
+                          <CardContent className="p-4 flex items-center gap-4">
+                             <div className="p-2 bg-amber-50 rounded-lg">
+                                <MapPin className="h-5 w-5 text-amber-600" />
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location Health</p>
+                                <p className="text-lg font-black text-slate-900 leading-none mt-1">
+                                   {data.rows.filter((r: any) => r.location.suggested_kecamatan || r.location.suggested_desa).length}
+                                </p>
+                                <p className="text-[8px] font-bold text-amber-600 uppercase mt-1">Anomalies Detected</p>
+                             </div>
+                          </CardContent>
+                       </Card>
+                       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
+                          <CardContent className="p-4 flex items-center gap-4">
+                             <div className="p-2 bg-rose-50 rounded-lg">
+                                <AlertTriangle className="h-5 w-5 text-rose-600" />
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Financial Purity</p>
+                                <p className="text-lg font-black text-slate-900 leading-none mt-1">
+                                   {data.rows.filter((r: any) => !r.is_synced).length}
+                                </p>
+                                <p className="text-[8px] font-bold text-rose-600 uppercase mt-1">Balance Discrepancies</p>
+                             </div>
+                          </CardContent>
+                       </Card>
+                       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
+                          <CardContent className="p-4 flex items-center gap-4">
+                             <div className="p-2 bg-slate-100 rounded-lg">
+                                <UserCheck className="h-5 w-5 text-slate-900" />
+                             </div>
+                             <div>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identity Trust</p>
+                                <p className="text-lg font-black text-slate-900 leading-none mt-1">
+                                   {data.rows.filter((r: any) => r.nik.length !== 16).length}
+                                </p>
+                                <p className="text-[8px] font-bold text-slate-500 uppercase mt-1">Invalid NIK Lengths</p>
+                             </div>
+                          </CardContent>
+                       </Card>
+                    </div>
+
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between">
+                          <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-tighter italic">Anomaly Remediation Stream</h5>
+                          <div className="flex gap-2">
+                             <Button 
+                               size="sm" 
+                               variant="outline" 
+                               className="h-7 text-[9px] font-black uppercase border-slate-200"
+                               onClick={handleAutoHealLocations}
+                             >
+                                <RefreshCw className="h-3 w-3 mr-1" /> Auto-Heal Locations
+                             </Button>
+                             <Button size="sm" className="h-7 text-[9px] font-black uppercase bg-slate-900">
+                                <CheckSquare className="h-3 w-3 mr-1" /> Approve All
+                             </Button>
+                          </div>
+                       </div>
+
+                       <div className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
+                          <table className="w-full border-collapse">
+                             <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                   <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Recipient</th>
+                                   <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Current Anomaly</th>
+                                   <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Forensic Suggestion</th>
+                                   <th className="px-4 py-3 text-right text-[9px] font-black text-slate-500 uppercase tracking-widest">Action</th>
+                                </tr>
+                             </thead>
+                             <tbody className="divide-y divide-slate-100">
+                                {data.rows.filter((r: any) => !r.is_synced || r.location.suggested_kecamatan || r.nik.length !== 16).slice(0, 10).map((row: any) => (
+                                   <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                                      <td className="px-4 py-4">
+                                         <p className="text-[11px] font-black text-slate-900 uppercase">{row.name}</p>
+                                         <p className="text-[9px] font-mono font-bold text-slate-400">{row.nik}</p>
+                                      </td>
+                                      <td className="px-4 py-4">
+                                         {row.location.suggested_kecamatan && (
+                                            <div className="bg-amber-50/50 border border-amber-100 p-2 rounded-lg space-y-1">
+                                               <p className="text-[8px] font-black text-amber-800 uppercase">Invalid Location</p>
+                                               <p className="text-[10px] text-slate-600 line-through decoration-amber-400/50 font-bold">
+                                                  {row.location.kecamatan}, {row.location.desa}
+                                               </p>
+                                            </div>
+                                         )}
+                                         {!row.is_synced && (
+                                            <div className="bg-rose-50/50 border border-rose-100 p-2 rounded-lg space-y-1 mt-2">
+                                               <p className="text-[8px] font-black text-rose-800 uppercase">Price Discrepancy</p>
+                                               <p className="text-[10px] text-slate-600 font-bold">
+                                                  Gap: <span className="text-rose-600">{formatCurrency(row.financials.gap)}</span>
+                                               </p>
+                                            </div>
+                                         )}
+                                      </td>
+                                      <td className="px-4 py-4">
+                                         {row.location.suggested_kecamatan && (
+                                            <div className="bg-emerald-50 border border-emerald-100 p-2 rounded-lg space-y-1">
+                                               <p className="text-[8px] font-black text-emerald-800 uppercase">Master Data Match</p>
+                                               <p className="text-[10px] text-emerald-900 font-black italic">
+                                                  {row.location.suggested_kecamatan}, {row.location.suggested_desa}
+                                               </p>
+                                            </div>
+                                         )}
+                                      </td>
+                                      <td className="px-4 py-4 text-right">
+                                         <Button 
+                                           variant="ghost" 
+                                           size="sm" 
+                                           className="h-7 text-[9px] font-black text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                           onClick={() => handleApplyFix(row.id)}
+                                         >
+                                            Apply Fix
+                                         </Button>
+                                      </td>
+                                   </tr>
+                                ))}
+                             </tbody>
+                          </table>
+                          <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
+                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                Showing {Math.min(10, data.rows.filter((r: any) => !r.is_synced || r.location.suggested_kecamatan || r.nik.length !== 16).length)} of {data.rows.filter((r: any) => !r.is_synced || r.location.suggested_kecamatan || r.nik.length !== 16).length} Anomalies
+                             </p>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+               ) : viewMode === 'ringkasan' ? (
                  <table className="w-full border-collapse">
                     <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
                       <tr>
@@ -391,7 +627,7 @@ export const DistributionIntelligence = ({ onDataLoaded }: { onDataLoaded: (data
                       ))}
                     </tbody>
                  </table>
-               ) : (
+               ) : viewMode === 'lampiran' ? (
                  <table className="w-full border-collapse text-nowrap">
                     <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
                       <tr>
@@ -416,7 +652,7 @@ export const DistributionIntelligence = ({ onDataLoaded }: { onDataLoaded: (data
                       ))}
                     </tbody>
                  </table>
-               )}
+               ) : null}
             </div>
           </CardContent>
         </Card>

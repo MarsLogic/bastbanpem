@@ -176,6 +176,8 @@ class ExcelIngestResult(BaseModel):
     headers: List[str]
     sheet_name: str
     total_target: float
+    reconciliation_gap: float = 0.0
+    is_balanced: bool = False
     header_index: int
     pollution_count: int
     sheets: List[ExcelSheetProbe] = [] # Added for Phase 1 context
