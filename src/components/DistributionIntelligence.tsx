@@ -2,8 +2,10 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { 
   FileSpreadsheet, Loader2, Table as TableIcon, CheckCircle2, 
-  ArrowRight, X, AlertCircle, FileText
+  ArrowRight, X, AlertCircle, FileText, Search, ChevronLeft, 
+  ChevronRight, ChevronUp, ChevronDown, ChevronsUpDown
 } from 'lucide-react';
+import { Input } from "@/components/ui/input";
 import { ingestExcel, probeExcel } from '../lib/api';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
@@ -17,6 +19,12 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
   const [selectedSheet, setSelectedSheet] = useState<string | null>(null);
   const [stage, setStage] = useState<'IDLE' | 'ANALYZING' | 'SELECTING' | 'LOADING' | 'READY'>('IDLE');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [data, setData] = useState<any>(null);
+
+  // Table State (SSKK Alignment)
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState<number | 'all'>(10);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -49,6 +57,7 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
     try {
       const result = await ingestExcel(currentFile, sheetName);
       setSelectedSheet(sheetName);
+      setData(result);
       setStage('READY');
       onDataLoaded(result);
       toast.success("Data loaded successfully", { id: loadingToast });
@@ -198,70 +207,142 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
         </Card>
       )}
 
-      {/* STAGE 5: READY (DATA TABLE VIEW) */}
-      {stage === 'READY' && data && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-          <Card className="border-slate-200 shadow-xl rounded-2xl overflow-hidden bg-white">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+      {/* STAGE 5: READY (SSKK ALIGNMENT) */}
+      {stage === 'READY' && data && (() => {
+        const filtered = data.rows.filter((row: any) => 
+          Object.values(row).some(v => String(v).toLowerCase().includes(search.toLowerCase())) ||
+          Object.values(row.location).some(v => String(v).toLowerCase().includes(search.toLowerCase()))
+        );
+        
+        const actualPageSize = pageSize === 'all' ? filtered.length : pageSize;
+        const totalPages = Math.ceil(filtered.length / actualPageSize);
+        const pageRows = filtered.slice(page * actualPageSize, (page + 1) * actualPageSize);
+
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <div className="flex flex-col rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+              {/* Table Toolbar */}
+              <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-3 flex-wrap">
+                <div className="relative flex-1 min-w-[240px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                  <Input 
+                    placeholder="Search rows..." 
+                    value={search}
+                    onChange={e => { setSearch(e.target.value); setPage(0); }}
+                    className="h-9 pl-9 text-[12px] bg-white border-slate-200 shadow-sm" 
+                  />
                 </div>
-                <div>
-                  <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-tight">Verified Distribution List</h3>
-                  <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Source: {selectedSheet} • {data.rows.length} records</p>
+                <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
+                  <Badge variant="secondary" className="text-[10px] h-6 font-mono bg-slate-100 text-slate-600 border-slate-200">
+                    {filtered.length}/{data.rows.length} rows · {Object.keys(data.rows[0] || {}).length} cols
+                  </Badge>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleReset}
+                    className="h-8 text-[10px] font-black uppercase text-slate-400 hover:text-slate-900"
+                  >
+                    Change File
+                  </Button>
                 </div>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleReset}
-                className="h-8 text-[9px] font-black uppercase text-slate-500 hover:text-slate-900 border-slate-200"
-              >
-                Change File
-              </Button>
-            </div>
 
-            <div className="max-h-[500px] overflow-auto">
-              <table className="w-full border-collapse text-left">
-                <thead className="sticky top-0 bg-slate-50/95 backdrop-blur-sm border-b border-slate-200 z-10">
-                  <tr>
-                    <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">NIK</th>
-                    <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Name</th>
-                    <th className="px-6 py-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Location</th>
-                    <th className="px-6 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest">Quantity</th>
-                    <th className="px-6 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {data.rows.map((row: any, idx: number) => (
-                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-6 py-4">
-                        <span className="text-[11px] font-mono font-bold text-slate-900">{row.nik}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[11px] font-black text-slate-700 uppercase">{row.name}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-bold text-slate-900 uppercase">{row.location.desa}</span>
-                          <span className="text-[9px] font-bold text-slate-400 uppercase">{row.location.kecamatan}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className="text-[11px] font-mono font-bold text-slate-900">{row.financials.qty.toLocaleString()}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Badge variant="outline" className="text-[8px] h-4 font-black border-slate-200 text-slate-400">LOADED</Badge>
-                      </td>
+              {/* Table Body */}
+              <div className="overflow-auto min-h-[300px]">
+                <table className="w-full text-[11px] border-collapse">
+                  <thead className="sticky top-0 z-10 bg-slate-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-[9px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-200 w-12">#</th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                        <div className="flex items-center gap-1">NIK <ChevronsUpDown className="h-3 w-3 text-slate-300" /></div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                        <div className="flex items-center gap-1">Name <ChevronsUpDown className="h-3 w-3 text-slate-300" /></div>
+                      </th>
+                      <th className="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200">
+                        Location
+                      </th>
+                      <th className="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-slate-500 border-b border-slate-200">
+                        Quantity
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pageRows.map((row: any, idx: number) => (
+                      <tr key={idx} className={cn(
+                        "hover:bg-slate-50 border-b border-slate-50 transition-colors group",
+                        idx % 2 === 0 ? "bg-white" : "bg-slate-50/30"
+                      )}>
+                        <td className="px-4 py-3 text-[9px] font-mono text-slate-400">
+                          {page * actualPageSize + idx + 1}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-[11px] font-mono font-bold text-slate-900">{row.nik}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-[11px] font-black text-slate-700 uppercase">{row.name}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold text-slate-900 uppercase leading-tight">{row.location.desa}</span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{row.location.kecamatan}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">
+                          {row.financials.qty.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination bar */}
+              <div className="px-4 py-2 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                    {page * actualPageSize + 1}–{Math.min((page + 1) * actualPageSize, filtered.length)} of {filtered.length}
+                  </span>
+                  
+                  <div className="flex items-center gap-1.5 border-l border-slate-200 pl-4">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Show:</span>
+                    {[10, 20, 50, 'all'].map(size => (
+                      <button
+                        key={size}
+                        onClick={() => { setPageSize(size as any); setPage(0); }}
+                        className={cn(
+                          "text-[10px] px-2 py-0.5 rounded transition-colors font-mono font-bold",
+                          pageSize === size ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-200"
+                        )}
+                      >
+                        {size === 'all' ? 'All' : size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost" size="icon" className="h-8 w-8 text-slate-400"
+                    disabled={page === 0}
+                    onClick={() => setPage(p => p - 1)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-[10px] font-mono font-bold text-slate-900 px-2">{page + 1}/{totalPages}</span>
+                  <Button
+                    variant="ghost" size="icon" className="h-8 w-8 text-slate-400"
+                    disabled={page >= totalPages - 1}
+                    onClick={() => setPage(p => p + 1)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
-          </Card>
-        </div>
-      )}
+          </div>
+        );
+      })()}
 
       {/* ERROR HINT */}
       {!currentFile && stage === 'IDLE' && (
