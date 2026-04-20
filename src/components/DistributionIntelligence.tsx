@@ -1,181 +1,70 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { 
-  FileSpreadsheet, ShieldCheck, AlertTriangle, Search, 
-  Settings2, ChevronDown, CheckCircle2, Loader2, Info,
-  Table as TableIcon, LayoutGrid, Download, Activity,
-  CheckSquare, RefreshCw, UserCheck, MapPin, XCircle
+  FileSpreadsheet, Loader2, Table as TableIcon, CheckCircle2, 
+  ArrowRight, X, AlertCircle, FileText
 } from 'lucide-react';
-import { ingestExcel, probeExcel, generateBast, dispatchBundle } from '../lib/api';
+import { ingestExcel, probeExcel } from '../lib/api';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-
-interface ParsingStats {
-  headerRow: number;
-  totalRowsFound: number;
-  mappedColumns: number;
-  pollutionDropped: number;
-  healthScore: number;
-}
 
 export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?: any, onDataLoaded: (data: any) => void }) => {
-  const [isIngesting, setIsIngesting] = useState(false);
-  const [parsingStats, setParsingStats] = useState<ParsingStats | null>(null);
-  const [ingestProgress, setIngestProgress] = useState(0);
-  const [viewMode, setViewMode] = useState<'ringkasan' | 'lampiran' | 'validation' | 'fulfillment'>('validation');
-  const [data, setData] = useState<any>(null);
-  
-  // Expert Phase 1 State
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [probedSheets, setProbedSheets] = useState<any[]>([]);
-  const [stage, setStage] = useState<'IDLE' | 'PROBING' | 'DISCOVERY' | 'INGESTING' | 'COMPLETE'>('IDLE');
+  const [selectedSheet, setSelectedSheet] = useState<string | null>(null);
+  const [stage, setStage] = useState<'IDLE' | 'ANALYZING' | 'SELECTING' | 'LOADING' | 'READY'>('IDLE');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
     if (!file) return;
 
     setCurrentFile(file);
-    setStage('PROBING');
-    setIngestProgress(20);
+    setStage('ANALYZING');
     
-    const probeToast = toast.loading(`Probing Physical Structure of "${file.name}"...`);
+    const analyzeToast = toast.loading(`Analyzing "${file.name}"...`);
 
     try {
       const sheets = await probeExcel(file);
       setProbedSheets(sheets);
-      setStage('DISCOVERY');
-      setIngestProgress(100);
-      toast.success("Workbook Structure Analyzed", { id: probeToast });
+      setStage('SELECTING');
+      toast.success("File analyzed", { id: analyzeToast });
     } catch (error: any) {
-      toast.error(`Probe Failed: ${error.message}`, { id: probeToast });
+      toast.error(`Analysis failed: ${error.message}`, { id: analyzeToast });
       setStage('IDLE');
+      setCurrentFile(null);
     }
   }, []);
 
   const handleSheetSelect = async (sheetName: string) => {
     if (!currentFile) return;
     
-    setStage('INGESTING');
-    setIsIngesting(true);
-    setIngestProgress(30);
-    const loadingToast = toast.loading(`Extracting Payload from [${sheetName}]...`);
+    setStage('LOADING');
+    setIsProcessing(true);
+    const loadingToast = toast.loading(`Loading data from ${sheetName}...`);
 
     try {
       const result = await ingestExcel(currentFile, sheetName);
-      setIngestProgress(100);
-      setData(result);
-      
-      const stats: ParsingStats = {
-        headerRow: result.header_index,
-        totalRowsFound: result.rows.length,
-        mappedColumns: result.headers.length,
-        pollutionDropped: result.pollution_count,
-        healthScore: result.rows.length > 0 ? 98 : 0
-      };
-
-      setParsingStats(stats);
-      setStage('COMPLETE');
+      setSelectedSheet(sheetName);
+      setStage('READY');
       onDataLoaded(result);
-      toast.success("Extraction Complete", { id: loadingToast });
+      toast.success("Data loaded successfully", { id: loadingToast });
     } catch (error: any) {
-      toast.error(`Ingestion Failed: ${error.message}`, { id: loadingToast });
-      setStage('DISCOVERY');
+      toast.error(`Failed to load data: ${error.message}`, { id: loadingToast });
+      setStage('SELECTING');
     } finally {
-      setIsIngesting(false);
+      setIsProcessing(false);
     }
   };
 
-  // Aggregation Logic for Ringkasan
-  const aggregates = React.useMemo(() => {
-    if (!data?.rows) return [];
-    const map = new Map();
-    
-    data.rows.forEach((row: any) => {
-      const key = `${row.location.kabupaten}|${row.location.kecamatan}`;
-      if (!map.has(key)) {
-        map.set(key, {
-          kabupaten: row.location.kabupaten,
-          kecamatan: row.location.kecamatan,
-          qty: 0,
-          value: 0,
-          recipients: 0
-        });
-      }
-      const entry = map.get(key);
-      entry.qty += row.financials.qty;
-      entry.value += row.financials.calculated_value;
-      entry.recipients += 1;
-    });
-    
-    return Array.from(map.values()).sort((a: any, b: any) => 
-      a.kabupaten.localeCompare(b.kabupaten) || a.kecamatan.localeCompare(b.kecamatan)
-    );
-  }, [data]);
-
-  // Golden Bridge: Excel vs PDF Reconciliation
-  const reconciliation = React.useMemo(() => {
-    if (!data?.rows || !contract?.metadata?.nilai_kontrak) return null;
-    
-    // Attempt to parse contract value (e.g. "Rp. 1.250.000,00" -> 1250000)
-    const rawContractVal = contract.metadata.nilai_kontrak;
-    const contractTotal = parseFloat(rawContractVal.replace(/[^\d]/g, '')) / 100 || 0;
-    
-    const excelTotal = data.rows.reduce((sum: number, r: any) => sum + r.financials.calculated_value, 0);
-    const gap = excelTotal - contractTotal;
-    
-    return {
-      contractTotal,
-      excelTotal,
-      gap,
-      isBalanced: Math.abs(gap) < 1.0
-    };
-  }, [data, contract]);
-
-  const handleApplyFix = (rowId: string) => {
-    if (!data) return;
-    const newRows = data.rows.map((r: any) => {
-      if (r.id === rowId) {
-        const updated = { ...r };
-        if (r.location.suggested_kecamatan) {
-          updated.location = {
-            ...r.location,
-            kecamatan: r.location.suggested_kecamatan,
-            desa: r.location.suggested_desa || r.location.desa,
-            suggested_kecamatan: undefined,
-            suggested_desa: undefined
-          };
-        }
-        return updated;
-      }
-      return r;
-    });
-    setData({ ...data, rows: newRows });
-    toast.success("Anomaly Repaired");
-  };
-
-  const handleAutoHealLocations = () => {
-    if (!data) return;
-    const newRows = data.rows.map((r: any) => {
-       if (r.location.suggested_kecamatan) {
-          return {
-            ...r,
-            location: {
-               ...r.location,
-               kecamatan: r.location.suggested_kecamatan,
-               desa: r.location.suggested_desa || r.location.desa,
-               suggested_kecamatan: undefined,
-               suggested_desa: undefined
-            }
-          };
-       }
-       return r;
-    });
-    setData({ ...data, rows: newRows });
-    toast.success("Mass Location Healing Complete");
+  const handleReset = () => {
+    setCurrentFile(null);
+    setProbedSheets([]);
+    setSelectedSheet(null);
+    setStage('IDLE');
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -185,176 +74,110 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
       'application/vnd.ms-excel': ['.xls']
     },
     multiple: false,
-    disabled: isIngesting
+    disabled: isProcessing
   });
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val);
-  };
-
-  const handlePrintBast = async (row: any) => {
-    const payload = {
-        nomor_bast: `BAST-${row.nik.slice(-4)}/${contract?.metadata?.nomor_kontrak || '2026'}`,
-        nomor_kontrak: contract?.metadata?.nomor_kontrak || 'N/A',
-        nama_kegiatan: contract?.metadata?.pekerjaan || 'Penyaluran Bantuan',
-        penerima_nama: row.name,
-        penerima_nik: row.nik,
-        penerima_alamat: `${row.location.desa}, ${row.location.kecamatan}`,
-        volume: row.financials.qty,
-        nilai: row.financials.calculated_value,
-        nama_vendor: contract?.metadata?.penyedia || 'PT. BASTBANPEM JAYA',
-    };
-
-    const printToast = toast.loading(`Generating BAST for ${row.name}...`);
-    try {
-        const blob = await generateBast(payload);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `BAST_${row.nik}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        toast.success("BAST Generated", { id: printToast });
-    } catch (e) {
-        toast.error("Generation Failed", { id: printToast });
-    }
-  };
-
-  const handleGetBundle = async () => {
-    const bundleToast = toast.loading("Packaging Portal Dispatch Bundle...");
-    try {
-        const result = await dispatchBundle(contract?.id || 'CONTRACT-01', data.rows);
-        const blob = new Blob([JSON.stringify(result.bundle, null, 2)], { type: 'application/json' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Dispatch_Bundle_${contract?.id || 'BAST'}.json`;
-        a.click();
-        toast.success("Dispatch Bundle Ready", { id: bundleToast });
-    } catch (e) {
-        toast.error("Bundle Packaging Failed", { id: bundleToast });
-    }
-  };
 
   return (
     <div className="space-y-6">
-      {/* 1. Expert Ingestion Stage: IDLE or PROBING */}
-      {(stage === 'IDLE' || stage === 'PROBING') && (
-        <div 
-          {...getRootProps()} 
-          className={cn(
-            "relative group overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-300",
-            "bg-slate-50/50 p-12 text-center clickable cursor-pointer",
-            isDragActive ? "border-slate-900 bg-slate-100/50 scale-[0.99]" : "border-slate-200 hover:border-slate-400 hover:bg-white",
-            stage === 'PROBING' && "opacity-50 pointer-events-none"
-          )}
-        >
-          <input {...getInputProps()} />
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-slate-900/5 blur-2xl rounded-full" />
-              <div className="relative p-6 bg-white rounded-2xl shadow-sm border border-slate-100 group-hover:scale-110 transition-transform duration-500">
-                {stage === 'PROBING' ? (
-                  <Loader2 className="h-10 w-10 text-slate-900 animate-spin" />
-                ) : (
-                  <FileSpreadsheet className="h-10 w-10 text-slate-800" />
-                )}
-              </div>
-            </div>
-            
-            <div className="max-w-xs space-y-1">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">
-                {stage === 'PROBING' ? "Probing Structure..." : "Load Distribution Payload"}
-              </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                {stage === 'PROBING' ? "Identifying sheets and header density" : "Drag your recipient Excel file here or click to browse."}
-              </p>
-            </div>
-
-            {stage === 'PROBING' && (
-              <div className="w-48 mt-2">
-                <Progress value={ingestProgress} className="h-1.5" />
-              </div>
-            )}
-
-            {stage === 'IDLE' && (
-              <div className="flex gap-4 mt-2">
-                <Badge variant="outline" className="bg-white text-[9px] font-bold text-slate-500 border-slate-200 py-1">
-                  XLSX SUPPORT
-                </Badge>
-                <Badge variant="outline" className="bg-white text-[9px] font-bold text-slate-500 border-slate-200 py-1">
-                  PRE-FLIGHT PROBE
-                </Badge>
-                <Badge variant="outline" className="bg-white text-[9px] font-bold text-slate-500 border-slate-200 py-1">
-                  SCHEMA AUDIT
-                </Badge>
-              </div>
-            )}
-          </div>
+      {/* SECTION HEADER */}
+      <div className="flex items-center gap-3 mb-2">
+        <div className="h-8 w-8 rounded-lg bg-slate-900 flex items-center justify-center">
+          <FileText className="h-4 w-4 text-white" />
         </div>
+        <div>
+          <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">2. Recipient Data</h2>
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Upload and verify your distribution list</p>
+        </div>
+      </div>
+
+      {/* STAGE 1: UPLOAD */}
+      {stage === 'IDLE' && (
+        <Card className="border-slate-200 shadow-sm overflow-hidden rounded-2xl">
+          <CardContent className="p-0">
+            <div 
+              {...getRootProps()} 
+              className={cn(
+                "p-12 text-center clickable transition-all duration-300",
+                isDragActive ? "bg-slate-100 scale-[0.99]" : "bg-white hover:bg-slate-50"
+              )}
+            >
+              <input {...getInputProps()} />
+              <div className="flex flex-col items-center gap-4">
+                <div className="p-5 bg-slate-100 rounded-2xl border border-slate-200">
+                  <FileSpreadsheet className="h-8 w-8 text-slate-900" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-sm font-black text-slate-900 uppercase">Upload Recipient List</h3>
+                  <p className="text-xs text-slate-500 font-medium">Drag and drop your Excel file here, or click to browse</p>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Badge variant="secondary" className="text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-600">.xlsx</Badge>
+                  <Badge variant="secondary" className="text-[9px] font-bold uppercase tracking-tight bg-slate-100 text-slate-600">.xls</Badge>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* 2. DISCOVERY HUB: Sheet Selection */}
-      {stage === 'DISCOVERY' && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
-          <div className="flex items-center justify-between px-2">
-            <div>
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Workbook Selection</h3>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Select the target payload sheet</p>
+      {/* STAGE 2: ANALYZING */}
+      {stage === 'ANALYZING' && (
+        <Card className="border-slate-200 shadow-sm rounded-2xl">
+          <CardContent className="p-16 text-center space-y-4">
+            <Loader2 className="h-10 w-10 text-slate-900 animate-spin mx-auto" />
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-slate-900 uppercase">Analyzing File</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Detecting sheets and structure</p>
             </div>
-            <Button 
-               variant="ghost" 
-               size="sm" 
-               className="h-7 text-[10px] font-black underline"
-               onClick={() => setStage('IDLE')}
-            >
-              Cancel
+          </CardContent>
+        </Card>
+      )}
+
+      {/* STAGE 3: SELECT SHEET */}
+      {stage === 'SELECTING' && (
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest italic">Select Sheet</h3>
+            <Button variant="ghost" size="sm" onClick={handleReset} className="h-7 text-[10px] font-bold text-slate-400">
+              <X className="h-3 w-3 mr-1" /> Cancel
             </Button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {probedSheets.map((sheet) => {
-              const isPayload = sheet.discovery_score > 0.5;
+              const recommended = sheet.discovery_score > 0.5;
               return (
                 <div 
                   key={sheet.name}
                   onClick={() => handleSheetSelect(sheet.name)}
                   className={cn(
-                    "group p-4 rounded-2xl border-2 transition-all cursor-pointer bg-white",
-                    isPayload ? "border-slate-900 shadow-lg scale-[1.01]" : "border-slate-200 hover:border-slate-400 opacity-60 hover:opacity-100"
+                    "relative group p-5 rounded-2xl border-2 transition-all cursor-pointer bg-white",
+                    recommended ? "border-slate-900 ring-4 ring-slate-900/5 shadow-xl" : "border-slate-200 hover:border-slate-400"
                   )}
                 >
-                   <div className="flex items-center justify-between mb-3">
-                      <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                        <TableIcon className="h-4 w-4" />
-                      </div>
-                      {isPayload && (
-                        <Badge className="bg-slate-900 text-white text-[8px] h-4 px-1.5 font-black uppercase">
-                          Detected Payload
-                        </Badge>
-                      )}
-                   </div>
-                   <h4 className="text-[13px] font-black text-slate-900 truncate mb-1">{sheet.name}</h4>
-                   <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-bold text-slate-400 tabular-nums uppercase">{sheet.row_count} Rows</span>
-                      <span className="text-slate-200">|</span>
-                      <span className="text-[10px] font-bold text-slate-400 tabular-nums uppercase">{sheet.col_count} Cols</span>
-                   </div>
-                   
-                   {sheet.headers.length > 0 && (
-                     <div className="mt-4 pt-3 border-t border-slate-50 space-y-2">
-                        <p className="text-[8px] font-black text-slate-300 uppercase underline text-right">Structure Preview</p>
-                        <div className="flex flex-wrap gap-1">
-                           {sheet.headers.slice(0, 4).map((h: string, i: number) => (
-                             <Badge key={i} variant="outline" className="text-[8px] h-4 text-slate-400 border-slate-100 bg-slate-50/50">
-                                {h}
-                             </Badge>
-                           ))}
-                           {sheet.headers.length > 4 && <span className="text-[8px] text-slate-300">+{sheet.headers.length - 4}</span>}
-                        </div>
-                     </div>
-                   )}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={cn(
+                      "p-2 rounded-xl border transition-colors",
+                      recommended ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 text-slate-400 border-slate-100"
+                    )}>
+                      <TableIcon className="h-4 w-4" />
+                    </div>
+                    {recommended && (
+                      <Badge className="bg-slate-900 text-white text-[8px] h-4 font-black">RECOMMENDED</Badge>
+                    )}
+                  </div>
+                  
+                  <h4 className="text-[13px] font-black text-slate-900 truncate mb-1">{sheet.name}</h4>
+                  <div className="flex gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                    <span>{sheet.row_count} Rows</span>
+                    <span>•</span>
+                    <span>{sheet.col_count} Cols</span>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+                    <span className="text-[9px] font-black text-slate-300 uppercase">Click to select</span>
+                    <ArrowRight className="h-3 w-3 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               );
             })}
@@ -362,454 +185,55 @@ export const DistributionIntelligence = ({ contract, onDataLoaded }: { contract?
         </div>
       )}
 
-      {/* 3. INGESTING STATE */}
-      {stage === 'INGESTING' && (
-        <Card className="border-slate-200 rounded-2xl overflow-hidden shadow-xl">
-           <CardContent className="p-12 text-center space-y-6">
-              <div className="relative inline-block">
-                <div className="absolute inset-0 bg-slate-900/10 blur-3xl animate-pulse rounded-full" />
-                <Loader2 className="h-12 w-12 text-slate-900 animate-spin relative" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight italic">Analyzing Forensic Blocks...</h3>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Applying Polars-Strict schema validation</p>
-              </div>
-              <div className="max-w-md mx-auto">
-                 <Progress value={ingestProgress} className="h-2 rounded-full bg-slate-100" />
-                 <div className="flex justify-between mt-2">
-                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-tight">Extracting Cells</span>
-                    <span className="text-[9px] font-black text-slate-900 tabular-nums">{ingestProgress}%</span>
-                 </div>
-              </div>
-           </CardContent>
-        </Card>
-      )}
-
-      {/* 4. Extraction Detail: COMPLETE */}
-      {stage === 'COMPLETE' && parsingStats && (
-        <Card className="border-slate-200 bg-white shadow-sm overflow-hidden rounded-2xl">
-          <CardContent className="p-0">
-            <div className="p-4 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 shadow-sm">
-                  <FileSpreadsheet className="h-5 w-5 text-slate-900" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">Extraction Payload Active</h4>
-                  <div className="flex items-center gap-x-2 mt-0.5">
-                    <span className="text-[10px] text-slate-500 font-mono font-bold tracking-tight uppercase">Health Score:</span>
-                    <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-100 text-[10px] h-4 px-1.5 font-black uppercase">
-                      {parsingStats.healthScore}% Optimal
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="h-8 rounded-lg text-[10px] font-black uppercase tracking-wider"
-                onClick={() => {
-                   setParsingStats(null);
-                   setData(null);
-                   setStage('IDLE');
-                   setProbedSheets([]);
-                   setCurrentFile(null);
-                }}
-              >
-                Reset Engine
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-4 divide-x divide-slate-100">
-              <div className="p-4 py-6 text-center space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Header Row</p>
-                <p className="text-xl font-black text-slate-900 tabular-nums">{parsingStats.headerRow}</p>
-                <div className="flex items-center justify-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                  <span className="text-[9px] text-slate-400 font-bold uppercase">Detected</span>
-                </div>
-              </div>
-              <div className="p-4 py-6 text-center space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Real Data</p>
-                <p className="text-xl font-black text-slate-900 tabular-nums">{parsingStats.totalRowsFound}</p>
-                <span className="text-[9px] text-slate-400 font-bold uppercase">Recipients</span>
-              </div>
-              <div className="p-4 py-6 text-center space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Col Mapping</p>
-                <p className="text-xl font-black text-slate-900 tabular-nums">{parsingStats.mappedColumns}</p>
-                <span className="text-[9px] text-slate-400 font-bold uppercase">Canonical</span>
-              </div>
-              <div className="p-4 py-6 text-center space-y-1">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pollution</p>
-                <p className="text-xl font-black text-slate-900 tabular-nums">{parsingStats.pollutionDropped}</p>
-                 <div className="flex items-center justify-center gap-1">
-                  <ShieldCheck className="h-3 w-3 text-slate-400" />
-                  <span className="text-[9px] text-slate-400 font-bold uppercase">Excised</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Reconciliation Bridge Banner */}
-            {reconciliation && (
-              <div className={cn(
-                "px-4 py-2 flex items-center justify-between border-y",
-                reconciliation.isBalanced ? "bg-emerald-50/50 border-emerald-100" : "bg-rose-50/50 border-rose-100"
-              )}>
-                 <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "p-1.5 rounded-lg",
-                      reconciliation.isBalanced ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"
-                    )}>
-                       {reconciliation.isBalanced ? <CheckSquare className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">The Golden Bridge (Excel ↔ PDF)</p>
-                      <p className={cn("text-[11px] font-black uppercase", reconciliation.isBalanced ? "text-emerald-800" : "text-rose-800")}>
-                        {reconciliation.isBalanced ? "Precision Match: Data aligns with PDF Contract" : `Financial Discrepancy: ${formatCurrency(reconciliation.gap)} Delta`}
-                      </p>
-                    </div>
-                 </div>
-                 <div className="flex items-center gap-4 text-right">
-                    <div>
-                       <p className="text-[8px] font-black text-slate-400 uppercase">PDF Total</p>
-                       <p className="text-[11px] font-mono font-bold text-slate-600">{formatCurrency(reconciliation.contractTotal)}</p>
-                    </div>
-                    <div className="h-4 w-px bg-slate-200" />
-                    <div>
-                       <p className="text-[8px] font-black text-slate-400 uppercase">Excel Total</p>
-                       <p className="text-[11px] font-mono font-bold text-slate-900">{formatCurrency(reconciliation.excelTotal)}</p>
-                    </div>
-                 </div>
-              </div>
-            )}
-            
-            <div className="p-3 bg-slate-900 flex items-center justify-between">
-              <div className="flex gap-2">
-                <div 
-                  onClick={() => setViewMode('ringkasan')}
-                  className={cn(
-                    "flex items-center gap-1 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer",
-                    viewMode === 'ringkasan' ? "bg-white text-slate-900 shadow-sm" : "bg-slate-800 text-slate-400 hover:text-white"
-                  )}
-                >
-                   <LayoutGrid className="h-3.5 w-3.5" /> Ringkasan Pembayaran
-                </div>
-                <div 
-                  onClick={() => setViewMode('lampiran')}
-                  className={cn(
-                    "flex items-center gap-1 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer",
-                    viewMode === 'lampiran' ? "bg-white text-slate-900 shadow-sm" : "bg-slate-800 text-slate-400 hover:text-white"
-                  )}
-                >
-                   <TableIcon className="h-3.5 w-3.5" /> Lampiran Recipient
-                </div>
-              </div>
-                <div 
-                  onClick={() => setViewMode('validation')}
-                  className={cn(
-                    "flex items-center gap-1 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer",
-                    viewMode === 'validation' ? "bg-white text-slate-900 shadow-sm" : "bg-slate-800 text-slate-400 hover:text-white"
-                  )}
-                >
-                   <Activity className="h-3.5 w-3.5" /> Validation Hub
-                </div>
-                <div 
-                  onClick={() => setViewMode('fulfillment')}
-                  className={cn(
-                    "flex items-center gap-1 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all cursor-pointer",
-                    viewMode === 'fulfillment' ? "bg-emerald-500 text-white shadow-lg" : "bg-slate-800 text-slate-400 hover:text-white"
-                  )}
-                >
-                   <CheckCircle2 className="h-3.5 w-3.5" /> Fulfillment Sovereign
-                </div>
-              </div>
-
-            <div className="max-h-[600px] overflow-auto border-t border-slate-200 bg-slate-50/30">
-               {viewMode === 'validation' ? (
-                 <div className="p-6 space-y-6">
-                    {/* Validation Metrics */}
-                    <div className="grid grid-cols-3 gap-4">
-                       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
-                          <CardContent className="p-4 flex items-center gap-4">
-                             <div className="p-2 bg-amber-50 rounded-lg">
-                                <MapPin className="h-5 w-5 text-amber-600" />
-                             </div>
-                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Location Health</p>
-                                <p className="text-lg font-black text-slate-900 leading-none mt-1">
-                                   {data.rows.filter((r: any) => r.location.suggested_kecamatan || r.location.suggested_desa).length}
-                                </p>
-                                <p className="text-[8px] font-bold text-amber-600 uppercase mt-1">Anomalies Detected</p>
-                             </div>
-                          </CardContent>
-                       </Card>
-                       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
-                          <CardContent className="p-4 flex items-center gap-4">
-                             <div className="p-2 bg-rose-50 rounded-lg">
-                                <AlertTriangle className="h-5 w-5 text-rose-600" />
-                             </div>
-                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Financial Purity</p>
-                                <p className="text-lg font-black text-slate-900 leading-none mt-1">
-                                   {data.rows.filter((r: any) => !r.is_synced).length}
-                                </p>
-                                <p className="text-[8px] font-bold text-rose-600 uppercase mt-1">Balance Discrepancies</p>
-                             </div>
-                          </CardContent>
-                       </Card>
-                       <Card className="bg-white border-slate-200 shadow-sm rounded-xl overflow-hidden">
-                          <CardContent className="p-4 flex items-center gap-4">
-                             <div className="p-2 bg-slate-100 rounded-lg">
-                                <UserCheck className="h-5 w-5 text-slate-900" />
-                             </div>
-                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identity Trust</p>
-                                <p className="text-lg font-black text-slate-900 leading-none mt-1">
-                                   {data.rows.filter((r: any) => r.nik.length !== 16).length}
-                                </p>
-                                <p className="text-[8px] font-bold text-slate-500 uppercase mt-1">Invalid NIK Lengths</p>
-                             </div>
-                          </CardContent>
-                       </Card>
-                    </div>
-
-                    <div className="space-y-4">
-                       <div className="flex items-center justify-between">
-                          <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-tighter italic">Anomaly Remediation Stream</h5>
-                          <div className="flex gap-2">
-                             <Button 
-                               size="sm" 
-                               variant="outline" 
-                               className="h-7 text-[9px] font-black uppercase border-slate-200"
-                               onClick={handleAutoHealLocations}
-                             >
-                                <RefreshCw className="h-3 w-3 mr-1" /> Auto-Heal Locations
-                             </Button>
-                             <Button size="sm" className="h-7 text-[9px] font-black uppercase bg-slate-900">
-                                <CheckSquare className="h-3 w-3 mr-1" /> Approve All
-                             </Button>
-                          </div>
-                       </div>
-
-                       <div className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
-                          <table className="w-full border-collapse">
-                             <thead className="bg-slate-50 border-b border-slate-200">
-                                <tr>
-                                   <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Recipient</th>
-                                   <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Current Anomaly</th>
-                                   <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Forensic Suggestion</th>
-                                   <th className="px-4 py-3 text-right text-[9px] font-black text-slate-500 uppercase tracking-widest">Action</th>
-                                </tr>
-                             </thead>
-                             <tbody className="divide-y divide-slate-100">
-                                {data.rows.filter((r: any) => !r.is_synced || r.location.suggested_kecamatan || r.nik.length !== 16).slice(0, 10).map((row: any) => (
-                                   <tr key={row.id} className="hover:bg-slate-50 transition-colors">
-                                      <td className="px-4 py-4">
-                                         <p className="text-[11px] font-black text-slate-900 uppercase">{row.name}</p>
-                                         <p className="text-[9px] font-mono font-bold text-slate-400">{row.nik}</p>
-                                      </td>
-                                      <td className="px-4 py-4">
-                                         {row.location.suggested_kecamatan && (
-                                            <div className="bg-amber-50/50 border border-amber-100 p-2 rounded-lg space-y-1">
-                                               <p className="text-[8px] font-black text-amber-800 uppercase">Invalid Location</p>
-                                               <p className="text-[10px] text-slate-600 line-through decoration-amber-400/50 font-bold">
-                                                  {row.location.kecamatan}, {row.location.desa}
-                                               </p>
-                                            </div>
-                                         )}
-                                         {!row.is_synced && (
-                                            <div className="bg-rose-50/50 border border-rose-100 p-2 rounded-lg space-y-1 mt-2">
-                                               <p className="text-[8px] font-black text-rose-800 uppercase">Price Discrepancy</p>
-                                               <p className="text-[10px] text-slate-600 font-bold">
-                                                  Gap: <span className="text-rose-600">{formatCurrency(row.financials.gap)}</span>
-                                               </p>
-                                            </div>
-                                         )}
-                                      </td>
-                                      <td className="px-4 py-4">
-                                         {row.location.suggested_kecamatan && (
-                                            <div className="bg-emerald-50 border border-emerald-100 p-2 rounded-lg space-y-1">
-                                               <p className="text-[8px] font-black text-emerald-800 uppercase">Master Data Match</p>
-                                               <p className="text-[10px] text-emerald-900 font-black italic">
-                                                  {row.location.suggested_kecamatan}, {row.location.suggested_desa}
-                                               </p>
-                                            </div>
-                                         )}
-                                      </td>
-                                      <td className="px-4 py-4 text-right">
-                                         <Button 
-                                           variant="ghost" 
-                                           size="sm" 
-                                           className="h-7 text-[9px] font-black text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                           onClick={() => handleApplyFix(row.id)}
-                                         >
-                                            Apply Fix
-                                         </Button>
-                                      </td>
-                                   </tr>
-                                ))}
-                             </tbody>
-                          </table>
-                          <div className="p-3 bg-slate-50 border-t border-slate-100 text-center">
-                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                Showing {Math.min(10, data.rows.filter((r: any) => !r.is_synced || r.location.suggested_kecamatan || r.nik.length !== 16).length)} of {data.rows.filter((r: any) => !r.is_synced || r.location.suggested_kecamatan || r.nik.length !== 16).length} Anomalies
-                             </p>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-               ) : viewMode === 'ringkasan' ? (
-                 <table className="w-full border-collapse">
-                    <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Kabupaten</th>
-                        <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Kecamatan</th>
-                        <th className="px-4 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Volume</th>
-                        <th className="px-4 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Penerima</th>
-                        <th className="px-4 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Bayar</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {aggregates.map((agg: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-slate-50 transition-colors group">
-                          <td className="px-4 py-3 text-[11px] font-black text-slate-900 uppercase border-r border-slate-100">{agg.kabupaten}</td>
-                          <td className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase border-r border-slate-100">{agg.kecamatan}</td>
-                          <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-700 text-right border-r border-slate-100">{agg.qty.toLocaleString()}</td>
-                          <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-700 text-right border-r border-slate-100">{agg.recipients}</td>
-                          <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-900 text-right bg-slate-50/30 group-hover:bg-transparent">{formatCurrency(agg.value)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                 </table>
-               ) : viewMode === 'lampiran' ? (
-                 <table className="w-full border-collapse text-nowrap">
-                    <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">NIK</th>
-                        <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Nama Penerima</th>
-                        <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Phone</th>
-                        <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Desa</th>
-                        <th className="px-4 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest border-r border-slate-200">Volume</th>
-                        <th className="px-4 py-3 text-right text-[10px] font-black text-slate-500 uppercase tracking-widest">Calculated</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {data?.rows.map((row: any, idx: number) => (
-                        <tr key={idx} className="hover:bg-slate-50 transition-colors group">
-                           <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-900 border-r border-slate-100">{row.nik}</td>
-                           <td className="px-4 py-3 text-[11px] font-black text-slate-700 uppercase border-r border-slate-100">{row.name}</td>
-                           <td className="px-4 py-3 text-[11px] font-mono text-slate-500 border-r border-slate-100">{row.phone || '-'}</td>
-                           <td className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase border-r border-slate-100">{row.location.desa}</td>
-                           <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-700 text-right border-r border-slate-100">{row.financials.qty.toLocaleString()}</td>
-                           <td className="px-4 py-3 text-[11px] font-mono font-bold text-slate-900 text-right bg-slate-50/30 group-hover:bg-transparent">{formatCurrency(row.financials.calculated_value)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : viewMode === 'fulfillment' ? (
-                  <div className="p-6 space-y-6">
-                     <div className="flex items-center justify-between">
-                        <div>
-                           <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">The Sovereign Fulfillment Hub</h4>
-                           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Generate Digital Assets & Portal Bundles</p>
-                        </div>
-                        <Button 
-                           onClick={handleGetBundle}
-                           className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] h-9 px-6 rounded-xl shadow-lg border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all"
-                        >
-                           <Download className="mr-2 h-4 w-4" /> Get Dispatch Bundle
-                        </Button>
-                     </div>
-
-                     <div className="grid grid-cols-1 gap-4">
-                        <div className="border border-slate-200 rounded-2xl bg-white overflow-hidden shadow-sm">
-                           <table className="w-full border-collapse">
-                              <thead className="bg-slate-50 border-b border-slate-200">
-                                 <tr>
-                                    <th className="px-4 py-3 text-left text-[9px] font-black text-slate-500 uppercase tracking-widest">Penerima</th>
-                                    <th className="px-4 py-3 text-center text-[9px] font-black text-slate-500 uppercase tracking-widest">Identity Match</th>
-                                    <th className="px-4 py-3 text-center text-[9px] font-black text-slate-500 uppercase tracking-widest">Photo Evidence</th>
-                                    <th className="px-4 py-3 text-right text-[9px] font-black text-slate-500 uppercase tracking-widest">Document Fulfillment</th>
-                                 </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100">
-                                 {data.rows.map((row: any) => (
-                                    <tr key={row.id} className="hover:bg-slate-50 transition-colors">
-                                       <td className="px-4 py-4">
-                                          <p className="text-[11px] font-black text-slate-900 uppercase">{row.name}</p>
-                                          <p className="text-[9px] font-mono font-bold text-slate-400">{row.nik}</p>
-                                       </td>
-                                       <td className="px-4 py-4 text-center">
-                                          {row.hasKtp ? (
-                                             <Badge className="bg-emerald-50 text-emerald-700 border-dashed border-emerald-200 text-[8px] font-black">FORENSIC MATCH</Badge>
-                                          ) : (
-                                             <Badge variant="outline" className="text-[8px] font-black text-slate-400">PENDING</Badge>
-                                          )}
-                                       </td>
-                                       <td className="px-4 py-4 text-center">
-                                          {row.hasPhoto ? (
-                                             <Badge className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[8px] font-black uppercase">LINKED</Badge>
-                                          ) : (
-                                             <Badge variant="outline" className="text-[8px] font-black text-slate-400">NO MEDIA</Badge>
-                                          )}
-                                       </td>
-                                       <td className="px-4 py-4 text-right">
-                                          <div className="flex gap-2 justify-end">
-                                             <Button 
-                                               size="sm" 
-                                               variant="outline" 
-                                               className="h-8 text-[9px] font-black uppercase rounded-lg border-slate-200"
-                                               onClick={() => handlePrintBast(row)}
-                                             >
-                                                Print BAST
-                                             </Button>
-                                             <Button 
-                                               size="sm" 
-                                               variant="outline" 
-                                               className="h-8 text-[9px] font-black uppercase rounded-lg border-slate-200"
-                                             >
-                                                Print S. Jalan
-                                             </Button>
-                                          </div>
-                                       </td>
-                                    </tr>
-                                 ))}
-                              </tbody>
-                           </table>
-                        </div>
-                     </div>
-                  </div>
-                 ) : null}
+      {/* STAGE 4: LOADING DATA */}
+      {stage === 'LOADING' && (
+        <Card className="border-slate-200 shadow-sm rounded-2xl">
+          <CardContent className="p-16 text-center space-y-4">
+            <Loader2 className="h-10 w-10 text-slate-900 animate-spin mx-auto" />
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-slate-900 uppercase">Processing Data</h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Applying validation rules</p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* 2. Strategy Gating Alerts */}
-      {parsingStats && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="group p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3 hover:border-slate-300 transition-colors">
-            <div className="p-2 bg-white rounded-xl border border-slate-200 shadow-sm">
-              <ShieldCheck className="h-4 w-4 text-slate-900" />
+      {/* STAGE 5: READY */}
+      {stage === 'READY' && (
+        <Card className="border-slate-900 bg-slate-900 shadow-xl overflow-hidden rounded-2xl animate-in zoom-in-95 duration-300">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-400" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-white uppercase tracking-widest">Data Uploaded</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-0.5">
+                    Sheet: <span className="text-white">{selectedSheet}</span> • File: {currentFile?.name}
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleReset}
+                className="bg-transparent border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 text-[10px] font-black uppercase h-8 px-4"
+              >
+                Change File
+              </Button>
             </div>
-            <div className="space-y-0.5">
-              <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-wide">Strict Parse Active</h5>
-              <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                String coercion applied to 16-digit IDs. Scientific notation artifacts prevented.
-              </p>
-            </div>
-          </div>
-          <div className="group p-4 rounded-2xl bg-amber-50/50 border border-amber-100 flex items-start gap-3 hover:border-amber-200 transition-colors">
-            <div className="p-2 bg-white rounded-xl border border-amber-100 shadow-sm">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-            </div>
-            <div className="space-y-0.5">
-              <h5 className="text-[10px] font-black text-amber-900 uppercase tracking-wide">Stateful Healing Gated</h5>
-              <p className="text-[10px] text-amber-700/70 leading-relaxed font-medium">
-                Location resolutions found. Approval required in the next stage.
-              </p>
-            </div>
-          </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ERROR HINT */}
+      {!currentFile && stage === 'IDLE' && (
+        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-slate-50 border border-slate-100">
+          <AlertCircle className="h-4 w-4 text-slate-400" />
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">
+            Please ensure your file contains columns for Nama, NIK, and Alamat.
+          </p>
         </div>
       )}
     </div>
