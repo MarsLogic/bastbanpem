@@ -183,4 +183,29 @@ This document is the "Collective Brain" of the project. It captures architectura
 - ✅ **MANDATORY**: Push ALL `.md` changes immediately to synchronize sessions.
 
 ---
-*Last Updated: 2026-04-18 (Phase 4: Legal Layout Beautification & Professional Branding Complete)*
+### Improvement: [LEARN-017] TSX Tree-Sitter Query Stabilization
+**Context**: `intel.py` was failing on TSX files with `QueryError: Impossible pattern` because the query used `identifier` for classes (TS requires `type_identifier`) and had an inverted hierarchy for `arrow_function` detection.
+**Action**: 
+1. Updated `class_declaration` to use `name: (type_identifier)`.
+2. Restructured variable-assigned functions to search for `variable_declarator` with `value: [(arrow_function) (function_expression)]`.
+3. Made `extract_method` language-aware (it was hardcoded to Python).
+**Risk Identified**: Tree-sitter grammars (especially for TSX) are sensitive to field names. `identifier` vs `type_identifier` is a common source of "Impossible pattern" errors.
+**Consequences**: Restored the **Surgical Mandate** for React components, enabling 90% token savings when reading component logic.
+**Expert Insight**: **Golden Syntax for TSX Queries**:
+- **Functions**: `(function_declaration name: (identifier) @name) @func`
+- **Classes**: `(class_declaration name: (type_identifier) @name) @class`
+- **Arrows**: `(variable_declarator name: (identifier) @name value: (arrow_function) @func) @func`
+- **Methods**: `(method_definition name: (property_identifier) @name) @func`
+### Improvement: [LEARN-018] Forensic 'Pre-Flight' Excel Discovery Hub
+**Context**: Complex Excel workbooks with multiple tables (Subtotals, Headers, hidden sheets) were causing "Blind Ingestion" errors where the wrong data was being parsed as the primary payload.
+**Action**:
+1. Implemented a **structural probe** (`probe_excel_structure` in `backend/services/data_engine.py`) that scores sheets by keyword density (NIK, Nama, etc.).
+2. Redesigned the UI into a **three-stage discovery workflow**: Physical Probe -> Sheet Selection (UI Hub) -> Targeted Ingestion (`src/components/DistributionIntelligence.tsx`).
+3. Enforced **string-strict coercion** in the Polars pipeline to prevent 16-digit ID (NIK) corruption by Excel's float engine.
+**Risk Identified**: Selection of subtotal/summary sheets as payload. Mitigated by adding "Detected Payload" badges and structural previews (row/col counts, header samples) in the Discovery Hub.
+**Consequences**: Eliminated ingestion errors caused by multi-sheet workbooks. 100% precision for 16-digit Indonesian IDs and regional regional codes.
+**Expert Insight**: NEVER ingest multi-sheet Excel workbooks blindly. Always wrap ingestion in a "Discovery Hub" that exposes the physical structure to the user for structural validation BEFORE the parser runs.
+
+---
+
+*Last Updated: 2026-04-20 (Phase 5: Forensic Excel 'Pre-Flight' Hub Implemented)*

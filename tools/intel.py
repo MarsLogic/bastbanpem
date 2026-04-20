@@ -28,25 +28,25 @@ class MethodExtractor:
         """Returns a list of (name, start_line, end_line) for all functions/classes."""
         tree = self.parser.parse(bytes(code, "utf8"))
         
-        # Query for Python or TS (TS query is slightly different, but we'll start with Pythonic pattern)
-        query_str = """
-            (function_definition
-                name: (identifier) @name) @func
-            (class_definition
-                name: (identifier) @name) @class
-        """
-        # For TS, function declarations are different
+        # Query for Python or TS
         if self.language in [TS_LANGUAGE, TSX_LANGUAGE]:
             query_str = """
                 (function_declaration
                     name: (identifier) @name) @func
                 (class_declaration
-                    name: (identifier) @name) @class
-                (arrow_function
-                    (variable_declarator
-                        name: (identifier) @name)) @func
+                    name: (type_identifier) @name) @class
+                (variable_declarator
+                    name: (identifier) @name
+                    value: [(arrow_function) (function_expression)]) @func
                 (method_definition
                     name: (property_identifier) @name) @func
+            """
+        else:
+            query_str = """
+                (function_definition
+                    name: (identifier) @name) @func
+                (class_definition
+                    name: (identifier) @name) @class
             """
             
         query = Query(self.language, query_str)
@@ -71,12 +71,29 @@ class MethodExtractor:
     def extract_method(self, code: str, method_name: str) -> Optional[str]:
         """Extracts the source code of a specific method/class by name."""
         tree = self.parser.parse(bytes(code, "utf8"))
-        query = Query(PY_LANGUAGE, f"""
-            (function_definition
-                name: (identifier) @name (#eq? @name "{method_name}")) @func
-            (class_definition
-                name: (identifier) @name (#eq? @name "{method_name}")) @class
-        """)
+        
+        # Build language-specific query
+        if self.language in [TS_LANGUAGE, TSX_LANGUAGE]:
+            query_str = f"""
+                (function_declaration
+                    name: (identifier) @name (#eq? @name "{method_name}")) @func
+                (class_declaration
+                    name: (type_identifier) @name (#eq? @name "{method_name}")) @class
+                (variable_declarator
+                    name: (identifier) @name (#eq? @name "{method_name}")
+                    value: [(arrow_function) (function_expression)]) @func
+                (method_definition
+                    name: (property_identifier) @name (#eq? @name "{method_name}")) @func
+            """
+        else:
+            query_str = f"""
+                (function_definition
+                    name: (identifier) @name (#eq? @name "{method_name}")) @func
+                (class_definition
+                    name: (identifier) @name (#eq? @name "{method_name}")) @class
+            """
+            
+        query = Query(self.language, query_str)
         
         cursor = QueryCursor(query)
         matches = cursor.matches(tree.root_node)

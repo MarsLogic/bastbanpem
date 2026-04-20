@@ -131,6 +131,7 @@ class PipelineRow(BaseModel):
     id: str
     nik: str
     name: str = ""
+    phone: str = ""
     location: LocationData = Field(default_factory=LocationData)
     financials: FinancialData = Field(default_factory=FinancialData)
     evidence: EvidenceData = Field(default_factory=EvidenceData)
@@ -162,11 +163,22 @@ class ReconciliationResult(BaseModel):
     is_fully_balanced: bool = False
     discovered_headers: List[str] = []
 
+class ExcelSheetProbe(BaseModel):
+    name: str
+    row_count: int
+    col_count: int
+    sample_rows: List[List[Any]] = []
+    headers: List[str] = []
+    discovery_score: float = 0.0
+
 class ExcelIngestResult(BaseModel):
     rows: List[PipelineRow]
     headers: List[str]
     sheet_name: str
     total_target: float
+    header_index: int
+    pollution_count: int
+    sheets: List[ExcelSheetProbe] = [] # Added for Phase 1 context
 
 class AutomationRequest(BaseModel):
     nik: str

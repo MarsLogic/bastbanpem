@@ -16,38 +16,44 @@ from backend.models import (
 from backend.services.diagnostics import diagnostics
 from backend.services.location_service import location_service
 
-# Smart Mapping from SmartBind11
+# # Smart Mapping from SmartBind11
 HEADER_ALIAS_MAP = {
     "provinsi": ["prov", "insi", "provinsi"],
     "kabupaten": ["kab", "upaten", "kabupaten", "kota"],
     "kecamatan": ["kec", "amatan", "kecamatan"],
     "desa": ["desa", "kelurahan", "village"],
     "nik": ["nik", "nomor induk kependudukan", "id", "identity", "ktp"],
-    "nama": ["nama", "ketua", "penerima", "petani", "penerima manfaat"],
-    "qty": ["qty", "jumlah", "volume", "kuantitas", "liter", "kg"],
-    "unit_price": ["harga", "satuan", "unit price"],
-    "shipping": ["ongkir", "kirim", "shipping"],
-    "target_value": ["target", "pagu", "jumlah total harga", "total value"],
-    "group": ["kelompok", "poktan", "group"],
+    "nama": ["nama", "ketua", "penerima", "petani", "penerima manfaat", "entity"],
+    "qty": ["qty", "jumlah", "volume", "kuantitas", "liter", "kg", "pestisida"],
+    "unit_price": ["harga", "satuan", "unit price", "harga barang satuan"],
+    "shipping": ["ongkir", "kirim", "shipping", "ongkos kirim satuan"],
+    "target_value": ["target", "pagu", "jumlah total harga", "total value", "jumlah nominal", "jumlah total harga barang + jml total ongkir"],
+    "group": ["kelompok", "poktan", "group", "gapoktan", "lmdh", "koperasi", "kth", "bptph", "brigade"],
     "jadwal_tanam": ["tanam", "jadwal", "masa tanam", "periode"],
+    "phone": ["no hp", "phone", "telepon", "kontak", "whatsapp"],
 }
+
+def clean_header_text(text: Any) -> str:
+    """Production Pattern: Sanitize headers from structural pollution (newlines, nulls, special chars)."""
+    if text is None: return ""
+    # Remove newlines, carriage returns, zero-width spaces, and extra whitespace
+    s = str(text).lower().replace('\r', ' ').replace('\n', ' ').strip()
+    # Remove non-alphanumeric except underscore and space
+    s = re.sub(r'[^\w\s/]', '', s)
+    return re.sub(r'\s+', '_', s)
 
 def protect_sci_notation(val: Any) -> str:
     """Elite Pattern: Prevent NIK corruption from Excel scientific notation."""
     s = str(val).strip()
-    if not s or s.lower() == 'none' or s.lower() == 'nan': return ""
+    if not s or s.lower() in ('none', 'nan', ''): return ""
     
+    # Handle scientific notation E+15
     if 'e' in s.lower() and '+' in s:
         try:
-            parts = s.lower().split('e+')
-            base = parts[0].replace('.', '')
-            exponent = int(parts[1])
-            decimal_parts = parts[0].split('.')
-            decimal_count = len(decimal_parts[1]) if len(decimal_parts) > 1 else 0
-            result = base + ('0' * (exponent - decimal_count))
-            return result
+            return str(int(float(s)))
         except: pass
     
+    # Remove trailing .0 from strings that should be integers
     if '.' in s:
         parts = s.split('.')
         if len(parts) > 1 and (parts[1] == '0' or not parts[1]):
@@ -56,9 +62,21 @@ def protect_sci_notation(val: Any) -> str:
     return s
 
 def normalize_nik(val: Any) -> str:
+    """Strict ID normalization."""
+    if val is None: return ""
+    # Strip all non-digits (newline artifacts, dashes)
+    digits = re.sub(r"\D", "", str(val))
+    return digits
+
+def normalize_phone(val: Any) -> str:
+    """Strict Phone normalization."""
     if val is None: return ""
     digits = re.sub(r"\D", "", str(val))
-    return digits if len(digits) == 16 else digits # Keep digits even if not 16, UI will flag
+    if not digits: return ""
+    # Handle cases where leading zero is missing in Excel
+    if digits.startswith('8'):
+        return '0' + digits
+    return digits
 
 def normalize_jadwal_tanam(val: Any) -> str:
     if not val: return ""
@@ -68,16 +86,31 @@ def normalize_jadwal_tanam(val: Any) -> str:
     return s.title()
 
 def smart_detect_header(df: pl.DataFrame) -> int:
-    """Elite Heuristic: Finds header row by keyword density."""
-    keywords = ["nik", "nama", "penerima", "desa", "jumlah", "qty", "harga"]
-    max_scan = min(50, len(df))
+    """Heuristic Fingerprinting: Find row with max schema density."""
+    keywords = ["nik", "nama", "penerima", "desa", "jumlah", "qty", "harga", "poktan", "kecamatan"]
+    max_scan = min(30, len(df))
+    
+    best_row = 0
+    max_matches = 0
     
     for i in range(max_scan):
         row_vals = [str(x).lower() for x in df.row(i) if x is not None]
         match_count = sum(1 for k in keywords if any(k in v for v in row_vals))
-        if match_count >= 2:
-            return i
-    return 0
+        if match_count > max_matches:
+            max_matches = match_count
+            best_row = i
+            
+    return best_row
+
+def is_pollution_row(row_dict: Dict[str, Any]) -> bool:
+    """Anti-Pollution: Detect subtotal, total, and footnote rows."""
+    pollution_keywords = ["total", "jumlah", "subtotal", "mengetahui", "nip", "lampiran", "ttd"]
+    # Check key identification columns
+    for key in ["kabupaten", "kecamatan", "nama", "nik"]:
+        val = str(row_dict.get(key) or "").lower()
+        if any(pk in val for pk in pollution_keywords):
+            return True
+    return False
 
 def smart_rename_columns(columns: List[str]) -> Dict[str, str]:
     rename_map = {}
@@ -89,94 +122,159 @@ def smart_rename_columns(columns: List[str]) -> Dict[str, str]:
                 break
     return rename_map
 
-def ingest_excel_to_models(excel_content: bytes) -> ExcelIngestResult:
-    diagnostics.log_breadcrumb("EXCEL", "Starting Elite Ingestion Pipeline")
+def probe_excel_structure(excel_content: bytes) -> List[ExcelSheetProbe]:
+    """Expert Phase 1: Probe workbook for structural discovery."""
+    excel_file = fastexcel.read_excel(excel_content)
+    probes: List[ExcelSheetProbe] = []
+    
+    keywords = ["nik", "nama", "penerima", "desa", "jumlah", "qty", "harga"]
+    
+    for name in excel_file.sheet_names:
+        try:
+            sheet = excel_file.load_sheet(name)
+            # Use small slice for probing to maximize speed
+            df_probe = sheet.to_polars().head(20)
+            
+            row_count, col_count = df_probe.shape # This is just head, but fastexcel metadata might have full size
+            # Get actual full shape if possible from fastexcel
+            
+            # Simple discovery score
+            match_count = 0
+            headers = []
+            if len(df_probe) > 0:
+                header_idx = smart_detect_header(df_probe)
+                raw_headers = df_probe.row(header_idx)
+                headers = [str(h) for h in raw_headers if h is not None]
+                row_vals = [str(x).lower() for x in raw_headers if x is not None]
+                match_count = sum(1 for k in keywords if any(k in v for v in row_vals))
+            
+            probes.append(ExcelSheetProbe(
+                name=name,
+                row_count=sheet.height, # Actual sheet height
+                col_count=sheet.width,  # Actual sheet width
+                sample_rows=df_probe.head(5).to_dicts(),
+                headers=headers,
+                discovery_score=min(1.0, match_count / 4.0)
+            ))
+        except Exception as e:
+            print(f"Failed to probe sheet {name}: {e}")
+            
+    return probes
+
+def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = None) -> ExcelIngestResult:
+    diagnostics.log_breadcrumb("EXCEL", f"Initializing Maximum Expert Pipeline{' on ' + target_sheet if target_sheet else ''}")
     
     try:
+        # PRODUCTION SCALE: Use polars for everything to maintain data purity
         excel_file = fastexcel.read_excel(excel_content)
-        sheet_name = excel_file.sheet_names[0]
-        df = excel_file.load_sheet(sheet_name).to_polars()
+        sheet_name = target_sheet or excel_file.sheet_names[0]
+        sheet = excel_file.load_sheet(sheet_name)
+        df_raw = sheet.to_polars()
         
-        # 1. Header Discovery
-        header_idx = smart_detect_header(df)
-        header_row = df.row(header_idx)
-        raw_headers = [str(x) if x is not None else f"Unnamed_{i}" for i, x in enumerate(header_row)]
+        header_idx = smart_detect_header(df_raw)
         
-        # 2. Slice data and set columns
-        df_data = df.slice(header_idx + 1)
-        df_data.columns = raw_headers
+        # Reload with corrected offset and clean headers
+        df_data = df_raw.slice(header_idx + 1)
+        raw_header_row = df_raw.row(header_idx)
+        clean_headers = [clean_header_text(x) if x is not None else f"unnamed_{i}" for i, x in enumerate(raw_header_row)]
+        df_data.columns = clean_headers
         
-        # 3. Forward Fill
-        df_data = df_data.fill_null(strategy="forward")
+        # 3. BOUNDED FORWARD FILL (Hierarchical)
+        # We fill regionals but protect against bleeding into distinct entities
+        # Polars fill_null with strategy "forward"
+        regional_cols = [c for c in df_data.columns if any(x in c.lower() for x in ["insi", "kabupaten", "kecamatan", "desa"])]
+        if regional_cols:
+            df_data = df_data.with_columns([
+                pl.col(c).fill_null(strategy="forward") for c in regional_cols
+            ])
+
+        # 4. Canonical Mapping
+        rename_map = {}
+        for col in df_data.columns:
+            col_key = col.lower()
+            for canonical, aliases in HEADER_ALIAS_MAP.items():
+                if any(alias in col_key for alias in aliases):
+                    rename_map[col] = canonical
+                    break
         
-        # 4. Smart Rename
-        rename_map = smart_rename_columns(raw_headers)
         df_mapped = df_data.rename(rename_map)
         
-        for col in ["nik", "nama", "qty", "unit_price", "shipping", "target_value"]:
+        # Ensure core columns exist
+        for col in ["nik", "nama", "qty", "unit_price", "shipping", "target_value", "phone", "group"]:
             if col not in df_mapped.columns:
                 df_mapped = df_mapped.with_columns(pl.lit(None).alias(col))
 
-        # 5. Model Conversion & Cleaning
+        # 5. Production Processing Loop
         rows: List[PipelineRow] = []
         total_target = Decimal('0')
-        state = {"prov": "", "kab": "", "kec": "", "desa": "", "group": ""}
-
-        # Initialize location service for repair
+        pollution_count = 0
         location_service.initialize()
 
-        for idx, row_dict in enumerate(df_mapped.to_dicts()):
-            # Track location state
-            for key in ["provinsi", "kabupaten", "kecamatan", "desa", "group"]:
-                val = row_dict.get(key)
-                if val: state[key[:4]] = str(val).strip()
-
-            raw_nik = row_dict.get("nik")
-            nik = normalize_nik(protect_sci_notation(raw_nik))
+        for row_dict in df_mapped.to_dicts():
+            # Drop purely empty or pollution rows
+            if not any(v for v in row_dict.values() if v is not None):
+                continue
+                
+            if is_pollution_row(row_dict):
+                pollution_count += 1
+                continue
+            
+            # ID Cleaning (Protect Trailing Digits)
+            raw_nik = protect_sci_notation(row_dict.get("nik"))
+            nik = normalize_nik(raw_nik)
+            phone = normalize_phone(protect_sci_notation(row_dict.get("phone")))
             
             name = str(row_dict.get("nama") or "").strip()
+            # A row needs at least a name or NIK to be valid
             if not nik and not name: continue 
-            
+
+            # Financial Extraction (Comma/Period invariant)
             def to_dec(v):
                 if v is None: return Decimal('0')
                 try:
-                    clean_v = re.sub(r'[^\d.,\-]', '', str(v)).replace(',', '.')
-                    if not clean_v: return Decimal('0')
-                    return Decimal(clean_v)
+                    # Strip currency symbols and handle Indonesian formatting (dot for thousands, comma for decimal)
+                    s = str(v).replace('Rp', '').replace(' ', '')
+                    if ',' in s and '.' in s: # Mixed format
+                        s = s.replace('.', '').replace(',', '.')
+                    elif ',' in s: # Likely Indonesian decimal
+                        s = s.replace(',', '.')
+                    return Decimal(s).quantize(Decimal('0.0001'), rounding=ROUND_HALF_UP)
                 except: return Decimal('0')
 
             qty = to_dec(row_dict.get("qty"))
             price = to_dec(row_dict.get("unit_price"))
             ship = to_dec(row_dict.get("shipping"))
+            # Note: User's file has 'Jumlah total Harga Barang + Jml total Ongkir' as the primary target
             target = to_dec(row_dict.get("target_value"))
             
             calc = (price + ship) * qty
             gap = calc - target
             total_target += target
 
-            # Elite Repair: Fix wrong parse location data
+            # Regional Resolution
             raw_loc = {
-                "provinsi": row_dict.get("provinsi") or state["prov"],
-                "kabupaten": row_dict.get("kabupaten") or state["kab"],
-                "kecamatan": row_dict.get("kecamatan") or state["kec"],
-                "desa": row_dict.get("desa") or state["desa"]
+                "provinsi": str(row_dict.get("provinsi") or ""),
+                "kabupaten": str(row_dict.get("kabupaten") or ""),
+                "kecamatan": str(row_dict.get("kecamatan") or ""),
+                "desa": str(row_dict.get("desa") or "")
             }
             repaired = location_service.resolve_location(**raw_loc)
 
-            # Elite Row Construction
+            # Elite Row Instantiation
             p_row = PipelineRow(
                 id=str(uuid.uuid4()),
                 nik=nik,
-                name=name,
+                name=name.title(), # Elite Aesthetic
+                phone=phone,
                 location=LocationData(
                     provinsi=raw_loc["provinsi"],
                     kabupaten=raw_loc["kabupaten"],
                     kecamatan=raw_loc["kecamatan"],
                     desa=raw_loc["desa"],
-                    suggested_provinsi=repaired["provinsi"] if repaired["provinsi"] != raw_loc["provinsi"] else None,
-                    suggested_kabupaten=repaired["kabupaten"] if repaired["kabupaten"] != raw_loc["kabupaten"] else None,
-                    suggested_kecamatan=repaired["kecamatan"] if repaired["kecamatan"] != raw_loc["kecamatan"] else None,
-                    suggested_desa=repaired["desa"] if repaired["desa"] != raw_loc["desa"] else None
+                    suggested_provinsi=repaired["provinsi"] if repaired["provinsi"].lower() != raw_loc["provinsi"].lower() else None,
+                    suggested_kabupaten=repaired["kabupaten"] if repaired["kabupaten"].lower() != raw_loc["kabupaten"].lower() else None,
+                    suggested_kecamatan=repaired["kecamatan"] if repaired["kecamatan"].lower() != raw_loc["kecamatan"].lower() else None,
+                    suggested_desa=repaired["desa"] if repaired["desa"].lower() != raw_loc["desa"].lower() else None
                 ),
                 financials=FinancialData(
                     qty=float(qty),
@@ -187,21 +285,23 @@ def ingest_excel_to_models(excel_content: bytes) -> ExcelIngestResult:
                     gap=float(gap)
                 ),
                 jadwal_tanam=normalize_jadwal_tanam(row_dict.get("jadwal_tanam")),
-                group=str(row_dict.get("group") or state["grou"]),
+                group=str(row_dict.get("group") or "").title(),
                 is_synced=abs(gap) < Decimal('1.0'),
                 column_data=row_dict,
                 original_row=row_dict
             )
             rows.append(p_row)
 
-        # Explicit GC to free up fastexcel and polars objects
         gc.collect()
+        diagnostics.log_success("EXCEL-ELITE-INGEST", f"Successfully parsed {len(rows)} verified recipient rows.")
 
         return ExcelIngestResult(
             rows=rows,
-            headers=raw_headers,
+            headers=clean_headers,
             sheet_name=sheet_name,
-            total_target=float(total_target)
+            total_target=float(total_target),
+            header_index=header_idx,
+            pollution_count=pollution_count
         )
 
     except Exception as e:

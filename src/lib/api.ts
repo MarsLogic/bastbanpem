@@ -31,9 +31,21 @@ export const reconcileFiles = async (pdfFile: File, excelFile: File) => {
   return data;
 };
 
-export const ingestExcel = async (file: File) => {
+export const probeExcel = async (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
+  const { data } = await api.post('/excel/probe', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data;
+};
+
+export const ingestExcel = async (file: File, sheetName?: string) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (sheetName) {
+    formData.append('sheet_name', sheetName);
+  }
   const { data } = await api.post('/excel/ingest', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });

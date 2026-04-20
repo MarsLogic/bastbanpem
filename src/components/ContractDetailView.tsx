@@ -10,6 +10,7 @@ import { DocumentManager } from './DocumentManager';
 import { ReconciliationTab } from './ReconciliationTab';
 import { PortalSyncModule } from './PortalSyncModule';
 import { ContractSummary } from './ContractSummary';
+import { DistributionIntelligence } from './DistributionIntelligence';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { Badge } from "@/components/ui/badge";
@@ -49,8 +50,11 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
   const ktpDir = contract.ktpDir || '';
   const proofDir = contract.proofDir || '';
 
-  const handleExcelDataLoaded = (data: any[]) => {
-    onUpdate(contract.id, { recipients: data });
+  const handleExcelDataLoaded = (result: any) => {
+    onUpdate(contract.id, { 
+      recipients: result.rows,
+      // Metadata from Excel scan could go here
+    });
   };
 
   const handleGlobalConfigUpdate = (config: any) => {
@@ -138,17 +142,14 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         <DashboardSection 
           id="sec-excel"
           icon={Server}
-          title="2. Recipients"
-          subtitle="Distribution Data & Allocation"
+          title="2. Distribution Intelligence"
+          subtitle="Precision Parsing & Recipient Hub"
         >
-          <ExcelWorkbench 
-            recipients={contract.recipients}
-            globalConfig={globalConfig}
-            setGlobalConfig={(c:any) => handleGlobalConfigUpdate(typeof c === 'function' ? c(globalConfig) : c)}
-            onDataLoaded={handleExcelDataLoaded}
-            globalNIKRegistry={globalNIKRegistry}
-            currentContractId={contract.id}
-          />
+          <div className="p-6">
+            <DistributionIntelligence 
+              onDataLoaded={handleExcelDataLoaded}
+            />
+          </div>
         </DashboardSection>
 
         <DashboardSection 

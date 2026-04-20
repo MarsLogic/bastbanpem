@@ -8,7 +8,7 @@ from typing import Dict, Optional, List, Any
 from backend.services.pdf_intelligence import pdf_intel
 from backend.services.ktp_service import extract_ktp_data
 from backend.services.automation_service import submit_to_government_site
-from backend.services.data_engine import reconcile_files, ingest_excel_to_models, apply_magic_balance
+from backend.services.data_engine import reconcile_files, ingest_excel_to_models, apply_magic_balance, probe_excel_structure
 from backend.services.location_service import location_service
 from backend.services.pdf_intelligence import pdf_intel
 from backend.models import (
@@ -96,11 +96,19 @@ async def pdf_parse(file: UploadFile = File(...)):
             except:
                 pass
 
-@router.post("/excel/ingest", response_model=ExcelIngestResult)
-async def excel_ingest(file: UploadFile = File(...)):
+@router.post("/excel/probe", response_model=List[Any])
+async def excel_probe(file: UploadFile = File(...)):
     try:
         content = await file.read()
-        return ingest_excel_to_models(content)
+        return probe_excel_structure(content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/excel/ingest", response_model=ExcelIngestResult)
+async def excel_ingest(file: UploadFile = File(...), sheet_name: Optional[str] = Body(None)):
+    try:
+        content = await file.read()
+        return ingest_excel_to_models(content, target_sheet=sheet_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
