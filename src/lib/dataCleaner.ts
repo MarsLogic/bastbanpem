@@ -408,7 +408,10 @@ export function cleanValue(
     key.includes('kelompok') ||
     key.includes('opt') ||
     key.includes('ketua') ||
-    key.includes('rekomendasi')
+    key.includes('rekomendasi') ||
+    key.includes('jadwal') ||
+    key.includes('tanam') ||
+    key.includes('periode')
   ) {
     cleaned = toTitleCase(cleaned);
   } else if (key.includes('email') || key.includes('website') || key.includes('mail')) {

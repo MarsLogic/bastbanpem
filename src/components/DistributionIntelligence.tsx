@@ -709,14 +709,15 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
                         const val = row.column_data?.[header] ?? '—';
                         const hUpper = header.toUpperCase();
                         const isNIK = hUpper.includes('NIK') || hUpper === 'ID' || hUpper.includes('KTP') || hUpper.includes('IDX') || hUpper.includes('SOURCE') || hUpper.includes('HP') || hUpper.includes('WA') || hUpper.includes('TELEPON');
+                        const isJadwal = hUpper.includes('JADWAL') || hUpper.includes('TANAM') || hUpper.includes('PERIODE') || hUpper.includes('MASA');
                         const isMain = hUpper === 'NAMA PENERIMA' || hUpper === 'PENERIMA' || hUpper === 'NAMA';
                         
                         const isPrice = hUpper.includes('HARGA') || hUpper.includes('PRICE') || hUpper.includes('VALUE') || hUpper.includes('NOMINAL') || hUpper.includes('TOTAL') || hUpper.includes('ONGKOS') || hUpper.includes('KIRIM') || hUpper.includes('BIAYA');
-                        const isVolume = hUpper.includes('QTY') || hUpper.includes('VOLUME') || hUpper.includes('JUMLAH') || hUpper.includes('UNIT') || hUpper.includes('LUAS');
+                        const isVolume = !isJadwal && (hUpper.includes('QTY') || hUpper.includes('VOLUME') || hUpper.includes('JUMLAH') || hUpper.includes('UNIT') || hUpper.includes('LUAS'));
                         
                         // Robust Content Check: If value looks like a number, treat it as one for alignment/formatting
-                        // Skip this for NIK to prevent decimal/separator pollution [NIK-700]
-                        const isNumericContent = !isNIK && (typeof val === 'number' || (typeof val === 'string' && /^-?\d+(\.\d+)?$/.test(val.trim())));
+                        // Skip this for NIK/JADWAL to prevent decimal/separator pollution [NIK-700/JADWAL-700]
+                        const isNumericContent = !isNIK && !isJadwal && (typeof val === 'number' || (typeof val === 'string' && /^-?\d+(\.\d+)?$/.test(val.trim())));
 
                         return (
                           <td 
@@ -731,7 +732,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
                           >
                             {isPrice 
                               ? formatIDR(Number(val)) 
-                              : (isNIK 
+                              : (isNIK || isJadwal
                                   ? cleanValue(safeStr(val), header) 
                                   : (isVolume || isNumericContent ? formatDecimal(val) : cleanValue(safeStr(val), header))
                                 )

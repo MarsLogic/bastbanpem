@@ -29,8 +29,8 @@ HEADER_ALIAS_MAP = {
     "ONGKOS KIRIM": ["ongkos kirim satuan", "ongkos kirim", "ongkir", "shipping", "biaya kirim", "jasa kirim"],
     "TOTAL_VALUE": ["jumlah total harga barang + jml total ongkir", "jumlah total harga", "total value", "nominal", "target", "pagu", "total bayar", "total nominal", "jumlah nominal"],
     "POKTAN/GROUP": ["kelompok tani", "gapoktan", "poktan", "group", "lmdh", "koperasi", "kth", "brigade"],
-    "JADWAL": ["jadwal tanam", "masa tanam", "periode tanam", "jadwal", "periode"],
-    "NO HP": ["whatsapp", "telepon", "kontak", "phone", "no hp", "no. hp"],
+    "JADWAL": ["jadwal tanam", "masa tanam", "periode tanam", "jadwal", "periode", "jadwal_tanam", "masa_tanam", "periode_tanam", "jadwal_tana"],
+    "NO HP": ["whatsapp", "telepon", "kontak", "phone", "no hp", "no. hp", "wa"],
     "LUAS LAHAN": ["luas lahan", "land area", "jumlah luas", "ha"],
     "OPT DOMINAN": ["opt dominan", "opt", "hama", "pest", "kekurangan"],
     "SPESIFIKASI": ["spesifikasi", "merk", "produk", "specification", "brand"],
@@ -61,13 +61,15 @@ def canonical_heal(header: Any) -> Tuple[Optional[str], int]:
     for canonical, aliases in HEADER_ALIAS_MAP.items():
         for alias in aliases:
             # Word Boundary Hardening: Prevent 'nama' matching 'tanaman'
-            # If alias is very short (< 5 chars), require word boundaries or exact match
+            # Normalize Clean to enable space-based alias matching even in underscored headers
             is_match = False
+            clean_normalized = clean.replace('_', ' ')
+            
             if len(alias) <= 5:
                 # Use regex for strict word boundaries
-                if re.search(fr"\b{re.escape(alias)}\b", clean):
+                if re.search(fr"\b{re.escape(alias)}\b", clean_normalized):
                     is_match = True
-            elif alias in clean:
+            elif alias in clean_normalized:
                 is_match = True
                 
             if is_match:
@@ -250,6 +252,8 @@ class EliteJadwalHealer:
                 if p_year: res_part += f" {p_year.group()}"
                 healed_parts.append(res_part)
             else:
+                # [PRODUCTION-PRESERVATION] If the name looks like a month but failed map (rare), 
+                # keep it Title Case. 
                 healed_parts.append(p_clean.title())
 
         # Join parts back together
@@ -511,7 +515,7 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
                     month_regex = r"(?i)jan|feb|mar|apr|mei|jun|jul|ags|agt|sep|okt|nov|des|uari|ruari|aret|ril|gustus|ptember|tober|vember|sember"
                     month_hits = df_data[h].head(50).cast(pl.Utf8).str.contains(month_regex).sum()
                     if month_hits > 0:
-                        weight += 200 
+                        weight += 500 # PRO-BOOST: Massive priority for columns with real month names
                     
                     # Production Logging
                     diagnostics.log_breadcrumb("EXCEL-JADWAL-WEIGHT", f"Col: '{h}', MonthHits: {month_hits}, TotalWeight: {weight}")
