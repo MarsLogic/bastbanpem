@@ -446,4 +446,13 @@ Government-scale financial data often arrives as `7.429.298,50`. Standard JS `pa
 2. **Vocabulary-Aware Conversion**: Expanded keyword detection for agrarian terms (`PESTISIDA`, `BENIH`, `BIBIT`, `KG`, `HA`) to ensure they are exported as true numeric types (`number`).
 3. **Smart Heuristic**: Implemented a length-aware fallback (`length < 15`) that converts unclassified digit-based strings into numbers, while safely ignoring longer values that might be IDs.
 **Risk**: Converting 16-digit strings to numbers in Excel causes the last digit to become `0` due to floating-point limits. The 15-character guard is critical for data integrity.
-**Expert Insight**: Professional Excel exports must balance summable data (numbers) with protected identities (formulas). Never let long numeric IDs become true numbers in XLSX. Always use the formula trick to suppress UI warnings.
+
+### Improvement: [LEARN-047] Unified Elite Export Architecture (WYSIWYG Parity)
+**Context**: Fragmented export logic across components (Financial Summary, SSKK, Distribution Intelligence) led to inconsistent designs, broken data parity (exporting unfiltered data), and manual totaling errors.
+**Action**:
+1. **Centralized Expert Hook**: Migrated all renderers to a single `exportStyledExcel` engine in `lib/excelExpert.ts`.
+2. **UI State Synchronization**: Forced all export triggers to use the `sorted` or `filtered` local state instead of the raw data source. This ensures that what the user sees in the filtered grid is exactly what they get in the Excel file.
+3. **Dynamic Summary Injection**: Extended the engine to support `summaryRows` (Grand Totals) with Light Slate styling (`FFF1F5F9`). Calculated financial totals in the component layer to ensure reconciliation between UI display and exported XLSX footers.
+4. **Hardened Currency Normalization**: Upgraded `parseNumberID` to strip `Rp` symbols and handle Indonesian negative formatting mid-string, ensuring financial data is immediately summable in Excel.
+**Risk**: If summary rows are not recalculating on filter changes, the Excel footer will be inaccurate. Always derive summary data from the *filtered* set.
+**Expert Insight**: A production-grade export is not just a data dump; it's a mirror of the operational state. If a user filters a report, they expect the export to be that specific report. Always prioritize "WYSIWYG" (What You See Is What You Get) parity.
