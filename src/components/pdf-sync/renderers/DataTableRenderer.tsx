@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileDown } from 'lucide-react';
 import { cleanValue, stripRegionalPrefix } from '@/lib/dataCleaner';
 import { exportStyledExcel } from '@/lib/excelExpert';
+import { generateExportFilename } from '@/lib/exportUtils';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 
 interface RawTable {
@@ -19,6 +20,8 @@ interface DataTableRendererProps {
   /** Show page/method metadata badge in header */
   showMeta?: boolean;
   searchQuery?: string;
+  orderId?: string;
+  tableName?: string;
 }
 
 // Initial default
@@ -182,7 +185,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       finalHeaders,
       {
         sheetName: 'Data Table',
-        filename: `extracted_table_${new Date().getTime()}.xlsx`
+        filename: generateExportFilename(props.orderId, props.tableName || 'Data Table')
       }
     );
   };

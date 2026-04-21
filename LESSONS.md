@@ -457,4 +457,12 @@ Government-scale financial data often arrives as `7.429.298,50`. Standard JS `pa
 5. **Intelligent Number Formatting**: Implemented a whitelist-based detection for index/ID columns (`#`, `NO`, `ID`). These columns are strictly formatted as Integers (`0` format) and Center-aligned, while price/volume data retains its decimal precision (`#,##0.00`).
 6. **Contextual Tab Naming**: Standardized the Excel sheet (tab) names to match their component source (e.g., "Ringkasan Pembayaran" instead of generic "Sheet1"). This improves UX when users are managing multiple exports.
 **Risk**: If summary rows are not recalculating on filter changes, the Excel footer will be inaccurate. Always derive summary data from the *filtered* set.
-**Expert Insight**: A production-grade export is not just a data dump; it's a mirror of the operational state. If a user filters a report, they expect the export to be that specific report. Always prioritize "WYSIWYG" (What You See Is What You Get) parity.
+
+### Improvement: [LEARN-048] Standardized Export Filename Protocol
+**Context**: Generic or auto-generated timestamps in filenames (e.g. `recap_1713...xlsx`) made archival and traceability difficult for users managing multiple contracts.
+**Action**:
+1. **Shared Filename Engine**: Centralized naming logic in `lib/exportUtils.ts` to enforce a strict `[YYYY-MM-DD]-[OrderID]_[Section]_Data Table Export` format.
+2. **Metadata Sanitization**: Implemented automated cleaning for filename-unfriendly characters (`/`, `:`, `*`, etc.) to ensure OS compatibility.
+3. **Robust Fallbacks**: Guaranteed system safety by providing default labels (`UNSET`, `Untitled-Section`) when contract or section metadata is missing.
+4. **Propagated Context**: Updated the `DocumentView` hierarchy to pass `order_id` from structured `ultraRobust` metadata down to all rendering layers.
+**Expert Insight**: Traceability is as important as accuracy. A filename should act as a self-describing metadata header for the file, allowing users to identify, sort, and search their exports without opening them.

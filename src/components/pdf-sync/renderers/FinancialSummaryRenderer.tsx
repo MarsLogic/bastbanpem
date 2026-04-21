@@ -13,6 +13,7 @@ import {
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import { exportStyledExcel } from '@/lib/excelExpert';
+import { generateExportFilename } from '@/lib/exportUtils';
 import { Button } from '@/components/ui/button';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,6 +29,7 @@ interface FinancialSummaryRendererProps {
   ledger?: any[];
   financials?: any;
   searchQuery?: string;
+  orderId?: string;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -204,7 +206,7 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
       'DPP (Excl. Tax)', 'PPN (Tax)', 'Total (Incl. Tax)'
     ], {
       sheetName: 'Ringkasan Pembayaran',
-      filename: `financial_recap_${new Date().getTime()}.xlsx`,
+      filename: generateExportFilename(props.orderId, 'Ringkasan Pembayaran'),
       summaryRows: [
         {
           'Desa': 'GRAND TOTAL',

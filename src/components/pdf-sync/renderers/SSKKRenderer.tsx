@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Highlight } from '@/components/ui/highlight';
 import { exportStyledExcel } from '@/lib/excelExpert';
+import { generateExportFilename } from '@/lib/exportUtils';
 
 interface SSKKClause {
   nomor: string;
@@ -23,6 +24,7 @@ interface SSKKClause {
 interface SSKKRendererProps {
   clauses: SSKKClause[];
   searchQuery?: string;
+  orderId?: string;
 }
 
 /**
@@ -72,7 +74,7 @@ export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery
     
     await exportStyledExcel(data, ['ARTICLE', 'TITLE', 'CONTENT'], {
       sheetName: 'SSKK',
-      filename: `sskk_clauses_${new Date().toISOString().split('T')[0]}.xlsx`
+      filename: generateExportFilename(props.orderId, 'SSKK')
     });
   };
 

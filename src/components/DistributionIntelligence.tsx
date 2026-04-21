@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { cleanValue, stripRegionalPrefix } from '@/lib/dataCleaner';
 import { exportStyledExcel } from '@/lib/excelExpert';
+import { generateExportFilename } from '@/lib/exportUtils';
 import * as XLSX from 'xlsx';
 import { ingestExcel, probeExcel, saveContract } from '../lib/api';
 import { toast } from 'sonner';
@@ -399,7 +400,10 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
       activeData.headers,
       {
         sheetName: activeSheetName || 'Recipient List',
-        filename: `recipient_list_${activeSheetName}_${new Date().toISOString().split('T')[0]}.xlsx`,
+        filename: generateExportFilename(
+          activeData.header_meta?.order_id || activeData.header_meta?.contract_id, 
+          activeSheetName || 'Recipient List'
+        ),
         headerMeta: activeData.header_meta
       }
     );

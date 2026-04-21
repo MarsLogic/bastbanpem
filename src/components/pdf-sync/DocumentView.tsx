@@ -66,7 +66,8 @@ function renderSectionContent(
   searchQuery: string, 
   ultraRobust: any, 
   tables: RawTable[],
-  sskkClauses?: any[]
+  sskkClauses?: any[],
+  orderId?: string
 ) {
   switch (key) {
     case 'HEADER':
@@ -104,13 +105,14 @@ function renderSectionContent(
           ledger={ultraRobust?.shipment_ledger}
           financials={ultraRobust?.financials}
           searchQuery={searchQuery}
+          orderId={orderId}
         />
       );
 
     case 'SSKK':
       // [PHASE 4] Prioritize structural logic over raw text parsing
       if (sskkClauses && sskkClauses.length > 0) {
-        return <SSKKRenderer clauses={sskkClauses} searchQuery={searchQuery} />;
+        return <SSKKRenderer clauses={sskkClauses} searchQuery={searchQuery} orderId={orderId} />;
       }
       return <ClauseRenderer text={text} searchQuery={searchQuery} />;
 
@@ -435,7 +437,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
           >
             <SectionHeader id={domId} label={label} Icon={Icon} chars={text.length} />
             <div className="mt-1">
-              {renderSectionContent(key, text, globalSearch, ultraRobust, tables, sskkClauses)}
+              {renderSectionContent(key, text, globalSearch, ultraRobust, tables, sskkClauses, ultraRobust?.contract_header?.order_id)}
             </div>
           </section>
         );
@@ -459,6 +461,8 @@ export const DocumentView: React.FC<DocumentViewProps> = ({
               table={table} 
               showMeta={true} 
               searchQuery={globalSearch || undefined} 
+              orderId={ultraRobust?.contract_header?.order_id}
+              tableName={`Table ${idx + 1}`}
             />
           </div>
         </section>
