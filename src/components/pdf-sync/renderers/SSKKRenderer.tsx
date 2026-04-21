@@ -31,7 +31,7 @@ interface SSKKRendererProps {
  * [PHASE 4] High-Fidelity SSKK Structured Renderer
  * Implements absolute typography uniformity and split-column layout.
  */
-export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery }) => {
+export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery, orderId }) => {
   const [search, setSearch] = useState(searchQuery || '');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
@@ -74,7 +74,7 @@ export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery
     
     await exportStyledExcel(data, ['ARTICLE', 'TITLE', 'CONTENT'], {
       sheetName: 'SSKK',
-      filename: generateExportFilename(props.orderId, 'SSKK')
+      filename: generateExportFilename(orderId, 'SSKK')
     });
   };
 

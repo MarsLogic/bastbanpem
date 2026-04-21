@@ -68,7 +68,7 @@ function inferHeaders(rows: Record<string, any>[]): string[] {
 
 import { Highlight } from '@/components/ui/highlight';
 
-export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, showMeta = false, searchQuery }) => {
+export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, showMeta = false, searchQuery, orderId, tableName }) => {
   // Sync internal search ONLY on initial load if provided
   const [search,   setSearch]   = useState(searchQuery || '');
   const [sortCol,  setSortCol]  = useState<string | null>(null);
@@ -185,7 +185,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       finalHeaders,
       {
         sheetName: 'Data Table',
-        filename: generateExportFilename(props.orderId, props.tableName || 'Data Table')
+        filename: generateExportFilename(orderId, tableName || 'Data Table')
       }
     );
   };

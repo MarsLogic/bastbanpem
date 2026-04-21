@@ -465,4 +465,10 @@ Government-scale financial data often arrives as `7.429.298,50`. Standard JS `pa
 2. **Metadata Sanitization**: Implemented automated cleaning for filename-unfriendly characters (`/`, `:`, `*`, etc.) to ensure OS compatibility.
 3. **Robust Fallbacks**: Guaranteed system safety by providing default labels (`UNSET`, `Untitled-Section`) when contract or section metadata is missing.
 4. **Propagated Context**: Updated the `DocumentView` hierarchy to pass `order_id` from structured `ultraRobust` metadata down to all rendering layers.
-**Expert Insight**: Traceability is as important as accuracy. A filename should act as a self-describing metadata header for the file, allowing users to identify, sort, and search their exports without opening them.
+
+### Improvement: [LEARN-049] Prop Destructuring Awareness in Functional Components
+**Context**: Introduced build regressions by referencing `props.variable` in components where the props were already destructured in the function signature (e.g., `({ table, searchQuery }) => ...`).
+**Action**:
+1. **Signature Audit**: Synchronized component signatures with body logic. If a prop is added to the interface, it MUST be destructured in the signature if the component follows the destructuring pattern.
+2. **Standardization**: Enforced a project-wide pattern: strictly destructure props in the component signature for cleaner access and better IDE IntelliSense.
+**Expert Insight**: When refactoring or extending interfaces, always check the component's entry point. Mixed usage of `props` and destructured variables leads to `ReferenceError` during the build phase (`tsc`), even if it looks correct in local HMR.

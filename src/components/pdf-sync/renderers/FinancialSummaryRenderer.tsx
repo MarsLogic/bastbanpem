@@ -80,7 +80,7 @@ function parseFinancialRows(text: string): FinancialRow[] {
 
 // ─── Sub-Components ───────────────────────────────────────────────────────────
 
-const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQuery?: string }> = ({ ledger, financials, searchQuery }) => {
+const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQuery?: string; orderId?: string }> = ({ ledger, financials, searchQuery, orderId }) => {
   const [search, setSearch] = useState('');
 
   // Sync internal search ONLY on initial load
@@ -206,7 +206,7 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
       'DPP (Excl. Tax)', 'PPN (Tax)', 'Total (Incl. Tax)'
     ], {
       sheetName: 'Ringkasan Pembayaran',
-      filename: generateExportFilename(props.orderId, 'Ringkasan Pembayaran'),
+      filename: generateExportFilename(orderId, 'Ringkasan Pembayaran'),
       summaryRows: [
         {
           'Desa': 'GRAND TOTAL',
@@ -551,7 +551,7 @@ const FinancialTotalsCard: React.FC<{ financials: any; ledger: any[]; taxRate: n
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
-export const FinancialSummaryRenderer: React.FC<FinancialSummaryRendererProps> = ({ text, ledger, financials, searchQuery }) => {
+export const FinancialSummaryRenderer: React.FC<FinancialSummaryRendererProps> = ({ text, ledger, financials, searchQuery, orderId }) => {
   const rows = React.useMemo(() => parseFinancialRows(text), [text]);
   const resolveRawAddress = useMasterDataStore(state => state.resolveRawAddress);
 
@@ -573,7 +573,7 @@ export const FinancialSummaryRenderer: React.FC<FinancialSummaryRendererProps> =
         <div className="flex items-center justify-between mb-2">
           <Badge className="bg-slate-100 text-slate-600 border border-slate-200 text-[10px] py-1 px-3 rounded-full">Accounting View</Badge>
         </div>
-        <RecipientFinancialGrid ledger={ledger} financials={financials} searchQuery={searchQuery} />
+        <RecipientFinancialGrid ledger={ledger} financials={financials} searchQuery={searchQuery} orderId={orderId} />
         <FinancialTotalsCard 
           financials={financials} 
           ledger={ledger} 
