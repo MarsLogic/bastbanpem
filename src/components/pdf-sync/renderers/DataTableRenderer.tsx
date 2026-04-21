@@ -178,7 +178,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   const handleExportExcel = async () => {
     // Use the Elite Export Engine [EXCEL-600]
     await exportStyledExcel(
-      normalizedRows,
+      sorted,
       finalHeaders,
       {
         sheetName: 'Extracted Table',
@@ -216,9 +216,9 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
             variant="outline"
             size="sm"
             onClick={handleExportExcel}
-            className="h-7 text-[10px] font-bold gap-1.5 px-3 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shadow-sm"
+            className="h-7 text-[10px] font-bold gap-2 px-3 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shadow-sm shrink-0"
           >
-            <FileDown className="h-3 w-3" />
+            <FileDown className="h-3.5 w-3.5" />
             EXPORT EXCEL
           </Button>
         </div>

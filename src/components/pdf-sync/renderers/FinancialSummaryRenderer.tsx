@@ -12,7 +12,7 @@ import {
   ChevronUp, ChevronDown, Search, FileDown,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { exportStyledExcel } from '@/lib/excelExpert';
 import { Button } from '@/components/ui/button';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
     });
   }, [hydratedLedger, search, province]);
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     const exportData = sorted.map(item => {
       const dpp = (item.costs?.product_total || 0) + (item.costs?.shipping_total || 0);
       const ppn = Math.round(dpp * taxRate);
@@ -195,10 +195,25 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
       };
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Recipient Financials');
-    XLSX.writeFile(workbook, `ringkasan_pembayaran_${new Date().getTime()}.xlsx`);
+    const totalDPP = sorted.reduce((sum, item) => sum + (item.costs?.product_total || 0) + (item.costs?.shipping_total || 0), 0);
+    const totalPPN = Math.round(totalDPP * taxRate);
+    const totalGross = totalDPP + totalPPN;
+
+    await exportStyledExcel(exportData, [
+      '#', 'Penerima', 'Nomor Telepon', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Desa',
+      'DPP (Excl. Tax)', 'PPN (Tax)', 'Total (Incl. Tax)'
+    ], {
+      sheetName: 'Recipient Financials',
+      filename: `financial_recap_${new Date().getTime()}.xlsx`,
+      summaryRows: [
+        {
+          'Desa': 'GRAND TOTAL',
+          'DPP (Excl. Tax)': totalDPP,
+          'PPN (Tax)': totalPPN,
+          'Total (Incl. Tax)': totalGross
+        }
+      ]
+    });
   };
 
   const sorted = React.useMemo(() => {
@@ -285,10 +300,10 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
             variant="outline"
             size="sm"
             onClick={handleExportExcel}
-            className="h-7 text-[10px] font-bold gap-1.5 px-2.5 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shrink-0"
+            className="h-7 text-[10px] font-bold gap-2 px-3 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shadow-sm shrink-0"
           >
-            <FileDown className="h-3 w-3" />
-            Export Excel
+            <FileDown className="h-3.5 w-3.5" />
+            EXPORT EXCEL
           </Button>
 
           <div className="w-px h-4 bg-slate-200 shrink-0" />

@@ -12,39 +12,48 @@ export interface ExcelExportOptions {
   sheetName?: string;
   filename?: string;
   headerMeta?: Record<string, string>; // Canonical -> Original
+  summaryRows?: Record<string, any>[]; // Explicit footer rows
+  columnStyles?: Record<string, { alignment?: 'left' | 'right' | 'center', numFmt?: string }>;
 }
 
 /**
- * Expert Numeric Parser: Handles Indonesian formatting and Scientific Notation.
- * [FORMAT-ID] "1.234.567,89" -> 1234567.89
- * [FORMAT-ENG] "1,234,567.89" -> 1234567.89
- * [FORMAT-SCI] "1.023e+7" -> 10230000
+ * Expert Numeric Parser: Handles Indonesian formatting, Scientific Notation, and Currency.
+ * [FORMAT-ID] "Rp 1.234.567,89" -> 1234567.89
+ * [FORMAT-NEG] "- Rp 5.000" -> -5000
  */
 const parseNumberID = (val: any): number => {
   if (typeof val === 'number') return val;
-  const s = String(val ?? '').trim();
+  let s = String(val ?? '').trim();
   if (!s || s === '—' || s === '-') return 0;
   
-  // 1. Detect Scientific Notation or Standard English Decimal (Single dot, no spaces)
-  if (/^-?\d*\.?\d+(?:[eE][-+]?\d+)?$/.test(s)) {
-    return parseFloat(s);
-  }
+  // 0. Preliminary Cleaning: Strip "Rp" and whitespace
+  s = s.replace(/Rp\.?\s*/gi, '');
+  const isNegative = s.includes('-') || s.includes('(');
+  s = s.replace(/[^\d,\.]/g, ''); // Keep only digits and decimal separators
   
-  // 2. Detect Indonesian Formatting (Dots as thousands, comma as decimal)
+  if (!s) return 0;
+
+  // 1. Detect Indonesian / Continental Formatting (Dots as thousands, comma as decimal)
   // e.g., "7.429.298,50" -> "7429298.50"
-  // Note: Only strip dots if there is a comma or multiple dots (indicators of ID fmt)
   const hasComma = s.includes(',');
   const hasMultipleDots = (s.match(/\./g) || []).length > 1;
+  const endsWithDotTwoDigits = /\.\d{2}$/.test(s); // Indicator of English decimal
   
-  if (hasComma || hasMultipleDots) {
-    const cleaned = s.replace(/\./g, '').replace(/,/g, '.');
-    const num = parseFloat(cleaned);
-    return isNaN(num) ? 0 : num;
+  let cleaned = s;
+  if ((hasComma || hasMultipleDots) && !endsWithDotTwoDigits) {
+    cleaned = s.replace(/\./g, '').replace(/,/g, '.');
+  } else if (hasComma && endsWithDotTwoDigits) {
+    // Weird hybrid "1,234.56"
+    cleaned = s.replace(/,/g, '');
+  } else if (!hasComma && !hasMultipleDots && s.includes('.')) {
+    // Could be "1.000" (ID) or "1.50" (ENG)
+    // Heuristic: if it's 3 digits after the dot, it's likely a thousands separator
+    if (s.split('.')[1].length === 3) cleaned = s.replace(/\./g, '');
   }
-  
-  // 3. Last resort fallback
-  const num = parseFloat(s);
-  return isNaN(num) ? 0 : num;
+
+  const num = parseFloat(cleaned);
+  let finalNum = isNaN(num) ? 0 : num;
+  return isNegative ? -Math.abs(finalNum) : finalNum;
 };
 
 export const exportStyledExcel = async (
@@ -53,9 +62,11 @@ export const exportStyledExcel = async (
   options: ExcelExportOptions = {}
 ) => {
   const { 
-    sheetName = 'Recipient List', 
+    sheetName = 'Data Export', 
     filename = `export_${new Date().toISOString().split('T')[0]}.xlsx`,
-    headerMeta = {}
+    headerMeta = {},
+    summaryRows = [],
+    columnStyles = {}
   } = options;
 
   const workbook = new ExcelJS.Workbook();
@@ -65,7 +76,7 @@ export const exportStyledExcel = async (
 
   // 1. Define Columns
   const columnDefs = headers.map(h => {
-    const maxValLen = data.reduce((acc, row) => {
+    const maxValLen = [...data, ...summaryRows].reduce((acc, row) => {
       const val = String(row[h] ?? '');
       return Math.max(acc, val.length);
     }, Math.max(h.length, (headerMeta[h] ?? '').length));
@@ -93,7 +104,7 @@ export const exportStyledExcel = async (
   row2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E293B' } };
   row2.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
 
-  // 3. Populate Data
+  // 3. Populate Data Rows
   data.forEach((row, index) => {
     const rowValues: any = {};
     headers.forEach(h => {
@@ -102,11 +113,13 @@ export const exportStyledExcel = async (
       
       const isIdentity = hUpper.includes('NIK') || hUpper === 'ID' || hUpper.includes('KTP') || 
                          hUpper.includes('HP') || hUpper.includes('TELEPON') || hUpper.includes('MOBILE') ||
-                         hUpper.includes('SOURCE') || hUpper.includes('VA') || hUpper.includes('IDX');
+                         hUpper.includes('SOURCE') || hUpper.includes('VA') || hUpper.includes('IDX') ||
+                         hUpper.includes('ACCOUNT');
                          
       const isPrice = hUpper.includes('HARGA') || hUpper.includes('NOMINAL') || hUpper.includes('TOTAL') || 
                       hUpper.includes('PRICE') || hUpper.includes('VALUE') || hUpper.includes('ONGKOS') || 
-                      hUpper.includes('KIRIM') || hUpper.includes('BIAYA');
+                      hUpper.includes('KIRIM') || hUpper.includes('BIAYA') || hUpper.includes('TAX') ||
+                      hUpper.includes('DPP') || hUpper.includes('PPN') || hUpper.includes('GROSS');
                       
       const isVolume = hUpper.includes('QTY') || hUpper.includes('VOLUME') || hUpper.includes('JUMLAH') || 
                        hUpper.includes('UNIT') || hUpper.includes('LUAS') || hUpper.includes('LAHAN') ||
@@ -115,17 +128,15 @@ export const exportStyledExcel = async (
 
       const strVal = String(rawVal ?? '').trim();
       const isLikelyNumeric = strVal.length > 0 && 
-                              strVal.length < 15 && // 15+ digits triggers scientific notation truncation in Excel
-                              /^-?\d+([.,]\d+)*$/.test(strVal) &&
+                              strVal.length < 15 && 
+                              /^-?\s*(Rp\.?\s*)?\d+([.,]\d+)*$/.test(strVal) &&
                               !isIdentity && 
                               !hUpper.includes('JADWAL') && 
                               !hUpper.includes('TANAM');
 
       if (isIdentity) {
-        // [IDENTITY-SECURE] Force plain continuous string (NO SPACES)
         const digitsOnly = strVal.replace(/\D/g, '');
-        // Use formula "="..."" to suppress the green triangle warning for numbers stored as text
-        rowValues[h] = { formula: `="${digitsOnly}"`, result: digitsOnly };
+        rowValues[h] = digitsOnly.length > 0 ? { formula: `="${digitsOnly}"`, result: digitsOnly } : '';
       } else if (isPrice || isVolume || isLikelyNumeric) {
         rowValues[h] = parseNumberID(rawVal);
       } else {
@@ -136,11 +147,11 @@ export const exportStyledExcel = async (
     const newRow = worksheet.addRow(rowValues);
     newRow.height = 20;
 
-    // 4. Cell Styling & Alignment
     newRow.eachCell((cell, colNumber) => {
       const header = headers[colNumber - 1];
       const hUpper = header.toUpperCase();
       const isNumeric = typeof cell.value === 'number';
+      const colStyle = columnStyles[header];
 
       cell.font = { name: 'Inter', size: 9, color: { argb: 'FF1E293B' } };
       cell.border = {
@@ -155,13 +166,54 @@ export const exportStyledExcel = async (
       }
 
       if (isNumeric) {
-        cell.alignment = { horizontal: 'right', vertical: 'middle' };
-        cell.numFmt = '#,##0.00';
+        cell.alignment = { horizontal: colStyle?.alignment || 'right', vertical: 'middle' };
+        cell.numFmt = colStyle?.numFmt || '#,##0.00';
       } else {
-        cell.alignment = { horizontal: 'left', vertical: 'middle' };
+        cell.alignment = { horizontal: colStyle?.alignment || 'left', vertical: 'middle' };
         if (hUpper.includes('NIK') || hUpper.includes('HP')) {
-           cell.numFmt = '@'; // Force text format
+           cell.numFmt = '@';
         }
+      }
+    });
+  });
+
+  // 4. Populate Summary Rows (Footer)
+  summaryRows.forEach((row) => {
+    const rowValues: any = {};
+    headers.forEach(h => {
+      const val = row[h];
+      const hUpper = h.toUpperCase();
+      const isNumericInput = typeof val === 'number' || (typeof val === 'string' && /^-?\d+([.,]\d+)*$/.test(val.replace(/Rp\.?\s*/gi, '')));
+      
+      if (isNumericInput) {
+        rowValues[h] = parseNumberID(val);
+      } else {
+        rowValues[h] = val;
+      }
+    });
+
+    const summaryRow = worksheet.addRow(rowValues);
+    summaryRow.height = 24;
+    summaryRow.font = { name: 'Inter', size: 9, bold: true, color: { argb: 'FF0F172A' } };
+    
+    summaryRow.eachCell((cell, colNumber) => {
+      const isNumeric = typeof cell.value === 'number';
+      const header = headers[colNumber - 1];
+      const colStyle = columnStyles[header];
+
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }; // Light slate background
+      cell.border = {
+        top: { style: 'medium', color: { argb: 'FF94A3B8' } },
+        bottom: { style: 'thin', color: { argb: 'FF94A3B8' } },
+        left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+        right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+      };
+
+      if (isNumeric) {
+        cell.alignment = { horizontal: colStyle?.alignment || 'right', vertical: 'middle' };
+        cell.numFmt = colStyle?.numFmt || '#,##0.00';
+      } else {
+        cell.alignment = { horizontal: colStyle?.alignment || 'left', vertical: 'middle' };
       }
     });
   });

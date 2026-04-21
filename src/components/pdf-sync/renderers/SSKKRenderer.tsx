@@ -64,7 +64,7 @@ export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery
   };
 
   const handleExport = async () => {
-    const data = clauses.map(c => ({
+    const data = visible.map(c => ({
       'ARTICLE': c.nomor,
       'TITLE': c.judul,
       'CONTENT': c.isi
