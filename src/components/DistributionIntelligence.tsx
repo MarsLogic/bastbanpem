@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { ExcelIngestionLoader } from './pdf-sync/ExcelIngestionLoader';
 import { useMasterDataStore } from '../lib/masterDataStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -145,6 +146,21 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
   const [isExtracting, setIsExtracting] = useState(false);
   const [simulatedProgress, setSimulatedProgress] = useState(0);
   
+  // Confirmation state
+  const [confirmState, setConfirmState] = useState<{
+    show: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+    type: 'warning' | 'danger';
+  }>({
+    show: false,
+    title: '',
+    description: '',
+    action: () => {},
+    type: 'warning'
+  });
+  
   // contract info for job key
   const contractId = contract?.nomorKontrak || contract?.id || 'unknown';
 
@@ -250,6 +266,23 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
     [contractId, contract, onDataLoaded],
   );
 
+  const saveToVault = useCallback(async (rows: any[]) => {
+    try {
+      const sqliteId = contractId.replace(/\s+/g, '_');
+      await saveContract(
+        sqliteId,
+        contract?.nomorKontrak || contract?.name || 'RECOVERED_CONTRACT',
+        contract?.ultraRobust?.financials?.grand_total ?? 0,
+        contract?.metadata ?? null,
+        contract?.ultraRobust ?? null,
+        contract?.tables ?? [],
+        rows
+      );
+    } catch (e) {
+      console.warn('Vault Persistence Error:', e);
+    }
+  }, [contractId, contract]);
+
   // ── Drop handler ──────────────────────────────────────────────────────────
 
   const onDrop = useCallback(
@@ -300,7 +333,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
 
   // ── Sheet management ──────────────────────────────────────────────────────
 
-  const handleReset = useCallback(() => {
+  const handleReset = useCallback(async () => {
     setCurrentFile(null);
     setProbedSheets([]);
     setLoadedSheets({});
@@ -308,9 +341,11 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
     setSearch('');
     setCurrentPage(1);
     setStage('IDLE');
-  }, []);
+    onDataLoaded([]); // Sync parent
+    await saveToVault([]); // Sync backend
+  }, [onDataLoaded, saveToVault]);
 
-  const removeSheet = useCallback((name: string) => {
+  const removeSheet = useCallback(async (name: string) => {
     setLoadedSheets(prev => {
       const next = { ...prev };
       delete next[name];
@@ -322,10 +357,32 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
         setActiveSheetName(remaining[0]);
         setSearch('');
         setCurrentPage(1);
+        onDataLoaded(next[remaining[0]].rows);
+        saveToVault(next[remaining[0]].rows);
       }
       return next;
     });
-  }, [activeSheetName, handleReset]);
+  }, [activeSheetName, handleReset, onDataLoaded, saveToVault]);
+
+  const confirmReset = useCallback(() => {
+    setConfirmState({
+      show: true,
+      title: 'Change Ingestion File?',
+      description: 'This will clear all currently loaded sheets and recipient data for this contract. This action cannot be undone.',
+      type: 'danger',
+      action: handleReset
+    });
+  }, [handleReset]);
+
+  const confirmRemoveSheet = useCallback((name: string) => {
+    setConfirmState({
+      show: true,
+      title: 'Remove Sheet?',
+      description: `Are you sure you want to remove "${name}"? If this is the last sheet, all recipient data will be cleared.`,
+      type: 'warning',
+      action: () => removeSheet(name)
+    });
+  }, [removeSheet]);
 
   const handleTabSwitch = useCallback((name: string) => {
     if (name === activeSheetName) return;
@@ -570,7 +627,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
                   </button>
                   <button
                     title={`Remove ${name}`}
-                    onClick={e => { e.stopPropagation(); removeSheet(name); }}
+                    onClick={e => { e.stopPropagation(); confirmRemoveSheet(name); }}
                     className="p-0.5 ml-0.5 text-slate-300 hover:text-red-500 transition-colors"
                   >
                     <X className="h-2.5 w-2.5" />
@@ -592,7 +649,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
             </div>
 
             <button
-              onClick={handleReset}
+              onClick={confirmReset}
               className="text-[10px] font-black uppercase text-slate-400 hover:text-slate-700 transition-colors shrink-0 ml-4"
             >
               Change File
@@ -837,6 +894,56 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
         </div>
       )}
 
+      <AnimatePresence>
+        {confirmState.show && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+            >
+              <div className="p-6">
+                <div className={cn(
+                  "w-12 h-12 rounded-full flex items-center justify-center mb-4",
+                  confirmState.type === 'danger' ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"
+                )}>
+                  <AlertCircle className="size-6" />
+                </div>
+                <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight mb-2">{confirmState.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{confirmState.description}</p>
+              </div>
+              <div className="p-4 bg-slate-50 border-t flex gap-3">
+                <Button 
+                  variant="ghost" 
+                  className="flex-1 font-bold text-[11px] uppercase tracking-widest text-slate-400 hover:text-slate-600"
+                  onClick={() => setConfirmState(p => ({ ...p, show: false }))}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  variant="default"
+                  className={cn(
+                    "flex-1 font-black text-[11px] uppercase tracking-widest text-white shadow-lg",
+                    confirmState.type === 'danger' ? "bg-red-600 hover:bg-red-700 shadow-red-200" : "bg-slate-900 hover:bg-black shadow-slate-200"
+                  )}
+                  onClick={() => {
+                    confirmState.action();
+                    setConfirmState(p => ({ ...p, show: false }));
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

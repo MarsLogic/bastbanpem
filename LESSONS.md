@@ -488,3 +488,16 @@ Government-scale financial data often arrives as `7.429.298,50`. Standard JS `pa
 1. **Signature Audit**: Synchronized component signatures with body logic. If a prop is added to the interface, it MUST be destructured in the signature if the component follows the destructuring pattern.
 2. **Standardization**: Enforced a project-wide pattern: strictly destructure props in the component signature for cleaner access and better IDE IntelliSense.
 **Expert Insight**: When refactoring or extending interfaces, always check the component's entry point. Mixed usage of `props` and destructured variables leads to `ReferenceError` during the build phase (`tsc`), even if it looks correct in local HMR.
+
+### Improvement: [LEARN-053] Temporal Dead Zone (TDZ) & Hook Hoisting Integrity
+**Context**: While implementing confirmation modals, I introduced `useCallback` functions that referenced others defined later in the file. This triggered `TS2448` (Block-scoped variable used before declaration) during the production build.
+**Action**: Reordered the component logic to ensure all dependency callbacks (`handleReset`, `removeSheet`) are fully declared before being referenced in the dependency arrays or logic of downstream hooks (`confirmReset`, `confirmRemoveSheet`).
+**Risk Identified**: Unlike traditional `function Name() {}` declarations which are hoisted to the top of the scope, `const name = useCallback(...)` is subject to the **Temporal Dead Zone**. Referencing it "above" its definition will crash the TypeScript compiler.
+**Consequences**: Resolved 4 critical build errors that blocked the DEBUG and PRODUCTION modes.
+**Expert Insight**: **Order of Operations Mandate**: Always organize React component bodies in a "Dependency Waterfall":
+1.  **State & Refs** (The foundation)
+2.  **Base Callbacks** (Independent logic)
+3.  **Derived/Confirmation Callbacks** (Logic that references #2)
+4.  **Effects** (The cleanup/sync layer)
+5.  **Memoized Values** (The render prep)
+NEVER reference a `const` hook result before its line of definition.
