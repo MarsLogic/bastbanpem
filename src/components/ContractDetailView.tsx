@@ -7,7 +7,7 @@ import { ImageTaggerWorkspace } from './ImageTaggerWorkspace';
 import { SlicerWorkspace } from './SlicerWorkspace';
 import { PdfSyncModule } from './PdfSyncModule';
 import { DocumentManager } from './DocumentManager';
-import { ReconciliationTab } from './ReconciliationTab';
+import { MasterReconciliationGrid } from './MasterReconciliationGrid';
 import { PortalSyncModule } from './PortalSyncModule';
 import { ContractSummary } from './ContractSummary';
 import { DistributionIntelligence } from './DistributionIntelligence';
@@ -159,10 +159,10 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
           id="sec-audit"
           icon={ShieldCheck}
           title="3. Audit & Reconciliation"
-          subtitle="Data Discrepancy Report"
+          subtitle="Government Portal Import Hub"
         >
-          <div className="p-6">
-            <ReconciliationTab contract={contract} />
+          <div className="p-0">
+            <MasterReconciliationGrid contract={contract} />
           </div>
         </DashboardSection>
 

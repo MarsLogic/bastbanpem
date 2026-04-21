@@ -9,7 +9,7 @@ import Decimal from 'decimal.js';
 import { ExcelRow, DeliveryBlock, ContractData } from './contractStore';
 
 export interface AuditIssue {
-  type: 'QUANTITY_MISMATCH' | 'NAME_FUZZY_MATCH' | 'MISSING_DATA' | 'ROUNDING_ERROR' | 'METADATA_MISMATCH';
+  type: 'QUANTITY_MISMATCH' | 'NAME_FUZZY_MATCH' | 'MISSING_DATA' | 'ROUNDING_ERROR' | 'METADATA_MISMATCH' | 'INVALID_NIK';
   severity: 'high' | 'medium' | 'low';
   message: string;
   pdfValue?: string;
@@ -17,6 +17,25 @@ export interface AuditIssue {
   portalValue?: string;
   localValue?: string;
   pageSource?: number;
+}
+
+export interface MasterRow {
+  no: number;
+  provinsi: string;
+  kota: string;
+  kecamatan: string;
+  desa: string;
+  gapoktan: string;
+  barang: string;
+  qty: number;
+  nilai: number;
+  nik_penerima: string;
+  qty_disalurkan: number;
+  nilai_disalurkan: number;
+  // Metadata for UI
+  is_valid: boolean;
+  issues: AuditIssue[];
+  source_page?: number;
 }
 
 export interface ReconciliationResult {
@@ -236,4 +255,113 @@ export function performPortalReconciliation(local: ContractData, portal: PortalC
     score: Math.max(0, 100 - (issues.length * 5)),
     issues
   };
+}
+
+/**
+ * Generate a consolidated 12-column master list for Government Portal Import.
+ * Expert-grade implementation with Deduplication, Normalization, and Health Scoring.
+ */
+export function generateMasterImportList(contract: ContractData): MasterRow[] {
+    const recipients = contract.recipients || [];
+    const pdfBlocks = contract.deliveryBlocks || [];
+    
+    // Group recipients by NIK (Deduplication Layer)
+    const groupedByNik = new Map<string, ExcelRow[]>();
+    
+    recipients.forEach(row => {
+        // Heal NIK scientific notation (e.g. 1.23E+15)
+        let nik = (row.nik || "").toString().trim();
+        if (nik.includes('E') || nik.includes('+')) {
+            const num = parseFloat(nik);
+            if (!isNaN(num)) nik = BigInt(num).toString();
+        }
+        
+        if (!nik) return;
+        
+        if (!groupedByNik.has(nik)) groupedByNik.set(nik, []);
+        groupedByNik.get(nik)!.push(row);
+    });
+
+    const masterList: MasterRow[] = [];
+    let counter = 1;
+
+    groupedByNik.forEach((rows, nik) => {
+        const issues: AuditIssue[] = [];
+        const primaryRow = rows[0]; 
+        
+        // Sum using Decimal to prevent floating point drift
+        const totalQty = rows.reduce((acc, r) => acc.plus(safeDecimal(r.financials?.qty)), new Decimal(0));
+        const totalNilai = rows.reduce((acc, r) => acc.plus(safeDecimal(r.financials?.calculated_value || r.financials?.target_value)), new Decimal(0));
+
+        // Find match in PDF (Legal Evidence)
+        let bestPdfMatch: any = null;
+        let maxSim = -1;
+        
+        if (pdfBlocks && pdfBlocks.length > 0) {
+            for (const block of pdfBlocks) {
+                const sim = calculateNameSimilarity(block.namaPenerima || '', primaryRow.name || '');
+                if (sim > maxSim) {
+                    maxSim = sim;
+                    bestPdfMatch = block;
+                }
+            }
+        }
+
+        if (nik.length < 16) {
+            issues.push({ 
+                type: 'INVALID_NIK', 
+                severity: 'high', 
+                message: `NIK "${nik}" is invalid (must be 16 digits).`,
+                excelValue: nik 
+            });
+        }
+
+        if (maxSim < 60) {
+            issues.push({
+                type: 'MISSING_DATA',
+                severity: 'high',
+                message: `No matching name found in PDF contract for "${primaryRow.name}"`,
+                excelValue: primaryRow.name
+            });
+        } else if (maxSim < 95) {
+            issues.push({
+                type: 'NAME_FUZZY_MATCH',
+                severity: 'low',
+                message: `Fuzzy name match with PDF (${maxSim.toFixed(0)}%)`,
+                pdfValue: bestPdfMatch?.namaPenerima,
+                excelValue: primaryRow.name
+            });
+        }
+
+        const pdfQty = safeDecimal(bestPdfMatch?.jumlahProduk || 0);
+        if (bestPdfMatch && !totalQty.equals(pdfQty)) {
+             issues.push({
+                type: 'QUANTITY_MISMATCH',
+                severity: 'medium',
+                message: `Qty mismatch: PDF ${pdfQty} vs Excel ${totalQty}`,
+                pdfValue: pdfQty.toString(),
+                excelValue: totalQty.toString()
+            });
+        }
+
+        masterList.push({
+            no: counter++,
+            provinsi: (primaryRow.location?.provinsi || "SUMATERA UTARA").toUpperCase(),
+            kota: (primaryRow.location?.kabupaten || "NIAS BARAT").toUpperCase(),
+            kecamatan: (primaryRow.location?.kecamatan || "N/A").toUpperCase(),
+            desa: (primaryRow.location?.desa || "N/A").toUpperCase(),
+            gapoktan: `${primaryRow.name}${primaryRow.group ? ` (${primaryRow.group})` : ''}`.toUpperCase(),
+            barang: (contract.namaProduk || "BANTUAN").toUpperCase(),
+            qty: pdfQty.toNumber(), 
+            nilai: totalNilai.toNumber(),
+            nik_penerima: nik,
+            qty_disalurkan: totalQty.toNumber(), 
+            nilai_disalurkan: totalNilai.toNumber(),
+            is_valid: issues.filter(i => i.severity === 'high').length === 0 && nik.length >= 16,
+            issues: issues,
+            source_page: bestPdfMatch ? (bestPdfMatch as any).pageSource : undefined
+        });
+    });
+
+    return masterList;
 }
