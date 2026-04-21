@@ -71,7 +71,7 @@ export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery
     }));
     
     await exportStyledExcel(data, ['ARTICLE', 'TITLE', 'CONTENT'], {
-      sheetName: 'SSKK Clauses',
+      sheetName: 'SSKK',
       filename: `sskk_clauses_${new Date().toISOString().split('T')[0]}.xlsx`
     });
   };

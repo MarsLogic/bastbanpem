@@ -181,7 +181,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       sorted,
       finalHeaders,
       {
-        sheetName: 'Extracted Table',
+        sheetName: 'Data Table',
         filename: `extracted_table_${new Date().getTime()}.xlsx`
       }
     );

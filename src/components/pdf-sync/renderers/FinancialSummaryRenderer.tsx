@@ -203,7 +203,7 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
       '#', 'Penerima', 'Nomor Telepon', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Desa',
       'DPP (Excl. Tax)', 'PPN (Tax)', 'Total (Incl. Tax)'
     ], {
-      sheetName: 'Recipient Financials',
+      sheetName: 'Ringkasan Pembayaran',
       filename: `financial_recap_${new Date().getTime()}.xlsx`,
       summaryRows: [
         {
