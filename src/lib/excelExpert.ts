@@ -101,25 +101,35 @@ export const exportStyledExcel = async (
       const hUpper = h.toUpperCase();
       
       const isIdentity = hUpper.includes('NIK') || hUpper === 'ID' || hUpper.includes('KTP') || 
-                         hUpper.includes('HP') || hUpper.includes('TELEPON') || 
-                         hUpper.includes('SOURCE_IDX') || hUpper.includes('IDX');
+                         hUpper.includes('HP') || hUpper.includes('TELEPON') || hUpper.includes('MOBILE') ||
+                         hUpper.includes('SOURCE') || hUpper.includes('VA') || hUpper.includes('IDX');
                          
       const isPrice = hUpper.includes('HARGA') || hUpper.includes('NOMINAL') || hUpper.includes('TOTAL') || 
                       hUpper.includes('PRICE') || hUpper.includes('VALUE') || hUpper.includes('ONGKOS') || 
                       hUpper.includes('KIRIM') || hUpper.includes('BIAYA');
                       
       const isVolume = hUpper.includes('QTY') || hUpper.includes('VOLUME') || hUpper.includes('JUMLAH') || 
-                       hUpper.includes('UNIT') || hUpper.includes('LUAS');
+                       hUpper.includes('UNIT') || hUpper.includes('LUAS') || hUpper.includes('LAHAN') ||
+                       hUpper.includes('PESTISIDA') || hUpper.includes('BENIH') || hUpper.includes('BIBIT') ||
+                       hUpper.includes('(HA)') || hUpper.includes('(KG)') || hUpper.includes('(L)');
+
+      const strVal = String(rawVal ?? '').trim();
+      const isLikelyNumeric = strVal.length > 0 && 
+                              strVal.length < 15 && // 15+ digits triggers scientific notation truncation in Excel
+                              /^-?\d+([.,]\d+)*$/.test(strVal) &&
+                              !isIdentity && 
+                              !hUpper.includes('JADWAL') && 
+                              !hUpper.includes('TANAM');
 
       if (isIdentity) {
         // [IDENTITY-SECURE] Force plain continuous string (NO SPACES)
-        const digitsOnly = String(rawVal ?? '').replace(/\D/g, '');
+        const digitsOnly = strVal.replace(/\D/g, '');
         // Use formula "="..."" to suppress the green triangle warning for numbers stored as text
         rowValues[h] = { formula: `="${digitsOnly}"`, result: digitsOnly };
-      } else if (isPrice || isVolume) {
+      } else if (isPrice || isVolume || isLikelyNumeric) {
         rowValues[h] = parseNumberID(rawVal);
       } else {
-        rowValues[h] = cleanValue(String(rawVal ?? ''), h);
+        rowValues[h] = cleanValue(strVal, h);
       }
     });
 

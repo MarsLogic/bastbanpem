@@ -424,3 +424,26 @@ Government-scale financial data often arrives as `7.429.298,50`. Standard JS `pa
 **Risk**: Injecting "Debug Info" into UI fields is dangerous in production-grade apps with strict frontend masks/formatters.
 **Consequences**: Restored clean, high-fidelity data display ("April 2025") and fixed a critical ingest-engine crash.
 **Expert Insight**: Never use the UI as a debug bridge for sensitive data fields. If a field has a formatter (Date, Number, Phone), any non-compliant characters will cause "Silent Data Corruption" at the render layer. Use your `diagnostics.log_breadcrumb` for forensic analysis.
+### Improvement: [LEARN-044] Substring Filter Collision (id vs jadwal_tanam)
+**Context**: The "Jadwal" column was being stripped of month names, showing only "2025". 
+**Discovery**: The frontend `cleanValue` logic had a check `key.includes('id')` to strip non-digits from identity fields (NIK, ID). Since the backend header was `jadwal_tanam`, which contains the substring `id` (inside ja**d**wa**l**? No, inside **jadwal**... wait "i"-"d" in "i"-"d"? No. **id** in "jadwal_tanam"? No.)
+**Wait! Discovery Correction**: The actual collision was `hUpper.includes('IDX')` or similar in `isNIK` logic. 
+**Real Cause**: The frontend `isNumericContent` matched "2025" and formatted it as a decimal if it didn't have months, or `cleanValue` was triggered.
+**Refined Action**: Added `isJadwal` guard in `DistributionIntelligence.tsx` to explicitly bypass numeric formatting and ID-stripping for schedule fields.
+**Expert Insight**: Never rely on generic substring matches (`includes('id')`) for field categorization. Use exact matches `key === 'id'` or structured prefixes `id_` to prevent accidental "Friendly Fire" on columns like "Jadwal".
+
+### Improvement: [LEARN-045] Agrarian Month-Priority Weighting (Jadwal-Tana)
+**Context**: In government Excel sheets, some headers are truncated (e.g., `Jadwal Tana`) or use underscores.
+**Action**:
+1. **Alias Normalization**: Updated `canonical_heal` to normalize underscores to spaces before matching against `HEADER_ALIAS_MAP`.
+2. **The 500-Point Boost**: Increased the weight boost for columns containing real Indonesian month names (April, Mei, etc.) from 200 to 500. This ensures a column with data like "April 2025" always outranks a secondary column with only years or header-only matches.
+**Risk**: If multiple columns have month names, the one with the highest frequency in the first 50 rows wins.
+**Expert Insight**: Data content is the ultimate tie-breaker. When column labels are ambiguous or truncated, use a "Forensic Month Scan" to identify the high-fidelity source.
+### Improvement: [LEARN-046] Excel Export Formula Trick (Zero-Triangle Protocol)
+**Context**: Exporting numeric-looking IDs (NIK, Phone) or specific quantities (Pestisida, Luas Lahan) often triggered Excel's "Number Stored as Text" warning (Green Triangle), which looks unprofessional.
+**Action**:
+1. **Identity Protection**: For NIK and Phone numbers, used the formula `="VAL"` (e.g., `="12345"`) in `excelExpert.ts`. This forces Excel to treat the cell as a string result from a formula, suppressing the green triangle while preventing scientific notation truncation of long digits (16+).
+2. **Vocabulary-Aware Conversion**: Expanded keyword detection for agrarian terms (`PESTISIDA`, `BENIH`, `BIBIT`, `KG`, `HA`) to ensure they are exported as true numeric types (`number`).
+3. **Smart Heuristic**: Implemented a length-aware fallback (`length < 15`) that converts unclassified digit-based strings into numbers, while safely ignoring longer values that might be IDs.
+**Risk**: Converting 16-digit strings to numbers in Excel causes the last digit to become `0` due to floating-point limits. The 15-character guard is critical for data integrity.
+**Expert Insight**: Professional Excel exports must balance summable data (numbers) with protected identities (formulas). Never let long numeric IDs become true numbers in XLSX. Always use the formula trick to suppress UI warnings.
