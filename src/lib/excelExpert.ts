@@ -166,8 +166,12 @@ export const exportStyledExcel = async (
       }
 
       if (isNumeric) {
-        cell.alignment = { horizontal: colStyle?.alignment || 'right', vertical: 'middle' };
-        cell.numFmt = colStyle?.numFmt || '#,##0.00';
+        // [FORMAT-LOGIC] Indices and IDs should be integers; Price/Volume should have decimals
+        const isIntegerColumn = hUpper === '#' || hUpper === 'NO' || hUpper === 'NO.' || 
+                               hUpper === 'NOMOR' || hUpper === 'ID' || hUpper === 'IDX';
+        
+        cell.alignment = { horizontal: colStyle?.alignment || (isIntegerColumn ? 'center' : 'right'), vertical: 'middle' };
+        cell.numFmt = colStyle?.numFmt || (isIntegerColumn ? '0' : '#,##0.00');
       } else {
         cell.alignment = { horizontal: colStyle?.alignment || 'left', vertical: 'middle' };
         if (hUpper.includes('NIK') || hUpper.includes('HP')) {
@@ -199,7 +203,11 @@ export const exportStyledExcel = async (
     summaryRow.eachCell((cell, colNumber) => {
       const isNumeric = typeof cell.value === 'number';
       const header = headers[colNumber - 1];
+      const hUpper = header.toUpperCase();
       const colStyle = columnStyles[header];
+
+      const isIntegerColumn = hUpper === '#' || hUpper === 'NO' || hUpper === 'NO.' || 
+                             hUpper === 'NOMOR' || hUpper === 'ID' || hUpper === 'IDX';
 
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F5F9' } }; // Light slate background
       cell.border = {
@@ -210,8 +218,8 @@ export const exportStyledExcel = async (
       };
 
       if (isNumeric) {
-        cell.alignment = { horizontal: colStyle?.alignment || 'right', vertical: 'middle' };
-        cell.numFmt = colStyle?.numFmt || '#,##0.00';
+        cell.alignment = { horizontal: colStyle?.alignment || (isIntegerColumn ? 'center' : 'right'), vertical: 'middle' };
+        cell.numFmt = colStyle?.numFmt || (isIntegerColumn ? '0' : '#,##0.00');
       } else {
         cell.alignment = { horizontal: colStyle?.alignment || 'left', vertical: 'middle' };
       }
