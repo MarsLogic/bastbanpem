@@ -458,13 +458,21 @@ Government-scale financial data often arrives as `7.429.298,50`. Standard JS `pa
 6. **Contextual Tab Naming**: Standardized the Excel sheet (tab) names to match their component source (e.g., "Ringkasan Pembayaran" instead of generic "Sheet1"). This improves UX when users are managing multiple exports.
 **Risk**: If summary rows are not recalculating on filter changes, the Excel footer will be inaccurate. Always derive summary data from the *filtered* set.
 
-### Improvement: [LEARN-048] Standardized Export Filename Protocol
-**Context**: Generic or auto-generated timestamps in filenames (e.g. `recap_1713...xlsx`) made archival and traceability difficult for users managing multiple contracts.
+### Improvement: [LEARN-050] Dual-Line Technical Header Architecture
+**Context**: Professional data tables often need both a "Display Label" (for humans) and a "Technical Identifier" (for traceability/mapping).
 **Action**:
-1. **Shared Filename Engine**: Centralized naming logic in `lib/exportUtils.ts` to enforce a strict `[YYYY-MM-DD]-[OrderID]_[Section]_Data Table Export` format.
-2. **Metadata Sanitization**: Implemented automated cleaning for filename-unfriendly characters (`/`, `:`, `*`, etc.) to ensure OS compatibility.
-3. **Robust Fallbacks**: Guaranteed system safety by providing default labels (`UNSET`, `Untitled-Section`) when contract or section metadata is missing.
-4. **Propagated Context**: Updated the `DocumentView` hierarchy to pass `order_id` from structured `ultraRobust` metadata down to all rendering layers.
+1. **UI Layer**: Implemented a dual-line header in `DataTableRenderer`, `FinancialSummaryRenderer`, and `DistributionIntelligence`. The Primary Header is Clean/Capitalized, while the Secondary Header is a muted, italicized technical label in parentheses (e.g., `(insu)`).
+2. **Excel Layer**: Row 1 contains the Clean Display Header; Row 2 contains the Technical Header.
+3. **Traceability**: This pattern ensures that what was uploaded in the "Header Mapping" stage is visible during data review and reconciliation.
+**Expert Insight**: Never hide the technical column names in internal workbench tools. Administrative users need them to verify that the "Amount" column they are looking at is actually the "net_nominal" and not "gross_total".
+
+### Improvement: [LEARN-051] Automated Regional Data Healing (Provinsi-Kabupaten Recovery)
+**Context**: Goverment data exports often have "Province Holes" where the `PROVINSI` field is forgotten or empty, even though the `KABUPATEN` is present.
+**Action**:
+1. **Intelligent Lookup**: Integrated `resolveHierarchy` from the `masterDataStore` into the table rendering components.
+2. **Auto-Filling**: If `PROVINSI` is missing/empty but `KABUPATEN` is found, the system performs a forensic lookup in the regional hierarchy and automatically recovers the missing province.
+3. **Fidelity**: This healing is applied during the `useMemo` normalization phase, so it affects both the UI and the Excel export.
+**Expert Insight**: "Zero-Manual Recovery" is the goal. If the system knows the Kabupaten, it knows the Provinsi. Don't make the user fill in what the machine can resolve.
 
 ### Improvement: [LEARN-049] Prop Destructuring Awareness in Functional Components
 **Context**: Introduced build regressions by referencing `props.variable` in components where the props were already destructured in the function signature (e.g., `({ table, searchQuery }) => ...`).

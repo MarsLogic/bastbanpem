@@ -13,7 +13,7 @@ import {
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight
 } from 'lucide-react';
 import { exportStyledExcel } from '@/lib/excelExpert';
-import { generateExportFilename } from '@/lib/exportUtils';
+import { generateExportFilename, getStandardHeaderMeta } from '@/lib/exportUtils';
 import { Button } from '@/components/ui/button';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -201,12 +201,16 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
     const totalPPN = Math.round(totalDPP * taxRate);
     const totalGross = totalDPP + totalPPN;
 
-    await exportStyledExcel(exportData, [
+    const headers = [
       '#', 'Penerima', 'Nomor Telepon', 'Provinsi', 'Kabupaten', 'Kecamatan', 'Desa',
       'DPP (Excl. Tax)', 'PPN (Tax)', 'Total (Incl. Tax)'
-    ], {
+    ];
+    const headerMeta = getStandardHeaderMeta(headers);
+
+    await exportStyledExcel(exportData, headers, {
       sheetName: 'Ringkasan Pembayaran',
       filename: generateExportFilename(orderId, 'Ringkasan Pembayaran'),
+      headerMeta,
       summaryRows: [
         {
           'Desa': 'GRAND TOTAL',
@@ -254,20 +258,26 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
   const totalPages = Math.max(1, Math.ceil(sorted.length / actualPageSize));
   const pageData = sorted.slice(page * actualPageSize, (page * actualPageSize) + actualPageSize);
 
-  const TH = ({ label, col, align = 'left' }: { label: string, col: string, align?: 'left' | 'right' }) => (
-    <th 
-      className={`px-3 py-2.5 text-${align} text-[9px] font-medium uppercase tracking-wider text-slate-400 bg-slate-50 border-b border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap`}
-      onClick={() => {
-        if (sortKey === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-        else { setSortKey(col); setSortDir('asc'); }
-      }}
-    >
-      <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
-        {label}
-        {sortKey === col && (sortDir === 'asc' ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />)}
-      </div>
-    </th>
-  );
+  const TH = ({ label, col, align = 'left' }: { label: string, col: string, align?: 'left' | 'right' }) => {
+    const meta = getStandardHeaderMeta([label])[label];
+    return (
+      <th 
+        className={`px-3 py-3 text-${align} border-b border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors whitespace-nowrap`}
+        onClick={() => {
+          if (sortKey === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+          else { setSortKey(col); setSortDir('asc'); }
+        }}
+      >
+        <div className={`flex items-center gap-1.5 ${align === 'right' ? 'justify-end' : ''}`}>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none">{label}</span>
+            {meta && <span className="text-[8px] font-normal lowercase text-slate-400 italic mt-0.5 tracking-tight">({meta})</span>}
+          </div>
+          {sortKey === col && (sortDir === 'asc' ? <ChevronUp className="h-2.5 w-2.5 text-slate-400" /> : <ChevronDown className="h-2.5 w-2.5 text-slate-400" />)}
+        </div>
+      </th>
+    );
+  };
 
   return (
     <div className="space-y-3">

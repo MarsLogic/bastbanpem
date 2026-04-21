@@ -149,9 +149,9 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
   const contractId = contract?.nomorKontrak || contract?.id || 'unknown';
 
   const fetchMasterData = useMasterDataStore((state: any) => state.fetchMasterData);
+  const resolveHierarchy = useMasterDataStore((state: any) => state.resolveHierarchy);
   // Master Data Cache
   const isMasterLoaded = useMasterDataStore((state: any) => state.isLoaded);
-  const findDesa = useMasterDataStore((state: any) => state.findDesa);
 
   useEffect(() => {
     fetchMasterData().catch(console.error);
@@ -340,8 +340,24 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
 
   const filteredRows = useMemo(() => {
     if (!activeData?.rows) return [];
-    return activeData.rows.filter(row => rowMatchesSearch(row, search));
-  }, [activeData, search]);
+    
+    // [HEAL] Recovery step for missing regional fields
+    const healedRows = activeData.rows.map(row => {
+      const data = { ...row.column_data };
+      const hProv = activeData.headers.find(h => h.toUpperCase().includes('PROVINSI') || h.toUpperCase() === 'INSU');
+      const hKab  = activeData.headers.find(h => h.toUpperCase().includes('KABUPATEN') || h.toUpperCase() === 'KAB');
+      
+      if (hProv && hKab && !data[hProv] && data[hKab]) {
+        const found = resolveHierarchy({ kabupaten: cleanValue(data[hKab], 'kabupaten') });
+        if (found?.provinsi) {
+          data[hProv] = stripRegionalPrefix(found.provinsi);
+        }
+      }
+      return { ...row, column_data: data };
+    });
+
+    return healedRows.filter(row => rowMatchesSearch(row, search));
+  }, [activeData, search, resolveHierarchy]);
 
   const sortedRows = useMemo(() => {
     let result = [...filteredRows];
@@ -404,7 +420,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
           activeData.header_meta?.order_id || activeData.header_meta?.contract_id, 
           activeSheetName || 'Recipient List'
         ),
-        headerMeta: activeData.header_meta
+        headerMeta: activeData.header_meta || getStandardHeaderMeta(activeData.headers)
       }
     );
   };
@@ -647,13 +663,13 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contra
                       >
                         <div className={cn("flex flex-col gap-0.5", isRight ? "items-end" : "items-start")}>
                            <div className={cn("flex items-center gap-1.5", isRight && "flex-row-reverse")}>
-                              {header.replace(/_/g, ' ')}
+                              <span className="truncate">{header.replace(/_/g, ' ')}</span>
                              <div className={cn("transition-all duration-300", isSorted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 group-hover:opacity-40 group-hover:translate-y-0")}>
                                 {dir === 'asc' ? <ChevronUp className="h-2.5 w-2.5" /> : (dir === 'desc' ? <ChevronDown className="h-2.5 w-2.5" /> : <div className="h-2 w-2 border-x border-slate-300 opacity-20" />)}
                              </div>
                           </div>
-                          {activeData?.header_meta?.[header] && activeData.header_meta[header] !== header && (
-                            <span className="text-[8px] font-bold text-slate-400 lowercase italic line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                          {activeData?.header_meta?.[header] && (
+                            <span className="text-[8px] font-normal lowercase text-slate-400 italic line-clamp-1">
                               ({activeData.header_meta[header]})
                             </span>
                           )}

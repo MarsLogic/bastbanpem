@@ -107,12 +107,20 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
 
     const mergedHeaders = [...MANDATORY, ...otherHeaders];
 
+    const headerMeta = getStandardHeaderMeta(mergedHeaders);
+
     // 3. Transform & Heal Rows
     const healed = rows.map((row, idx) => {
-      const vProv = hProv ? String(row[hProv] || '').trim() : '';
+      let vProv = hProv ? String(row[hProv] || '').trim() : '';
       const vKab  = hKab  ? String(row[hKab]  || '').trim() : '';
       const vKec  = hKec  ? String(row[hKec]  || '').trim() : '';
       const vDesa = hDesa ? String(row[hDesa] || '').trim() : '';
+
+      // [HEAL] If Provinsi is missing but Kabupaten is present, try to find it
+      if (!vProv && vKab) {
+        const found = resolveHierarchy({ kabupaten: cleanValue(vKab, 'kabupaten') });
+        if (found?.provinsi) vProv = found.provinsi;
+      }
 
       const cProv = cleanValue(vProv, 'provinsi');
       const cKab  = cleanValue(vKab, 'kabupaten');
@@ -134,7 +142,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       return newRow;
     });
 
-    return { finalHeaders: mergedHeaders, normalizedRows: healed };
+    return { finalHeaders: mergedHeaders, normalizedRows: healed, headerMeta };
   }, [table.headers, table.rows, resolveHierarchy]);
 
   const toggleSort = (col: string) => {
@@ -184,8 +192,9 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
       sorted,
       finalHeaders,
       {
-        sheetName: 'Data Table',
-        filename: generateExportFilename(orderId, tableName || 'Data Table')
+        sheetName: tableName || 'Data Table',
+        filename: generateExportFilename(orderId, tableName || 'Data Table'),
+        headerMeta
       }
     );
   };
@@ -256,8 +265,15 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
                                hover:bg-slate-100 transition-colors whitespace-nowrap"
                     style={{ minWidth: 80, maxWidth: 300 }}
                   >
-                    <div className="flex items-center gap-1">
-                      <span className="truncate">{h || `Col`}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex flex-col min-w-0">
+                        <span className="truncate leading-none">{h || `Col`}</span>
+                        {headerMeta[h] && (
+                          <span className="text-[8px] font-normal lowercase text-slate-400 mt-0.5 tracking-tight italic">
+                            ({headerMeta[h]})
+                          </span>
+                        )}
+                      </div>
                       <SortIcon dir={sortCol === h ? sortDir : null} />
                     </div>
                   </th>
