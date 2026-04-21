@@ -474,6 +474,14 @@ Government-scale financial data often arrives as `7.429.298,50`. Standard JS `pa
 3. **Fidelity**: This healing is applied during the `useMemo` normalization phase, so it affects both the UI and the Excel export.
 **Expert Insight**: "Zero-Manual Recovery" is the goal. If the system knows the Kabupaten, it knows the Provinsi. Don't make the user fill in what the machine can resolve.
 
+### Improvement: [LEARN-052] Mandatory Import & Destructuring Audit (tsc Blockers)
+**Context**: Adding new utility functions (e.g., `getStandardHeaderMeta`) or returning new fields from `useMemo` hooks often leads to `Cannot find name` or `No value exists in scope` build errors if imports or destructuring are missed.
+**Action**:
+1. **Import Sync**: Every time a utility is used in a component, explicitly verify it is in the `import` block.
+2. **Destructuring Parity**: If a `useMemo` or a function return type is updated to include more fields, ensure all call sites that destructure that object are updated to include the new keys.
+3. **Build Guard**: Always run `rtk npm run build` (which triggers `tsc`) after any refactoring that involves cross-file utility usage or state structure changes.
+**Expert Insight**: Runtime HMR (Hot Module Replacement) can sometimes hide missing imports if the code path isn't immediately hit. The production build (`tsc`) is the only source of truth for scope integrity.
+
 ### Improvement: [LEARN-049] Prop Destructuring Awareness in Functional Components
 **Context**: Introduced build regressions by referencing `props.variable` in components where the props were already destructured in the function signature (e.g., `({ table, searchQuery }) => ...`).
 **Action**:

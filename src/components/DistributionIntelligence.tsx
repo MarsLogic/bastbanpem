@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { cleanValue, stripRegionalPrefix } from '@/lib/dataCleaner';
 import { exportStyledExcel } from '@/lib/excelExpert';
-import { generateExportFilename } from '@/lib/exportUtils';
+import { generateExportFilename, getStandardHeaderMeta } from '@/lib/exportUtils';
 import * as XLSX from 'xlsx';
 import { ingestExcel, probeExcel, saveContract } from '../lib/api';
 import { toast } from 'sonner';

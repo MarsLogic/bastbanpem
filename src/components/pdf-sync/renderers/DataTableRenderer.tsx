@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileDown } from 'lucide-react';
 import { cleanValue, stripRegionalPrefix } from '@/lib/dataCleaner';
 import { exportStyledExcel } from '@/lib/excelExpert';
-import { generateExportFilename } from '@/lib/exportUtils';
+import { generateExportFilename, getStandardHeaderMeta } from '@/lib/exportUtils';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 
 interface RawTable {
@@ -88,7 +88,8 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
 
   const { 
     finalHeaders, 
-    normalizedRows 
+    normalizedRows,
+    headerMeta
   } = useMemo(() => {
     const rawHeaders = table.headers.length > 0 ? table.headers : inferHeaders(table.rows);
     const rows = normalizeRows(rawHeaders, table.rows);
