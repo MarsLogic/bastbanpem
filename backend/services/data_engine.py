@@ -5,7 +5,7 @@ import os
 import io
 import uuid
 import gc
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Tuple
 from decimal import Decimal, ROUND_HALF_UP
 from rapidfuzz import process, fuzz
 import fastexcel
@@ -29,27 +29,25 @@ HEADER_ALIAS_MAP = {
     "ONGKOS KIRIM": ["ongkos kirim satuan", "ongkos kirim", "ongkir", "shipping", "biaya kirim", "jasa kirim"],
     "TOTAL_VALUE": ["jumlah total harga barang + jml total ongkir", "jumlah total harga", "total value", "nominal", "target", "pagu", "total bayar", "total nominal", "jumlah nominal"],
     "POKTAN/GROUP": ["kelompok tani", "gapoktan", "poktan", "group", "lmdh", "koperasi", "kth", "brigade"],
-    "JADWAL": ["masa tanam", "jadwal tanam", "jadwal", "tanam", "periode"],
+    "JADWAL": ["jadwal tanam", "masa tanam", "periode tanam", "jadwal", "periode"],
     "NO HP": ["whatsapp", "telepon", "kontak", "phone", "no hp", "no. hp"],
     "LUAS LAHAN": ["luas lahan", "land area", "jumlah luas", "ha"],
     "OPT DOMINAN": ["opt dominan", "opt", "hama", "pest", "kekurangan"],
     "SPESIFIKASI": ["spesifikasi", "merk", "produk", "specification", "brand"],
     "KETUA": ["ketua kelompok", "nama ketua", "ketua"],
     "NOMINAL BAST": ["nominal ditulis di bast", "ditulis di bast", "nominal bast", "jumlah nominal bast"],
+    "LOKASI PERTANAMAN": ["lokasi pertanaman", "lokasi tanam", "pertanaman"],
     "SOURCE_IDX": ["ind", "index", "no.", "nomor", "no"],
 }
 
-def canonical_heal(raw_header: str) -> str:
-    """
-    Excel-Elite Heal: Transmute broken or fragmented headers into professional titles.
-    Uses 'Contextual Weighting' to handle ambiguous terms like 'Jumlah'.
-    """
-    if not raw_header: return "UNNAMED"
-    clean = str(raw_header).lower().strip()
+def canonical_heal(header: Any) -> Tuple[Optional[str], int]:
+    """Expert Extraction logic for Indonesian government headers. Returns (Canonical, Weight)"""
+    if not header: return None, 0
+    clean = str(header).lower().strip()
     
     # Filter common structural artifacts
     if "unnamed" in clean or clean.startswith("column_") or clean.startswith("_column_") or len(clean) < 2:
-        return "UNNAMED"
+        return "UNNAMED", 0
     
     # Contextual Markers
     has_money = any(x in clean for x in ["harga", "nominal", "bayar", "rupiah", "rp", "bast", "duit"])
@@ -62,8 +60,20 @@ def canonical_heal(raw_header: str) -> str:
     # Precise Match using Alias Map (Weighted Strategy)
     for canonical, aliases in HEADER_ALIAS_MAP.items():
         for alias in aliases:
-            if alias in clean:
+            # Word Boundary Hardening: Prevent 'nama' matching 'tanaman'
+            # If alias is very short (< 5 chars), require word boundaries or exact match
+            is_match = False
+            if len(alias) <= 5:
+                # Use regex for strict word boundaries
+                if re.search(fr"\b{re.escape(alias)}\b", clean):
+                    is_match = True
+            elif alias in clean:
+                is_match = True
+                
+            if is_match:
                 weight = len(alias)
+                # Exact match bonus
+                if alias == clean: weight += 50
                 
                 # Boost weights based on context clues to avoid generic 'Jumlah' collisions
                 if canonical == "TOTAL_VALUE" and has_money: weight += 10
@@ -77,12 +87,13 @@ def canonical_heal(raw_header: str) -> str:
             
     if best_canonical:
         # Special Case: If it's a generic 'Jumlah' but we detected it's likely Total
+        final_canonical = best_canonical
         if best_canonical == "QTY" and has_money:
-            return "TOTAL_VALUE"
-        return best_canonical
+            final_canonical = "TOTAL_VALUE"
+        return final_canonical, best_match_len
             
     # Fallback to Title Cased Raw if no match
-    return clean.replace('_', ' ').upper()
+    return None, 0
 
 def deep_sanitize(val: Any) -> str:
     """Forensic Scrub: Remove all non-printable and invisible artifacts (\u200b, \r, \t, etc)."""
@@ -153,12 +164,102 @@ def normalize_phone(val: Any) -> str:
         return '0' + digits
     return digits
 
-def normalize_jadwal_tanam(val: Any) -> str:
-    if not val: return ""
-    s = str(val).lower().strip()
-    s = s.replace("okmar", "oktober-maret").replace("aslab", "april-september")
-    # Title case for professionalism
-    return s.title()
+class EliteJadwalHealer:
+    """
+    Expert-Grade Agrarian Date Resolver.
+    Handles 'Okmar', 'Oct-Mar', 'April 2025', and 'Maret - April' with column-wide year baseline.
+    """
+    MONTH_MAP = {
+        "jan": "Januari", "feb": "Februari", "mar": "Maret", "apr": "April",
+        "mei": "Mei", "jun": "Juni", "jul": "Juli", "ags": "Agustus", "agt": "Agustus",
+        "sep": "September", "okt": "Oktober", "nov": "November", "des": "Desember"
+    }
+    
+    SHORTHAND_RANGES = {
+        "okmar": ("Oktober", "Maret"),
+        "ok - mar": ("Oktober", "Maret"),
+        "asep": ("April", "September"),
+        "aslab": ("April", "September"),
+        "apr - sep": ("April", "September"),
+        "okt-mar": ("Oktober", "Maret"),
+        "apr-sep": ("April", "September")
+    }
+
+    def __init__(self, dominant_year: Optional[int] = None):
+        self.dominant_year = str(dominant_year) if dominant_year else None
+
+    def heal(self, val: Any) -> str:
+        if not val or str(val).strip() in ["", "-", "—"]: return ""
+        
+        # Handle datetime objects directly from Excel parsers
+        from datetime import datetime, date
+        if isinstance(val, (datetime, date)):
+            m_name = self.MONTH_MAP.get(val.strftime("%b").lower(), val.strftime("%B"))
+            return f"{m_name} {val.year}"
+
+        raw_s = str(val).strip()
+        s = raw_s.lower()
+        
+        # 1. Quick Shorthand Aliases (Okmar, etc)
+        for alias, (start, end) in self.SHORTHAND_RANGES.items():
+            if alias in s:
+                res = f"{start} - {end}"
+                # If year is in original but not in our expansion, preserve it
+                y_in_s = re.search(r'\d{4}', raw_s)
+                if y_in_s:
+                    res += f" {y_in_s.group()}"
+                elif self.dominant_year:
+                    res += f" {self.dominant_year}"
+                return res
+
+        # 2. Extract years already present
+        found_years = re.findall(r'\d{4}', raw_s)
+        year_to_append = self.dominant_year if not found_years else None
+        
+        # 3. Handle Month Ranges and Fragments
+        # Split by common range delimiters
+        parts = re.split(r'[-–/]', raw_s)
+        healed_parts = []
+        for p in parts:
+            p_clean = p.strip()
+            if not p_clean: continue
+            
+            p_low = p_clean.lower()
+            p_year = re.search(r'\d{4}', p_clean)
+            
+            # Try to match month fragments or ISO month numbers
+            matched_month = None
+            for m_low, m_full in self.MONTH_MAP.items():
+                if p_low.startswith(m_low):
+                    matched_month = m_full
+                    break
+            
+            # Additional check for ISO dates (2025-04-01)
+            if not matched_month:
+                iso_match = re.search(r'-(\d{2})-', p_clean)
+                if iso_match:
+                    m_idx = int(iso_match.group(1))
+                    m_keys = sorted(self.MONTH_MAP.keys())
+                    # Quick mapping for ISO indices if needed, but easier to use a static list
+                    iso_months = ["", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+                    if 1 <= m_idx <= 12:
+                        matched_month = iso_months[m_idx]
+            
+            if matched_month:
+                res_part = matched_month
+                if p_year: res_part += f" {p_year.group()}"
+                healed_parts.append(res_part)
+            else:
+                healed_parts.append(p_clean.title())
+
+        # Join parts back together
+        result = " - ".join([p for p in healed_parts if p])
+        
+        # 4. Final Year Cleanup & Appending
+        if year_to_append and result and not re.search(r'\d{4}', result):
+            result += f" {year_to_append}"
+            
+        return result.replace("  ", " ").strip()
 
 def smart_detect_header(df: pl.DataFrame) -> Dict[str, Any]:
     """
@@ -276,8 +377,9 @@ def probe_excel_structure(excel_content: bytes) -> List[ExcelSheetProbe]:
                 match_count = sum(1 for k in keywords if any(k in v for v in row_vals))
                 
                 # Heal Headers for Discovery & Filter structural noise
-                healed_headers = [canonical_heal(h) for h in raw_headers]
-                healed_headers = [h for h in healed_headers if h != "UNNAMED"]
+                # canonical_heal now returns (Canonical, Weight)
+                healed_headers = [canonical_heal(h)[0] for h in raw_headers]
+                healed_headers = [h for h in healed_headers if h and h != "UNNAMED"]
             
             probes.append(ExcelSheetProbe(
                 name=name,
@@ -390,21 +492,58 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
         # [ELITE-MAPPING]: Instead of brittle renaming, we calculate which physical 
         # columns map to their 'Elite' categories (NIK, QTY, etc.)
         resolver = {}
+        resolver_weights = {} # Tracking best matches
         header_map = {}
         header_meta = {} # NEW: Contextual Metadata (Healed -> Original)
         seen_count = {}
         
+        # Phase 1: Determine the BEST physical columns for extraction identities
+        # [ELITE-CONTENT-AWARE]: We apply a 'Data Quality Boost' to resolve ties.
         for h in unique_headers:
-            canonical = canonical_heal(h)
-            if canonical == "UNNAMED":
-                header_map[h] = "UNNAMED"
+            canonical, weight = canonical_heal(h)
+            if not canonical or canonical == "UNNAMED":
                 continue
-            
-            # Map canonical to the FIRST physical column found for extraction
-            if canonical not in resolver:
+                
+            # Fidelity Tie-Breaker for JADWAL
+            if canonical == "JADWAL":
+                try:
+                    # Comprehensive month detection (Indonesian abbreviations + full names)
+                    month_regex = r"(?i)jan|feb|mar|apr|mei|jun|jul|ags|agt|sep|okt|nov|des|uari|ruari|aret|ril|gustus|ptember|tober|vember|sember"
+                    month_hits = df_data[h].head(50).cast(pl.Utf8).str.contains(month_regex).sum()
+                    if month_hits > 0:
+                        weight += 200 
+                    
+                    # Production Logging
+                    diagnostics.log_breadcrumb("EXCEL-JADWAL-WEIGHT", f"Col: '{h}', MonthHits: {month_hits}, TotalWeight: {weight}")
+                except Exception as e:
+                    diagnostics.log_breadcrumb("EXCEL-JADWAL-ERROR", f"Content scan failed for '{h}': {e}")
+
+            if canonical not in resolver or weight > resolver_weights.get(canonical, 0):
                 resolver[canonical] = h
+                resolver_weights[canonical] = weight
+        
+        # Phase 2: Build Header Map for UI & Storage
+        # [GOLDEN-RESOLVER]: We ensure the 'Best' physical column for each category 
+        # gets the CLEAN canonical name (e.g. 'JADWAL'). All others will be suffixed.
+        
+        # Step 1: Lock the winners
+        for canonical, physical in resolver.items():
+            header_map[physical] = canonical
+            header_meta[canonical] = physical
+            seen_count[canonical] = 0
+
+        # Step 2: Handle the rest (Redundancies or Unmapped)
+        for h in unique_headers:
+            if h in header_map: continue # Winner already assigned
             
-            # Build unique names for the UI/Headers
+            canonical, weight = canonical_heal(h)
+            
+            # If it's a generic column that didn't match a canonical category
+            if not canonical or canonical == "UNNAMED":
+                clean = clean_header_text(h)
+                canonical = clean.replace('_', ' ').upper()
+            
+            # Build unique names for redundant columns (e.g. JADWAL_1)
             if canonical in seen_count:
                 seen_count[canonical] += 1
                 healed = f"{canonical}_{seen_count[canonical]}"
@@ -413,7 +552,41 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
                 healed = canonical
             
             header_map[h] = healed
-            header_meta[healed] = h # Store the original name as context
+            header_meta[healed] = h
+        
+        # [ELITE-JADWAL-PRESCAN]: Analyze ALL columns identified as JADWAL for a year baseline.
+        # This is critical because some sheets put '2025' in 'Masa Tanam' and 'April' in 'Jadwal Tanam'.
+        dominant_year = None
+        all_jadwal_physicals = [h for h in unique_headers if canonical_heal(h)[0] == "JADWAL"]
+        
+        if all_jadwal_physicals:
+            try:
+                # Collect 4-digit years from all potential schedule columns
+                all_found_years = []
+                for p_col in all_jadwal_physicals:
+                    # Safely extract years using Polars string regex
+                    y_series = df_segmented[p_col].cast(pl.Utf8).str.extract_all(r"(\d{4})").explode().drop_nulls()
+                    if not y_series.is_empty():
+                        all_found_years.append(y_series)
+                
+                if all_found_years:
+                    combined_years = pl.concat(all_found_years)
+                    if not combined_years.is_empty():
+                        # value_counts() returns a DataFrame with columns [p_col_name, count]
+                        counts = combined_years.value_counts(sort=True)
+                        val_col = counts.columns[0]
+                        
+                        # Use .height for Polars DataFrame length
+                        if counts.height == 1:
+                            dominant_year = counts[0, val_col]
+                        elif counts.height > 1:
+                            total = counts["count"].sum()
+                            if counts[0, "count"] / total > 0.9:
+                                dominant_year = counts[0, val_col]
+            except Exception as e:
+                diagnostics.log_breadcrumb("EXCEL-JADWAL", f"Prescan failed: {e}")
+
+        jadwal_healer = EliteJadwalHealer(dominant_year)
         
         # Log resolution status for auditability
         matches = [f"{k}->{v}" for k, v in resolver.items()]
@@ -464,12 +637,19 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
             price = to_dec("HARGA SATUAN")
             ship = to_dec("ONGKOS KIRIM")
             target = to_dec("TOTAL_VALUE")
-            jadwal = str(row_dict.get(resolver.get("JADWAL")) or "").strip()
+            calc = (price + ship) * qty
+            target_val = target
+            
+            # [PRODUCTION-RESOLUTION]: Resolve JADWAL with the column-wide baseline
+            jadwal_col = resolver.get("JADWAL")
+            raw_jadwal_val = row_dict.get(jadwal_col)
+            healed_jadwal = jadwal_healer.heal(raw_jadwal_val)
+            
             group = str(row_dict.get(resolver.get("POKTAN/GROUP")) or "").strip()
             
-            calc = (price + ship) * qty
-            gap = calc - target
-            total_target += target
+            calc_val = (price + ship) * qty
+            gap = calc_val - target_val
+            total_target += target_val
 
             # Elite Forensic Scrub Loop: 
             # Sanitize 100% of the columns to prevent 'broken data' (Unicode noise, Scientific notation)
@@ -509,6 +689,27 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
             if ketua_col and clean_row_dict.get(ketua_col):
                 clean_row_dict[ketua_col] = str(clean_row_dict[ketua_col]).title()
 
+            # [ELITE-JADWAL-SYNC]: Sync the healed jadwal back into all related columns
+            # We sync to the primary JADWAL column AND any aliases (JADWAL_1, etc)
+            for phys_col, healed_name in header_map.items():
+                if healed_name.startswith("JADWAL"):
+                    # Only heal the specific column if it's the primary one or contains year/month
+                    h_val = clean_row_dict.get(phys_col)
+                    if h_val:
+                        clean_row_dict[phys_col] = jadwal_healer.heal(h_val)
+            
+            # Ensure the primary resolver column is definitely updated with the best healing
+            if jadwal_col:
+                clean_row_dict[jadwal_col] = healed_jadwal
+            
+            # [ELITE-COLLISION-GUARD]: If other columns also mapped to JADWAL (like JADWAL_1),
+            # we should also heal them if they look like dates.
+            for phys_col, healed_name in header_map.items():
+                if healed_name.startswith("JADWAL") and phys_col != jadwal_col:
+                    curr_val = clean_row_dict.get(phys_col)
+                    if curr_val and any(m in str(curr_val).lower() for m in EliteJadwalHealer.MONTH_MAP.keys()):
+                        clean_row_dict[phys_col] = jadwal_healer.heal(curr_val)
+
             # Elite Row Instantiation
             p_row = PipelineRow(
                 id=str(uuid.uuid4()),
@@ -537,7 +738,7 @@ def ingest_excel_to_models(excel_content: bytes, target_sheet: Optional[str] = N
                 # Forensic Alignment: ensure keys in column_data match the UI headers
                 column_data={header_map[k]: v for k, v in clean_row_dict.items() if header_map.get(k) != "UNNAMED"},
                 original_row={header_map[k]: v for k, v in clean_row_dict.items() if header_map.get(k) != "UNNAMED"},
-                jadwal_tanam=normalize_jadwal_tanam(jadwal),
+                jadwal_tanam=healed_jadwal,
                 group=group.title()
             )
             rows.append(p_row)

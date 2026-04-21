@@ -1,10 +1,25 @@
-# BAST-Automator: Project Intelligence Singleton
+# BAST-Automator: The Almanac (System Knowledge)
 
-This is the **Consolidated Source of Truth**. Replaces architecture.md, patterns.md, and decisions.md.
+This is the **Consolidated Knowledge Base** for the BAST-Automator project. It contains the technical specifications, architectural patterns, and structural barcodes (Logical IDs) required for high-fidelity development.
 
 ---
 
-## 1. System Architecture
+## 1. Project Overview
+BAST-Automator is a high-precision distribution and reconciliation tool designed for the Indonesian BANPEM (Bantuan Pemerintah) program. It ensures 100% data integrity between Excel distribution payloads and PDF contract "Ground Truth."
+
+### Technical Stack
+- **Shell**: Hybrid Native-Web via `PyWebView` (Edge Chromium engine).
+- **Backend**: `FastAPI` (Async Python) on Port 8000.
+- **Data Engine**: `Polars` (Lazy evaluation for 4GB RAM optimization).
+- **Intelligence**: 
+  - **PDF**: `PyMuPDF` (Slicing) + `pdfplumber` (Legal layout analysis).
+  - **OCR**: `RapidOCR` + `OpenCV` (Spatial Binding & NIK Triangulation).
+  - **Automation**: `Playwright` (Portal Injection).
+- **Frontend**: `React 19` + `Vite` + `shadcn/ui`.
+
+---
+
+## 2. System Architecture
 
 ### High-Level Flow
 ```mermaid
@@ -21,54 +36,39 @@ graph TD
     J --> F
 ```
 
-### Module Responsibilities
-- **[DATA] Data Engine**: Polars ingestion, location resolution [DATA-002], SQLite vault [DATA-003].
-- **[DOCS] Document Intel**: PyMuPDF slicing, RapidOCR extraction, Address normalisation [DOCS-004].
+### Logical ID Mapping (The Barcodes)
+To ensure perfect continuity in a stateless AI environment, the codebase uses a Barcode system:
+
 - **[CORE] Infrastructure**: FastAPI app [CORE-001], Global Config [CORE-002], Hardware detectors.
+- **[DATA] Data Engine**: Polars ingestion [DATA-001], Location resolution [DATA-002], SQLite vault [DATA-003].
+- **[DOCS] Document Intelligence**: OCR extraction [DOCS-001], PDF slicing [DOCS-002], Address normalisation [DOCS-004].
 - **[UIUX] Frontend**: Axios bridge [UIUX-001], Excel Workbench [UIUX-002], PDF Sync [UIUX-005].
 
 ---
 
-## 2. Karpathy Pattern: Goal-Driven Execution
+## 3. Specialized Intelligence Modules
 
-LLMs are exceptionally good at **Looping until Meeting Specific Goals**. We use "Verification-First" development:
-
-1. **Declarative Goals**: Instead of "Fix bug X," we define "Bug X is fixed when test case Y produces Z."
-2. **Success Criteria**: Every major feature implementation must start with a success-check definition.
-3. **Looping**: If a test fails, the agent self-corrects without being told *how*—only that it missed the goal.
-
----
-
-## 3. Coding Patterns & Mandates
-
-### Backend (Simplicity First)
-- **Config-Driven**: settings from `backend.config` only.
-- **Async/Await**: Non-blocking I/O is mandatory for UI responsiveness.
-- **Polars Lazy**: Scan/Filter/Collect. Never `read_csv` for large files.
-- **Memory Guards**: Explicit `gc.collect()` after large PDF or OCR operations.
-
-### Frontend (Surgical Precision)
-- **Bridge Pattern**: ALL calls via `src/lib/api.ts`.
-- **Neutral Palette**: neutrals only (Slate, Zinc). Follow `CLAUDE.md`.
-- **Layout Stability**: Fixed overlays + Scroll locking during heavy data alignment [UIUX-010].
-
----
-
-## 4. Data Intelligence & Repair
-
-### [DOCS-004] Address Normalisation
-- Resolves INAPROC PDF hyphenation and old province names via `wilayah_reference.json`.
+### [DOCS-001] Elite OCR Suite
+- **Spatial Binding**: 2D coordinate geometry linking labels to multi-line values.
+- **NIK Triangulation**: Cross-verifying Gender and DOB using 16-digit NIK checksums.
+- **Multi-Scale Retry**: 1.5x auto-scaling for low-resolution captures.
 
 ### [DATA-010] Deep Healing Patterns
-- **Phone Healing**: Restores truncated mobile digits (e.g., `53...` -> `0853...`).
-- **Title Case Protocol**: Standardizes Indonesian bureaucratic prefixes.
-- **Location Bridge**: Auto-resolution logic using 83k master records.
+- **Phone Healing**: Restores truncated mobile prefixes (e.g., `08...`).
+- **Location Bridge**: Auto-resolution using 83k master Indonesian location records.
+- **Title Case Protocol**: Standardizes bureaucratic prefixes (PT., CV., etc.).
 
 ---
 
-## 5. Architectural Decisions (ADR)
-- **[ADR-001] Polars**: Speed + Memory efficiency for 4GB RAM target.
+## 4. Architectural Decisions (ADR)
+- **[ADR-001] Polars Only**: Mandatory for 4GB RAM target. Never use `pandas`.
 - **[ADR-002] Static Serving**: FastAPI (8000) serves `dist/` to unify binary packaging.
 - **[ADR-003] Surgical Hydration**: 15-record chunks + 25ms yield to prevent UI freeze.
+- **[ADR-004] Weighted Resolver**: Priority-based header matching (Highest Specificity Wins).
 
-**VERIFICATION: If code is over-complicated, it violates ADR-001 and CLAUDE.md Principles.**
+---
+
+## 5. Reference Links
+- **Operational Rules**: [CLAUDE.md](file:///c:/Users/Wyx/bastbanpem/CLAUDE.md)
+- **Active State**: [STATE.md](file:///c:/Users/Wyx/bastbanpem/STATE.md)
+- **Institutional Memory**: [LESSONS.md](file:///c:/Users/Wyx/bastbanpem/LESSONS.md)
