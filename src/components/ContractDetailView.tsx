@@ -50,10 +50,9 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
   const ktpDir = contract.ktpDir || '';
   const proofDir = contract.proofDir || '';
 
-  const handleExcelDataLoaded = (result: any) => {
+  const handleExcelDataLoaded = (rows: any[]) => {
     onUpdate(contract.id, { 
-      recipients: result.rows,
-      // Metadata from Excel scan could go here
+      recipients: rows,
     });
   };
 
@@ -125,13 +124,13 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         </div>
       </header>
 
-      <div className="flex-1 overflow-auto p-8 max-w-[1600px] mx-auto w-full space-y-2 pb-24 scroll-smooth">
+      <div className="flex-1 overflow-auto p-8 max-w-[1600px] mx-auto w-full space-y-8 pb-32">
         
         <DashboardSection
           id="sec-pdf"
           icon={FileText}
           title="1. Contract PDF"
-          subtitle="Document Viewer & Data Extraction"
+          subtitle="View PDF and extract data"
         >
           <PdfSyncModule 
             contract={contract} 
@@ -142,12 +141,16 @@ export const ContractDetailView: React.FC<ContractDetailViewProps> = ({ contract
         <DashboardSection 
           id="sec-excel"
           icon={Server}
-          title="2. Distribution Intelligence"
-          subtitle="Precision Parsing & Recipient Hub"
+          title="2. Recipient List"
+          subtitle="Import and verify recipient data"
         >
           <div className="p-6">
             <DistributionIntelligence 
+              contract={contract}
               onDataLoaded={handleExcelDataLoaded}
+              globalConfig={globalConfig}
+              setGlobalConfig={handleGlobalConfigUpdate}
+              globalNIKRegistry={globalNIKRegistry}
             />
           </div>
         </DashboardSection>

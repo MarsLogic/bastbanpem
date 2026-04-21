@@ -2,9 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, FileDown } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FileDown } from 'lucide-react';
 import { cleanValue, stripRegionalPrefix } from '@/lib/dataCleaner';
+import { exportStyledExcel } from '@/lib/excelExpert';
 import { useMasterDataStore } from '@/lib/masterDataStore';
 
 interface RawTable {
@@ -66,13 +66,13 @@ function inferHeaders(rows: Record<string, any>[]): string[] {
 import { Highlight } from '@/components/ui/highlight';
 
 export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, showMeta = false, searchQuery }) => {
+  // Sync internal search ONLY on initial load if provided
   const [search,   setSearch]   = useState(searchQuery || '');
   const [sortCol,  setSortCol]  = useState<string | null>(null);
   const [sortDir,  setSortDir]  = useState<SortDir>(null);
   const [pageSize,  setPageSize]  = useState<number | 'all'>(DEFAULT_PAGE_SIZE);
   const [page,      setPage]      = useState(0);
 
-  // Sync internal search ONLY on initial load if provided
   React.useEffect(() => {
     if (searchQuery && !search) {
       setSearch(searchQuery);
@@ -83,55 +83,56 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   const resolveHierarchy = useMasterDataStore(state => state.resolveHierarchy);
   const isLoaded = useMasterDataStore(state => state.isLoaded);
 
-  const headers = table.headers.length > 0 ? table.headers : inferHeaders(table.rows);
-  const normalizedRows = useMemo(() => normalizeRows(headers, table.rows), [table.rows, headers]);
+  const { 
+    finalHeaders, 
+    normalizedRows 
+  } = useMemo(() => {
+    const rawHeaders = table.headers.length > 0 ? table.headers : inferHeaders(table.rows);
+    const rows = normalizeRows(rawHeaders, table.rows);
 
-  // Expert Triangulation: Hydrate rows with missing regional data
-  const normalized = useMemo(() => {
-    return normalizedRows.map(row => {
-      // Identify regional columns
-      const hProv = headers.find(h => /provinsi|prov/i.test(h));
-      const hKab  = headers.find(h => /kabupaten|kab/i.test(h));
-      const hKec  = headers.find(h => /kecamatan|kec/i.test(h));
-      const hDesa = headers.find(h => /desa|kelurahan/i.test(h));
+    // 1. Map raw headers to internal hierarchy keys
+    const hProv = rawHeaders.find(h => /provinsi|prov/i.test(h));
+    const hKab  = rawHeaders.find(h => /kabupaten|kab/i.test(h));
+    const hKec  = rawHeaders.find(h => /kecamatan|kec/i.test(h));
+    const hDesa = rawHeaders.find(h => /desa|kelurahan|kel/i.test(h));
 
-      if (hKab || hProv) {
-        const rawProv = hProv ? String(row[hProv] || '').trim() : '';
-        const rawKab  = hKab ? String(row[hKab] || '').trim() : '';
-        const rawKec  = hKec ? String(row[hKec] || '').trim() : '';
-        const rawDesa = hDesa ? String(row[hDesa] || '').trim() : '';
+    // 2. Define Elite Standard Header set
+    const MANDATORY = ['PROVINSI', 'KABUPATEN', 'KECAMATAN', 'DESA'];
+    const otherHeaders = rawHeaders.filter(h => 
+      h !== hProv && h !== hKab && h !== hKec && h !== hDesa
+    );
 
-        const provinsi = hProv ? cleanValue(rawProv, 'provinsi') : '';
-        const kabupaten = hKab ? cleanValue(rawKab, 'kabupaten') : '';
-        const kecamatan = hKec ? cleanValue(rawKec, 'kecamatan') : '';
-        const desa = hDesa ? cleanValue(rawDesa, 'desa') : '';
+    const mergedHeaders = [...MANDATORY, ...otherHeaders];
 
-        // Mangled detection: Empty, just dash, too short, or contains obvious OCR garbage
-        const isMangled = (s: string) => !s || s === '—' || s.length < 2 || /[%$#^*]/.test(s);
+    // 3. Transform & Heal Rows
+    const healed = rows.map((row, idx) => {
+      const vProv = hProv ? String(row[hProv] || '').trim() : '';
+      const vKab  = hKab  ? String(row[hKab]  || '').trim() : '';
+      const vKec  = hKec  ? String(row[hKec]  || '').trim() : '';
+      const vDesa = hDesa ? String(row[hDesa] || '').trim() : '';
 
-        if (isMangled(provinsi) || isMangled(kabupaten) || isMangled(kecamatan) || isMangled(desa)) {
-          const resolved = resolveHierarchy({ provinsi, kabupaten, kecamatan, desa });
-          if (resolved) {
-            const newRow = { ...row };
-            if (hProv) newRow[hProv] = stripRegionalPrefix(resolved.provinsi || provinsi || rawProv);
-            if (hKab)  newRow[hKab]  = stripRegionalPrefix(resolved.kabupaten || kabupaten || rawKab);
-            if (hKec)  newRow[hKec]  = stripRegionalPrefix(isMangled(kecamatan) ? (resolved.kecamatan || kecamatan || rawKec) : (kecamatan || rawKec));
-            if (hDesa) newRow[hDesa] = stripRegionalPrefix(isMangled(desa) ? (resolved.desa || desa || rawDesa) : (desa || rawDesa));
-            return newRow;
-          }
-        }
+      const cProv = cleanValue(vProv, 'provinsi');
+      const cKab  = cleanValue(vKab, 'kabupaten');
+      const cKec  = cleanValue(vKec, 'kecamatan');
+      const cDesa = cleanValue(vDesa, 'desa');
 
-        // Apply light cleaning as fallback if no triangulation
-        const newRow = { ...row };
-        if (hProv) newRow[hProv] = stripRegionalPrefix(provinsi || rawProv);
-        if (hKab)  newRow[hKab]  = stripRegionalPrefix(kabupaten || rawKab);
-        if (hKec)  newRow[hKec]  = stripRegionalPrefix(kecamatan || rawKec);
-        if (hDesa) newRow[hDesa] = stripRegionalPrefix(desa || rawDesa);
-        return newRow;
-      }
-      return row;
+      const resolved = resolveHierarchy({ provinsi: cProv, kabupaten: cKab, kecamatan: cKec, desa: cDesa });
+
+      const newRow: Record<string, any> = { _idx: idx };
+      newRow['PROVINSI']  = stripRegionalPrefix(resolved?.provinsi  || cProv || vProv);
+      newRow['KABUPATEN'] = stripRegionalPrefix(resolved?.kabupaten || cKab  || vKab);
+      newRow['KECAMATAN'] = stripRegionalPrefix(resolved?.kecamatan || cKec  || vKec);
+      newRow['DESA']      = stripRegionalPrefix(resolved?.desa      || cDesa || vDesa);
+
+      otherHeaders.forEach(h => {
+        newRow[h] = row[h];
+      });
+
+      return newRow;
     });
-  }, [normalizedRows, headers, resolveHierarchy, isLoaded]);
+
+    return { finalHeaders: mergedHeaders, normalizedRows: healed };
+  }, [table.headers, table.rows, resolveHierarchy]);
 
   const toggleSort = (col: string) => {
     if (sortCol !== col) { setSortCol(col); setSortDir('asc'); }
@@ -140,16 +141,23 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   };
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return normalized;
+    if (!search.trim()) return normalizedRows;
     const q = search.toLowerCase();
-    return normalized.filter(row =>
+    return normalizedRows.filter(row =>
       Object.values(row).some(v => String(v).toLowerCase().includes(q)),
     );
-  }, [normalized, search]);
+  }, [normalizedRows, search]);
 
   const sorted = useMemo(() => {
     if (!sortCol || !sortDir) return filtered;
     return [...filtered].sort((a, b) => {
+      // Handle # Index Sort
+      if (sortCol === '#') {
+        const idxA = a._idx ?? 0;
+        const idxB = b._idx ?? 0;
+        return sortDir === 'asc' ? idxA - idxB : idxB - idxA;
+      }
+
       const va = String(a[sortCol] ?? '');
       const vb = String(b[sortCol] ?? '');
       // numeric sort if both look numeric
@@ -167,18 +175,23 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
   // Reset to page 0 when filter or page size changes
   React.useEffect(() => { setPage(0); }, [search, sortCol, sortDir, pageSize]);
 
-  const handleExportExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(normalized);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Lampiran Data');
-    XLSX.writeFile(workbook, `lampiran_data_${new Date().getTime()}.xlsx`);
+  const handleExportExcel = async () => {
+    // Use the Elite Export Engine [EXCEL-600]
+    await exportStyledExcel(
+      normalizedRows,
+      finalHeaders,
+      {
+        sheetName: 'Extracted Table',
+        filename: `extracted_table_${new Date().getTime()}.xlsx`
+      }
+    );
   };
 
-  if (headers.length === 0) {
+  if (finalHeaders.length === 0) {
     return <p className="text-sm text-slate-400 italic p-4">No columns detected in this table.</p>;
   }
 
-  const isEmpty = normalized.length === 0;
+  const isEmpty = normalizedRows.length === 0;
 
   return (
     <div className="flex flex-col rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
@@ -196,17 +209,17 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
         )}
         <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
           <Badge variant="secondary" className="text-[10px] h-5 font-mono">
-            {filtered.length}/{normalized.length} rows · {headers.length} cols
+            {filtered.length}/{normalizedRows.length} rows · {finalHeaders.length} cols
           </Badge>
           
           <Button
             variant="outline"
             size="sm"
             onClick={handleExportExcel}
-            className="h-7 text-[10px] gap-1.5 px-2 border-slate-200 hover:bg-slate-100"
+            className="h-7 text-[10px] font-bold gap-1.5 px-3 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shadow-sm"
           >
             <FileDown className="h-3 w-3" />
-            Export Excel
+            EXPORT EXCEL
           </Button>
         </div>
       </div>
@@ -216,16 +229,22 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
         {isEmpty ? (
           <div className="p-8 text-center text-slate-400 text-[12px]">
             <div className="mb-2 font-medium">No data rows extracted</div>
-            <div className="text-[10px]">Headers detected: {headers.join(', ')}</div>
+            <div className="text-[10px]">Headers detected: {finalHeaders.join(', ')}</div>
           </div>
         ) : (
           <table className="w-full text-[11px] border-collapse">
             <thead className="sticky top-0 z-10 bg-slate-50">
               <tr>
-                <th className="px-3 py-2.5 text-left text-[9px] font-medium uppercase tracking-wider text-slate-400 border-b border-slate-200 w-10 select-none">
-                  #
+                <th 
+                  onClick={() => toggleSort('#')}
+                  className="px-3 py-2.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-200 w-10 cursor-pointer select-none hover:bg-slate-100 transition-colors"
+                >
+                  <div className="flex flex-col items-center gap-0.5">
+                    <span>#</span>
+                    <SortIcon dir={sortCol === '#' ? sortDir : null} />
+                  </div>
                 </th>
-                {headers.map(h => (
+                {finalHeaders.map(h => (
                   <th
                     key={h}
                     onClick={() => toggleSort(h)}
@@ -252,7 +271,7 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
                   <td className="px-3 py-2 text-[9px] font-mono text-slate-400 tabular-nums">
                     {page * actualPageSize + rIdx + 1}
                   </td>
-                  {headers.map(h => {
+                  {finalHeaders.map(h => {
                     const val = row[h] ?? '—';
                     const strVal = String(val);
                     const isEmpty = strVal === '' || strVal === 'nan' || strVal === 'None';
@@ -308,21 +327,47 @@ export const DataTableRenderer: React.FC<DataTableRendererProps> = ({ table, sho
 
           <div className="flex items-center gap-1">
             <Button
-              variant="ghost" size="icon"
-              className="h-7 w-7"
+              variant="outline" size="icon" className="h-7 w-7 border-slate-200"
+              disabled={page === 0}
+              onClick={() => setPage(0)}
+            >
+              <ChevronsLeft className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline" size="icon" className="h-7 w-7 border-slate-200"
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
-            <span className="text-[11px] font-mono tabular-nums px-1">{page + 1}/{totalPages}</span>
+            
+            <div className="flex items-center px-4 h-7 bg-white rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 tabular-nums shadow-sm">
+              <input 
+                className="w-8 text-center bg-transparent border-0 p-0 focus:outline-none font-bold text-slate-900" 
+                value={page + 1}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (!isNaN(val) && val > 0 && val <= totalPages) setPage(val - 1);
+                }}
+                onFocus={(e) => e.target.select()}
+              />
+              <span className="mx-1 text-slate-300">/</span>
+              <span>{totalPages}</span>
+            </div>
+
             <Button
-              variant="ghost" size="icon"
-              className="h-7 w-7"
+              variant="outline" size="icon" className="h-7 w-7 border-slate-200"
               disabled={page >= totalPages - 1}
               onClick={() => setPage(p => p + 1)}
             >
               <ChevronRight className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="outline" size="icon" className="h-7 w-7 border-slate-200"
+              disabled={page >= totalPages - 1}
+              onClick={() => setPage(totalPages - 1)}
+            >
+              <ChevronsRight className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>

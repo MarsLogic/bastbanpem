@@ -63,14 +63,30 @@ export function calculateNameSimilarity(pdfName: string, excelName: string): num
 }
 
 /**
+ * Safe Decimal conversion to prevent runtime crashes on malformed strings
+ */
+function safeDecimal(val: any): Decimal {
+    try {
+        if (val === null || val === undefined) return new Decimal(0);
+        if (typeof val === 'string') {
+            const clean = val.replace(/[^0-9.-]/g, '');
+            return new Decimal(clean || '0');
+        }
+        return new Decimal(val);
+    } catch (e) {
+        return new Decimal(0);
+    }
+}
+
+/**
  * Reconcile PDF blocks against Excel rows.
  */
 export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: ExcelRow[]): ReconciliationResult {
   const issues: AuditIssue[] = [];
 
   // 1. Total Quantity Check
-  const excelTotalQty = excelRows.reduce((acc, row) => acc.plus(new Decimal(row.financials.qty || 0)), new Decimal(0));
-  const pdfTotalQty = pdfBlocks.reduce((acc, block) => acc.plus(new Decimal(block.jumlahProduk || 0)), new Decimal(0));
+  const excelTotalQty = excelRows.reduce((acc, row) => acc.plus(safeDecimal(row.financials?.qty)), new Decimal(0));
+  const pdfTotalQty = pdfBlocks.reduce((acc, block) => acc.plus(safeDecimal(block.jumlahProduk)), new Decimal(0));
 
   if (!excelTotalQty.equals(pdfTotalQty)) {
     issues.push({
@@ -108,13 +124,15 @@ export function performReconciliation(pdfBlocks: DeliveryBlock[], excelRows: Exc
         pageSource: (block as any).pageSource
       });
     } else {
-        if (bestMatch && Math.abs(pdfQty - ((bestMatch as ExcelRow).financials.qty || 0)) > 0.01) {
+        const rowQty = safeDecimal(bestMatch ? (bestMatch as ExcelRow).financials?.qty : 0);
+        const pQty = safeDecimal(pdfQty);
+        if (bestMatch && !pQty.equals(rowQty)) {
             issues.push({
                 type: 'QUANTITY_MISMATCH',
                 severity: 'medium',
                 message: `Quantity mismatch for ${pdfName}`,
-                pdfValue: pdfQty.toString(),
-                excelValue: ((bestMatch as ExcelRow).financials.qty || 0).toString(),
+                pdfValue: pQty.toString(),
+                excelValue: rowQty.toString(),
                 pageSource: (block as any).pageSource
             });
         }
@@ -155,8 +173,8 @@ export function performPortalReconciliation(local: ContractData, portal: PortalC
     });
   }
 
-  const localTotalValue = new Decimal(local.totalPembayaran?.replace(/[^0-9]/g, '') || '0');
-  const portalTotalValue = new Decimal(portal.k_kontrak_nilai);
+  const localTotalValue = safeDecimal(local.totalPembayaran);
+  const portalTotalValue = safeDecimal(portal.k_kontrak_nilai);
 
   if (!localTotalValue.equals(portalTotalValue)) {
     issues.push({
@@ -185,13 +203,15 @@ export function performPortalReconciliation(local: ContractData, portal: PortalC
       });
     } else {
       // Check Qty
-      if (Math.abs(row.financials.qty - portalData.pn_qty_disalurkan) > 0.01) {
+      const rowQty = safeDecimal(row.financials?.qty);
+      const pQty = safeDecimal(portalData.pn_qty_disalurkan);
+      if (!rowQty.equals(pQty)) {
         issues.push({
           type: 'QUANTITY_MISMATCH',
           severity: 'medium',
           message: `Qty mismatch for ${row.name} on Portal`,
-          localValue: row.financials.qty.toString(),
-          portalValue: portalData.pn_qty_disalurkan.toString()
+          localValue: rowQty.toString(),
+          portalValue: pQty.toString()
         });
       }
     }

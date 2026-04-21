@@ -6,36 +6,69 @@
 /**
  * Standardizes Names to Title Case (excluding common abbreviations).
  */
+/**
+ * Standardizes Names to Title Case with special handling for 2-letter prefixes.
+ * Example: "as. maju jaya" -> "AS. Maju Jaya", "pt. bina usaha" -> "PT. Bina Usaha"
+ */
 export function toTitleCase(str: string): string {
   if (!str) return '';
   
-  // 1. Force standardization of PT. and CV. (Case-insensitive match, ensure dot and trailing space)
-  // This handles variations like 'cv.', 'Cv', 'pt', 'PT.' and ensures they become 'CV. ' or 'PT. '
-  let s = str.trim().replace(/\b(pt|cv)\b\.?\s*/gi, (match, prefix) => `${prefix.toUpperCase()}. `);
+  // 1. Initial cleanup: Ensure space after common punctuation marks if merged with text
+  // e.g. "Bp.sejahtera" -> "Bp. sejahtera", "PT/Karya" -> "PT/ Karya"
+  let s = str.trim().replace(/([.,\/\-])([a-zA-Z])/g, '$1 $2');
 
-  // 2. List of abbreviations that should stay uppercase
-  const PRESERVE = new Set(['PPK', 'NPWP', 'NIK', 'KTP', 'CV', 'PT', 'TBK', 'UD', 'PD', 'SPM', 'SK', 'IVA']);
+  // 2. Pre-process 2 and 3-letter prefixes (as., pt., cv., bp., kwt., etc.)
+  const PREFIXES = new Set(['as', 'pt', 'cv', 'ud', 'bp', 'kp', 'pd', 'sk', 'sj', 'kk', 'gr', 'ny', 'tn', 'dr', 'rd', 'kwt', 'kud', 'upj', 'lmd']);
+  
+  s = s.replace(/\b([a-z]{2,3})\b([.,\/\-])?\s*/gi, (match, prefix, punct) => {
+    const pLow = prefix.toLowerCase();
+    if (punct || PREFIXES.has(pLow)) {
+      const p = prefix.toUpperCase();
+      const punctuation = punct || '.'; 
+      return `${p}${punctuation} `;
+    }
+    return match;
+  });
 
-  return s
-    .split(/\s+/)
-    .map(word => {
+  // 3. List of abbreviations that should stay uppercase or are specifically Title Case
+  const PRESERVE = new Set(['PPK', 'NPWP', 'NIK', 'KTP', 'CV', 'PT', 'TBK', 'UD', 'PD', 'SPM', 'SK', 'IVA', 'Gapoktan', 'Poktan', 'KWT', 'UPJA', 'LMDH', 'Koperasi', 'KUD', 'BUMDes']);
+
+  // Words that should stay uppercase if they are short (2-3 chars) and likely acronyms
+  const UP_SHORT = new Set(['AS', 'PT', 'CV', 'UD', 'BP', 'KP', 'PD', 'SK', 'SJ', 'KK', 'GR', 'NY', 'TN', 'DR', 'RD', 'KWT', 'KUD', 'UPJ', 'LMD']);
+
+  // Connectors that should remain lowercase
+  const CONNECTORS = new Set(['dan', 'di', 'ke', 'da', 'dg', 'dgn', 'yg', 'atau']);
+
+  const words = s.split(/\s+/);
+  return words
+    .map((word, index) => {
       if (!word) return '';
-      const upper = word.toUpperCase();
       
-      // Handle PT. and CV. (already standardized above, but keep uppercase here)
-      if (upper === 'CV.' || upper === 'PT.') return upper;
-      
-      // Standard PRESERVE check
-      if (PRESERVE.has(upper)) return upper;
-      
-      // Handle Parentheses: (PPK) -> (PPK)
+      // Handle Parentheses: (ppk) -> (PPK)
       if (word.startsWith('(') && word.endsWith(')')) {
         const inner = word.slice(1, -1).toUpperCase();
-        if (PRESERVE.has(inner)) return `(${inner})`;
+        if (PRESERVE.has(inner) || UP_SHORT.has(inner)) return `(${inner})`;
+        const innerLower = word.slice(1, -1).toLowerCase();
+        return `(${innerLower.charAt(0).toUpperCase() + innerLower.slice(1)})`;
       }
+
+      // Remove trailing punctuation for checks
+      const cleanWord = word.replace(/[.,\/\-]$/, '');
+      const upper = cleanWord.toUpperCase();
+      const lowered = cleanWord.toLowerCase();
+      const punct = word.slice(cleanWord.length);
+
+      // Check PRESERVE list
+      if (PRESERVE.has(upper)) return upper + punct;
+      if (PRESERVE.has(cleanWord)) return cleanWord + punct;
       
-      const lowered = word.toLowerCase();
-      return lowered.charAt(0).toUpperCase() + lowered.slice(1);
+      // Check short acronyms (2-3 chars)
+      if (UP_SHORT.has(upper)) return upper + punct;
+
+      // Check connectors (lowercase unless first word)
+      if (CONNECTORS.has(lowered) && index !== 0) return lowered + punct;
+      
+      return lowered.charAt(0).toUpperCase() + lowered.slice(1) + punct;
     })
     .join(' ')
     .trim();
@@ -190,11 +223,11 @@ export function stripRegionalPrefix(str: string, type?: string): string {
   // Pattern to catch prefix + optional colon/space
   // e.g. "Kabupaten: Labuhan Batu" or "Kabupaten Labuhan Batu"
   const patterns = [
-    /^\s*(kabupaten|kab\.?)\s*:?\s+/i,
-    /^\s*(kecamatan|kec\.?)\s*:?\s+/i,
-    /^\s*(provinsi|prov\.?)\s*:?\s+/i,
-    /^\s*(desa|kelurahan|kel\.?)\s*:?\s+/i,
-    /^\s*(kota|kt\.?)\s*:?\s+/i,
+    /^\s*(kabupaten|kab\.?)\s*[:,\.-]?\s+/i,
+    /^\s*(kecamatan|kec\.?)\s*[:,\.-]?\s+/i,
+    /^\s*(provinsi|prov\.?)\s*[:,\.-]?\s+/i,
+    /^\s*(desa|kelurahan|kel\.?)\s*[:,\.-]?\s+/i,
+    /^\s*(kota|kt\.?)\s*[:,\.-]?\s+/i,
   ];
 
   let cleaned = str;
@@ -236,18 +269,87 @@ export function standardizeRegionalName(str: string): string {
     'tanjung jabung timur': 'Tanjung Jabung Timur',
     'tanjungjabung timur': 'Tanjung Jabung Timur',
     'tanjung jabung barat': 'Tanjung Jabung Barat',
-    'tanjungjabung barat': 'Tanjung Jabung Barat'
+    'tanjungjabung barat': 'Tanjung Jabung Barat',
+    'kalimantan tengah': 'Kalimantan Tengah',
+    'kalimantan timur': 'Kalimantan Timur',
+    'kalimantan selatan': 'Kalimantan Selatan',
+    'kalimantan utara': 'Kalimantan Utara'
   };
 
   const lowered = s.toLowerCase();
   if (MAP[lowered]) return MAP[lowered];
 
-  // 4. Fuzzy join/split for common patterns
-  // e.g. "Labuhanbatu" -> "Labuhan Batu" (Search for CamelCase or missing spaces)
-  // This is a heuristic: if a word is very long and matchable by master data, 
-  // we rely on triangulation later, but we Title Case it here for a clean start.
+  // 4. Fuzzy Healing for common OCR/Truncation artifacts (The "a Utara" Fix)
+  const HEAL_MAP: Record<string, string> = {
+    'a utara': 'Sumatera Utara',
+    'sumatra utara': 'Sumatera Utara',
+    'sumatera utara': 'Sumatera Utara',
+    'antan at': 'Kalimantan Barat',
+    'antan barat': 'Kalimantan Barat',
+    'kalimantan barat': 'Kalimantan Barat',
+    'ung jabung': 'Tanjung Jabung Barat', 
+    'ung jabung barat': 'Tanjung Jabung Barat',
+    'ung jabung timur': 'Tanjung Jabung Timur',
+    'antan parat': 'Kalimantan Barat',
+    'sumatora': 'Sumatera',
+    'sumatra': 'Sumatera',
+    'sumat': 'Sumatera',
+    'kalimant': 'Kalimantan',
+    'kaliman': 'Kalimantan'
+  };
+
+  if (HEAL_MAP[lowered]) return HEAL_MAP[lowered];
   
+  // 5. Handle trailing fragments (e.g., "a Utara" without the "Sumater")
+  if (lowered === 'a utara') return 'Sumatera Utara';
+  if (lowered.endsWith(' utara') && lowered.length < 10 && !lowered.includes(' ')) return 'Sumatera Utara';
+
   return toTitleCase(s);
+}
+
+/**
+ * Expert-Grade OCR Healing: Resolves "Ghost Spaces" and standardizes delimiters.
+ * Specifically handles Indonesian agrarian terminology.
+ */
+export function healTextArtifacts(str: string): string {
+  if (!str) return '';
+  let s = str.trim();
+
+  // 1. Symbol Standardization: Padding around slashes, space after commas/colons
+  // Ensure "A/B" -> "A / B"
+  s = s.replace(/\s*([\/\:])\s*/g, ' $1 ');
+  // Ensure "A,B" -> "A, B"
+  s = s.replace(/\s*(,)\s*/g, '$1 ');
+
+  // 2. Connector Standardization: Ensure lowercase 'dan' with proper spacing
+  s = s.replace(/\s+(dan|atau)\s+/gi, (match, p1) => ` ${p1.toLowerCase()} `);
+
+  // 3. OCR "Ghost Space" Healing: Fuses split words (e.g., "I nsektisida" -> "Insektisida")
+  // Specialized for Indonesian agronomic vocabulary
+  const FRAGMENTS = [
+    { head: 'I', body: 'nsektisida' },
+    { head: 'Pe', body: 'rtanaman' },
+    { head: 'Pe', body: 'stisida' },
+    { head: 'Pe', body: 'nggerak' },
+    { head: 'Pe', body: 'ngendali' },
+    { head: 'Wa', body: 'lang' },
+    { head: 'Wa', body: 'reng' },
+    { head: 'Su', body: 'ndep' },
+    { head: 'Su', body: 'matera' },
+    { head: 'Ka', body: 'limantan' },
+  ];
+
+  FRAGMENTS.forEach(({ head, body }) => {
+    const regex = new RegExp(`\\b${head}\\s+${body}\\b`, 'gi');
+    s = s.replace(regex, `${head}${body}`);
+  });
+
+  // 4. Known Truncation Artifacts: Repairing fractured words
+  s = s.replace(/\bSumat\s+era\b/gi, 'Sumatera');
+  s = s.replace(/\bKalim\s+antan\b/gi, 'Kalimantan');
+
+  // 5. Final Spacing Polish
+  return s.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -258,12 +360,17 @@ export function cleanValue(
   label?: string, 
   resolver?: (raw: string) => any
 ): string {
-  if (!val || val === '—' || val === 'UNKNOWN') return val;
+// 0. Early exit for performance (skip regex for empty/placeholder values)
+  if (!val || val.trim() === '' || val === '—' || val === 'UNKNOWN') return val;
 
   const key = label?.toLowerCase() || '';
   let cleaned = val;
 
   // 1. Initial portal noise reduction
+  cleaned = cleanPortalNoise(cleaned);
+  
+  // 2. High-Fidelity OCR & Delimiter Healing
+  cleaned = healTextArtifacts(cleaned);
   cleaned = cleanPortalNoise(cleaned);
 
   // 2. Specific field formatting
@@ -289,18 +396,45 @@ export function cleanValue(
         }
       }
     }
-  } else if (key.includes('nama') || key.includes('penerima') || key.includes('penanggung') || key.includes('jabatan') || key.includes('divisi') || key.includes('penyedia')) {
+  } else if (
+    key.includes('nama') || 
+    key.includes('penerima') || 
+    key.includes('penanggung') || 
+    key.includes('jabatan') || 
+    key.includes('divisi') || 
+    key.includes('penyedia') ||
+    key.includes('poktan') ||
+    key.includes('gapoktan') ||
+    key.includes('kelompok') ||
+    key.includes('opt') ||
+    key.includes('ketua') ||
+    key.includes('rekomendasi')
+  ) {
     cleaned = toTitleCase(cleaned);
   } else if (key.includes('email') || key.includes('website') || key.includes('mail')) {
     cleaned = cleaned.toLowerCase();
+  } else if (
+    key.includes('nik') || 
+    key === 'id' || 
+    key.includes('idx') || 
+    key.includes('hp') || 
+    key.includes('telepon') || 
+    key.includes('wa') || 
+    key.includes('id_')
+  ) {
+    // Identity Standard [NIK-800]: Plain continuous string, no spaces, no formatting
+    cleaned = cleaned.replace(/\D/g, ''); 
   } else if (key.includes('npwp')) {
     cleaned = formatNPWP(cleaned);
-  } else if (key.includes('telepon') || key.includes('hp')) {
-    cleaned = formatPhone(cleaned);
   }
 
   // 3. Strip redundant regional prefixes and standardize
-  if (key.includes('provinsi') || key.includes('kabupaten') || key.includes('kecamatan') || key.includes('desa')) {
+  const isRegional = key.includes('provinsi') || key.includes('prov') || key.includes('insi') || 
+                    key.includes('kabupaten') || key.includes('kab') || 
+                    key.includes('kecamatan') || key.includes('kec') || 
+                    key.includes('desa') || key.includes('kelurahan') || key.includes('kel');
+
+  if (isRegional) {
     cleaned = stripRegionalPrefix(cleaned, key);
     cleaned = standardizeRegionalName(cleaned);
   }

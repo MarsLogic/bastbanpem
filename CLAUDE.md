@@ -1,109 +1,67 @@
-# BAST-Automator: Expert AI Router & Singleton Brain
+# BAST-Automator: Karpathy-Hardened Singleton Brain
 
-Welcome, Agent. You are operating in a **Stateless Elite Workbench**. To ensure 100% continuity and token efficiency, you MUST follow these rules. This file is the **Single Source of Truth** for all rules.
-
-## 0. Session Initialization (Mandatory)
-
-**On every new session, do this FIRST:**
-
-1. **Check for active task:** `.claude/current-task.md`
-2. **Load project knowledge:**
-   - `.claude/project-knowledge/architecture.md` (System structure)
-   - `.claude/project-knowledge/patterns.md` (Coding standards)
-   - `.claude/project-knowledge/lessons-learned.md` (Self-Learning Hub)
-3. **Load memory index:**
-   - `.claude/projects/[project]/memory/MEMORY.md` (Deep context)
+This is the **Singleton Source of Truth**. Replaces AGENTS/GEMINI/DESIGN-SYSTEM.
 
 ---
 
-## 0.5 The Self-Learning & Surgical Mandate (CRITICAL)
+## 1. Operating Identity: The Karpathy Mandate
 
-### 🧠 Cumulative Self-Learning
-1.  **Strict CRC Protocol**: Every session MUST contribute to `.claude/project-knowledge/lessons-learned.md`.
-2.  **Immediate Pull/Push**: Documentation (CLAUDE.md, lessons-learned.md) MUST be synchronized to GitHub immediately after any rule update or major [LEARN] entry.
-3.  **Reflexive Tooling Reliability**: EVERY tool or command failure (e.g. `rtk` syntax, `grep` errors) MUST be documented in `lessons-learned.md` to establish the "Golden Syntax" for the repository.
-4.  **Knowledge Debt Auditor**: NEVER commit a major logic refactor or bugfix without an accompanying `[LEARN-###]` entry. Code without documentation is "Amnesia-prone" and is considered an expert-level failure.
+LLMs fail by over-engineering and making silent assumptions. To counter this, ALL work MUST follow these four principles:
 
-### ✂️ Surgical Context (Token ROI)
-1.  **Surgical Escalation**: NEVER read a full file > 200 lines if a specific method is the target.
-2.  **Tooling Protocol**: 
-    -   **Discovery**: `python tools/intel.py list <file>` to map method boundaries.
-    -   **Capture**: `python tools/intel.py read <file> <method>` to ingest ONLY the required code.
-    -   **Intelligence**: `python tools/indexer.py search <query>` to find logic snippets across the codebase.
-3.  **Caveman Ingestion**: For large logs or text files, use a scrubbing script to strip noise (headers, repeated metadata) BEFORE ingestion to prevent context pollution.
+1. **Think Before Coding**:
+   - **Ask rather than guess**: If anything is ambiguous, STOP and ask for clarification.
+   - **Surface Tradeoffs**: If multiple solutions exist, present them before implementing.
+   - **Push Back**: If a request is over-complicated, suggest a simpler approach.
 
-**The High-Fidelity Structure**: Use the following "Expert Format" for learning entries:
-   ```markdown
-   ### Improvement: [LEARN-###] Title
-   **Context**: Why was this needed? State of the system before the fix.
-   **Action**: What was done? (Link to logic/files).
-   **Risk Identified**: What corner cases were caught? (e.g. layout artifacts).
-   **Consequences**: Long-term impact on the system.
-   **Expert Insight**: A permanent rule for future AI sessions to follow.
-   ```
-3. **Immediate Push**: ANY change to documentation (`.md` files) MUST be pushed to GitHub immediately via `rtk` WITHOUT waiting for a separate approval.
+2. **Simplicity First**:
+   - **Minimum code**: No speculative features or "flexible" abstractions.
+   - **100 vs 1000**: If 1000 lines of code can be 100, rewrite it.
+   - **Seniors' Test**: "Would a senior engineer say this is over-complicated?" If yes, simplify.
+
+3. **Surgical Changes**:
+   - **Touch only the target**: Don't refactor code, comments, or formatting adjacent to your task.
+   - **Own your orphans**: Only remove dead code that YOUR changes made unused.
+   - **Match existing style**: Even if you'd do it differently, stay consistent with the room.
+
+4. **Goal-Driven Execution**:
+   - **Define Success First**: State a plan with verification steps before touching code.
+   - **Loop until Verified**: Transform imperative tasks into declarative goals (e.g., "X is done when Test Y passes").
 
 ---
 
-## 1. Mandatory Workflow & Sync
+## 2. Mandatory Workflow
 
-1. **Global Prefix:** ALWAYS use `rtk` for all shell commands (e.g., `rtk git status`).
-2. **Search First:** Always use `rtk rg` (ripgrep) for searching before reading large files.
-3. **Build & Verify:** NEVER conclude a code change without running `rtk npm run build` and verifying completion.
-4. **Windows Reliability:** When chaining commands on Windows/PowerShell, ALWAYS use `;` as a separator. NEVER use `&&`. (Example: `rtk git add .; rtk git commit`).
-6. **Port-Aware Reload Protocol:** ALWAYS guide the user on how to reflect changes:
-   - **Port 5173 (Dev):** Changes reflect instantly via HMR. No action needed.
-   - **Port 8000 (Prod):** REQUIRES `rtk npm run build` + **Browser Hard-Reload (Ctrl+Shift+R)**.
-   - **Service Staleness:** If changes on Port 8000 are not visible after a build, the user MUST be instructed to restart the `start.bat` process to clear any locked file descriptors.
-
-## 2. Design System & Component Mandates
-
-**Single Source of Truth:** `.claude/design-system.md` (Read EVERY time before UI work).
-
-### Color Palette (MANDATORY)
-| Type | Hex | Usage |
-|------|-----|-------|
-| Success | #374151 | Dark grey backgrounds |
-| Info | #6b7280 | Grey backgrounds |
-| Warning | #f3f4f6 | Light grey backgrounds |
-| Error | #1f2937 | Very dark grey backgrounds |
-| Text | #ffffff | On dark backgrounds |
-| Main Text| #1f2937 | Primary text color |
-
-### Design Standards:
-- **Icons**: Lucide React only (Sizes: `h-4 w-4` or `h-5 w-5`).
-- **Typography**: Geist Sans/Mono with Tailwind text scaling (`text-[10px]`, `text-[11px]`).
-- **Toasts**: Always use semantic styles (Background: #374151 or #1f2937).
-- **Patterns**: No hardcoded hex codes. Use Tailwind + Design System tokens.
-- **Brand Fidelity**: NEVER introduce new colors (rainbow colors) without checking against the defined palette. All UI/UX changes MUST adhere to existing `Slate`, `Zinc`, or `Gray` neutral themes.
+- **Global Proxy**: ALWAYS use `rtk` (60-90% token savings).
+- **Windows Reliability**: Use `;` for chaining commands. NEVER use `&&`.
+- **Closure Checklist**:
+  1. Update `LESSONS.md` with new insights.
+  2. Define "Success Criteria" for the next session in `.claude/current-task.md`.
+  3. Final Build: `rtk npm run build` -> Push to origin.
 
 ---
 
-## 3. Surgical Strategy (Token Saving)
-- **Lazy Loading:** Use Polars (Lazy) for all large data operations.
-- **Read by Range:** Never read whole files. Target 50-line chunks.
-- **Logic Barcodes:** Include Logical IDs in all plans and commits:
-  - `[CORE-###]` Infrastructure
-  - `[DATA-###]` Data Engine
-  - `[DOCS-###]` PDF/Image Intel
-  - `[UIUX-###]` React Workbench
+## 3. Design System & Semantics
+
+**Plain Language Policy**: Use grounded, professional terminology. No "Elite" or "Magic" jargon.
+
+### Palette & Checklist
+| Style | Background | Text | Border | Usage |
+|-------|------------|------|--------|-------|
+| Success | #374151 | White | #1f2937 | Validated records |
+| Info | #6b7280 | White | #4b5563 | Processing status |
+| Warning | #f3f4f6 | #374151| #d1d5db | Reconciliation mismatch |
+| Error | #1f2937 | White | #111827 | Hardware/Parsing fail |
+
+**Fidelity Guards**:
+- **Icons**: Lucide React (`h-4 w-4` / `h-5 w-5`).
+- **Loaders**: `fixed inset-0 z-[100] backdrop-blur-md`. Mandatory scroll lock on `document.body`.
+- **Toasts**: Semantic `sonner` styles only.
 
 ---
 
-## 4. Session Closure (The Hand-off)
+## 4. Surgical Reference
+- **Arch & Patterns**: [PROJECT.md](file:///c:/Users/Wyx/bastbanpem/PROJECT.md)
+- **Institutional Memory**: [LESSONS.md](file:///c:/Users/Wyx/bastbanpem/LESSONS.md)
+- **Active Task**: `.claude/current-task.md`
 
-**Before ending the session:**
-
-1. **Update Learning Hub**: Ensure `lessons-learned.md` reflects this session's insights.
-2. **Build Verification**: Run `rtk npm run build`.
-3. **Communicate Build Status**: "Build passes ✓ - Ready for production."
-4. **Final Push**:
-   ```bash
-   rtk git add .
-   rtk git commit -m "[TYPE]: [LOGICAL-ID] Brief description"
-   rtk git push origin main
-   ```
-
-**GOAL:** Minimal Tokens. Maximum Stability. Cumulative Intelligence.
-
-✅ Update lessons-learned.md if you discover something new
+**VERIFICATION: Every line changed must trace directly to a verified objective.**

@@ -6,11 +6,11 @@ import {
 } from 'lucide-react';
 
 const LOGIC_STEPS = [
-  { id: 'decrypt', label: "PDF Decryption", icon: ShieldCheck },
-  { id: 'entity', label: "Entity Mapping", icon: Search },
+  { id: 'decrypt', label: "Opening PDF", icon: ShieldCheck },
+  { id: 'entity', label: "Location Mapping", icon: Search },
   { id: 'sskk', label: "SSKK Extraction", icon: FileText },
-  { id: 'table', label: "Table Reconstruction", icon: Database },
-  { id: 'optimize', label: "Neural Optimization", icon: Sparkles },
+  { id: 'table', label: "Table Detection", icon: Database },
+  { id: 'optimize', label: "Data Validation", icon: Sparkles },
 ];
 
 export const ScanningLoader: React.FC = () => {
@@ -94,12 +94,12 @@ export const ScanningLoader: React.FC = () => {
                 <Cpu className="w-5 h-5 text-white" />
               </div>
               <div className="flex flex-col">
-                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Intelligence</h3>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Neuro-Extraction Engine</span>
+                <h3 className="text-xl font-black text-slate-900 uppercase tracking-tighter leading-none">Processing</h3>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Data Processing</span>
               </div>
             </div>
             <p className="text-[12px] text-slate-500 leading-relaxed font-medium pl-14">
-              Autonomous reconstruction of contract stanzas and financial matrices in progress.
+              Extracting document data and financial tables for review.
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export const ScanningLoader: React.FC = () => {
                           animate={{ opacity: 1, x: 0 }}
                           className="text-[9px] text-slate-900 font-black uppercase tracking-[0.2em] mt-0.5"
                         >
-                          Synthesizing...
+                          Processing...
                         </motion.span>
                       )}
                     </AnimatePresence>
@@ -158,7 +158,7 @@ export const ScanningLoader: React.FC = () => {
           {/* Shimmer Progress Bar - Strictly Black & White */}
           <div className="pt-6 space-y-3">
             <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.1em] text-slate-900 px-1">
-              <span>Fidelity</span>
+              <span>Progress</span>
               <span>{( (stepIdx + 1) / LOGIC_STEPS.length * 100).toFixed(0)}%</span>
             </div>
             <div className="h-[3px] w-full bg-slate-100 rounded-full overflow-hidden">
@@ -182,10 +182,10 @@ export const ScanningLoader: React.FC = () => {
              <span className="text-[10px] text-slate-400 font-black ml-auto lowercase">engine.core.log</span>
           </div>
           <div className="font-mono text-[10px] space-y-1.5">
-             <p className="text-slate-900 font-bold">READY_KERNEL ... [OK]</p>
-             <p className="text-slate-500">SCANNING_PAGES ... {stepIdx + 1}/12</p>
-             <p className="text-slate-400">DATA_POINTS ... {12 * (stepIdx + 1)}</p>
-             <p className="text-slate-900 animate-pulse font-black uppercase tracking-tighter">_NEURAL_PROCESSING</p>
+             <p className="text-slate-900 font-bold">SYSTEM_READY ... [OK]</p>
+             <p className="text-slate-500">READING_PAGES ... {stepIdx + 1}/12</p>
+             <p className="text-slate-400">RECORDS_FOUND ... {12 * (stepIdx + 1)}</p>
+             <p className="text-slate-900 animate-pulse font-black uppercase tracking-tighter">_PROCESSING_DATA</p>
           </div>
         </div>
       </div>

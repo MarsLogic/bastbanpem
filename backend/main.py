@@ -58,16 +58,7 @@ app.add_middleware(
 )
 
 # [EXPERT-006] Unified App & Frontend Entry Point
-app.include_router(router)
-
-@app.get("/health")
-def health_check():
-    license_status = license_svc.validate_license()
-    return {
-        "status": "ok",
-        "license": license_status.get("status"),
-        "hwid": license_svc.get_machine_id()
-    }
+app.include_router(router, prefix="/api")
 
 # Serve static assets from the 'dist' folder if it exists
 DIST_PATH = os.path.join(settings.BASE_DIR, "dist")

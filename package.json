@@ -23,6 +23,8 @@
     "clsx": "^2.1.1",
     "cropperjs": "^1.6.2",
     "decimal.js": "^10.4.3",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "framer-motion": "^12.38.0",
     "idn-area-data": "^4.0.1",
     "jszip": "^3.10.1",
@@ -44,6 +46,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/jszip": "^3.4.0",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",

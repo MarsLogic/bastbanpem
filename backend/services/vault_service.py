@@ -8,6 +8,7 @@ from backend.models import PipelineRow, ReconciliationResult, BatchTaskStatus, B
 class VaultService:
     def __init__(self):
         self._init_batch_table()
+        self._init_alignment_table()
 
     @staticmethod
     def _init_batch_table():
@@ -25,6 +26,23 @@ class VaultService:
             """)
 
     @staticmethod
+    def _init_alignment_table():
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS alignment_jobs (
+                    job_id TEXT PRIMARY KEY,
+                    contract_id TEXT,
+                    status TEXT, -- PENDING, RUNNING, COMPLETED, FAILED, CANCELLED
+                    progress INTEGER DEFAULT 0,
+                    total INTEGER DEFAULT 0,
+                    error TEXT,
+                    result_json TEXT,
+                    last_heartbeat TEXT,
+                    created_at TEXT
+                )
+            """)
+
+    @staticmethod
     def save_contract(
         id: str,
         name: str,
@@ -32,6 +50,7 @@ class VaultService:
         metadata: Optional[ContractMetadata] = None,
         ultra_robust: Optional[dict] = None,
         tables: Optional[list] = None,
+        rows: Optional[List[PipelineRow]] = None,
     ):
         meta_json   = metadata.model_dump_json() if metadata else "{}"
         
@@ -51,6 +70,10 @@ class VaultService:
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
                 (id, name, target_value, "ACTIVE", meta_json, ultra_json, tables_json),
             )
+        
+        # --- Handle Recipients [EXPERT-004] ---
+        if rows:
+            VaultService.save_recipients(id, rows)
 
     @staticmethod
     def get_contract(id: str) -> Optional[dict]:
@@ -60,6 +83,31 @@ class VaultService:
             if not row:
                 return None
             result = dict(row)
+
+            # --- Recipient Recovery [EXPERT-004] ---
+            cursor.execute("""
+                SELECT raw_data, balanced_data, is_balanced 
+                FROM recipients 
+                WHERE contract_id = ?
+            """, (id,))
+            recipient_rows = cursor.fetchall()
+            
+            recipients = []
+            for r_row in recipient_rows:
+                try:
+                    # Merge data for full PipelineRow reconstruction
+                    raw = json.loads(r_row['raw_data'])
+                    balanced = json.loads(r_row['balanced_data'])
+                    # If balanced data exists and has the full structure, use it
+                    # otherwise fallback to raw plus basic fields
+                    recipients.append({
+                        **raw,
+                        **balanced,
+                        "is_synced": bool(r_row['is_balanced'])
+                    })
+                except Exception:
+                    continue
+            result["recipients"] = recipients
 
             # Parse ultra_robust JSON column
             ultra_raw = result.pop("ultra_robust_json", None)
@@ -188,5 +236,55 @@ class VaultService:
             cursor.execute(sql, params)
             rows = cursor.fetchall()
             return [dict(r) for r in rows]
+
+    @staticmethod
+    def save_alignment_job(job_id: str, contract_id: str, status: str, total: int = 0):
+        timestamp = datetime.now().isoformat()
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                INSERT OR REPLACE INTO alignment_jobs (job_id, contract_id, status, total, progress, last_heartbeat, created_at)
+                VALUES (?, ?, ?, ?, 0, ?, ?)
+            """, (job_id, contract_id, status, total, timestamp, timestamp))
+
+    @staticmethod
+    def update_alignment_progress(job_id: str, progress: int, status: str = "RUNNING", result_json: Optional[str] = None, error: Optional[str] = None):
+        timestamp = datetime.now().isoformat()
+        with db.get_cursor() as cursor:
+            if result_json:
+                cursor.execute("""
+                    UPDATE alignment_jobs 
+                    SET progress = ?, status = ?, result_json = ?, last_heartbeat = ?
+                    WHERE job_id = ?
+                """, (progress, status, result_json, timestamp, job_id))
+            elif error:
+                cursor.execute("""
+                    UPDATE alignment_jobs 
+                    SET status = "FAILED", error = ?, last_heartbeat = ?
+                    WHERE job_id = ?
+                """, (error, timestamp, job_id))
+            else:
+                cursor.execute("""
+                    UPDATE alignment_jobs 
+                    SET progress = ?, status = ?, last_heartbeat = ?
+                    WHERE job_id = ?
+                """, (progress, status, timestamp, job_id))
+
+    @staticmethod
+    def get_alignment_job(job_id: str) -> Optional[dict]:
+        with db.get_cursor() as cursor:
+            cursor.execute("SELECT * FROM alignment_jobs WHERE job_id = ?", (job_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+
+    @staticmethod
+    def get_latest_job_for_contract(contract_id: str) -> Optional[dict]:
+        with db.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM alignment_jobs 
+                WHERE contract_id = ? AND status IN ("PENDING", "RUNNING")
+                ORDER BY created_at DESC LIMIT 1
+            """, (contract_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
 
 vault_service = VaultService()

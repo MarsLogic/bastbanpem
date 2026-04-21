@@ -293,8 +293,8 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
             <RefreshCw className={cn("size-5 text-white", (isLoading || !!activeBatchId) && "animate-spin")} />
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">Portal Intelligence Sync</h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Bidirectional Reconciliation Engine</p>
+            <h1 className="text-sm font-black text-slate-900 uppercase tracking-tight">Portal Sync</h1>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Government Portal Data Reconciliation</p>
           </div>
         </div>
 
@@ -319,7 +319,7 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
             disabled={!selectedPortalId || isLoading || !!activeBatchId}
             className="h-8 rounded-full bg-black hover:bg-zinc-800 text-white text-[10px] font-black uppercase px-6 shadow-md shadow-slate-300"
           >
-            Run Integrity Audit
+            Run Reconciliation Audit
           </Button>
         </div>
       </div>
@@ -423,9 +423,9 @@ export const PortalSyncModule: React.FC<PortalSyncModuleProps> = ({ contract, on
         ) : (
           <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
             <RefreshCw className="size-16 text-slate-200 mb-6 animate-pulse" />
-            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Sync Engine Ready</h3>
+            <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Portal Sync Ready</h3>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2 max-w-xs">
-              Bind a portal contract and run the integrity audit to begin the expert reconciliation process.
+              Bind a portal contract and run the reconciliation audit to begin the data reconciliation process.
             </p>
           </div>
         )}

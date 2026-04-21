@@ -28,10 +28,10 @@ function parseClauses(text: string): MainClause[] {
   let currentMain: MainClause | null = null;
   let currentSub:  SubClause  | null = null;
 
-  const subRe          = /^\s*(\d{1,3})\.(\d{1,3})\s*(.*)/;
-  const mainAloneRe    = /^\s*(\d{1,3})\.\s*$/;
-  const mainAndSubRe   = /^\s*(\d{1,3})\.\s+(.*?)\s+(\d{1,3})\.(\d{1,3})\s+(.*)/;
-  const mainInlineRe   = /^\s*(\d{1,3})\.\s+(.+)/;
+  const subRe          = /^\s*(?:\*\*)?(\d{1,4}(?:[\.][a-z0-9]+)+)[\.\)]?(?:\*\*)?\s*(.*)$/i;
+  const mainAloneRe    = /^\s*(?:\*\*)?(\d{1,4}(?:[a-z])?)[\.\)](?:\*\*)?\s*$/i;
+  const mainAndSubRe   = /^\s*(?:\*\*)?(\d{1,4}(?:[a-z])?)[\.\)](?:\*\*)?\s+(.*?)\s+(?:\*\*)?(\d{1,4}(?:[\.][a-z0-9]+)+)[\.\)]?(?:\*\*)?\s+(.*)$/i;
+  const mainInlineRe   = /^\s*(?:\*\*)?(\d{1,4}(?:[a-z])?)[\.\)](?:\*\*)?\s+(.+)$/i;
 
   const flushSub = () => {
     if (currentSub && currentMain) {
@@ -67,23 +67,25 @@ function parseClauses(text: string): MainClause[] {
     if (subMatch) {
       flushSub();
       currentSub = {
-        number:  `${subMatch[1]}.${subMatch[2]}`,
-        title:   subMatch[3].trim(),
+        number:  subMatch[1],
+        title:   subMatch[2].trim(),
         content: '',
       };
       continue;
     }
 
-    // Main clause — number alone on its own line, title on next
+    // Main clause — number alone on its own line, title on next (Stanza support)
     const aloneMatch = trimmed.match(mainAloneRe);
     if (aloneMatch) {
       flushMain();
       let title = '';
       let j = i + 1;
+      // Skip empty lines to find the title
       while (j < lines.length && !lines[j].trim()) j++;
+      
       if (
         j < lines.length &&
-        !lines[j].trim().match(/^\d+\./) &&
+        !lines[j].trim().match(/^(?:\*\*)?\d+/) &&
         lines[j].trim().length < 120
       ) {
         title = lines[j].trim();
@@ -92,7 +94,7 @@ function parseClauses(text: string): MainClause[] {
         // Peak ahead for orphan title continuation (PDF column artifacts like "pihak")
         if (i + 1 < lines.length) {
             const nextTrimmed = lines[i + 1].trim();
-            if (nextTrimmed.length > 0 && nextTrimmed.length < 15 && !nextTrimmed.match(/^\d+\./) && !nextTrimmed.includes(':')) {
+            if (nextTrimmed.length > 0 && nextTrimmed.length < 15 && !nextTrimmed.match(/^(?:\*\*)?\d+/) && !nextTrimmed.includes(':')) {
                 title += ' ' + nextTrimmed;
                 i++;
             }
@@ -111,8 +113,8 @@ function parseClauses(text: string): MainClause[] {
       
       // Immediately open the sub-clause
       currentSub = {
-        number:  `${mainAndSubMatch[3]}.${mainAndSubMatch[4]}`,
-        title:   mainAndSubMatch[5].trim(),
+        number:  mainAndSubMatch[3],
+        title:   mainAndSubMatch[4].trim(),
         content: '',
       };
       // The rest of the block goes into sub-clause content
@@ -121,9 +123,9 @@ function parseClauses(text: string): MainClause[] {
 
     // Main clause with inline title
     const inlineMatch = trimmed.match(mainInlineRe);
-    // CRITICAL: Ensure the number part is short (most clauses are < 100). 
+    // CRITICAL: Ensure the number part is short. 
     // Shipment IDs like 114. 785... have a long tail that mainInlineRe might eat.
-    if (inlineMatch && inlineMatch[1].length <= 3) {
+    if (inlineMatch && inlineMatch[1].length <= 5) {
       flushMain();
       let title = inlineMatch[2].trim();
       let content = '';
@@ -135,8 +137,7 @@ function parseClauses(text: string): MainClause[] {
           content = gapMatch[2].trim();
       }
       
-      // Peak ahead for orphan title continuation (PDF column artifacts like "pihak")
-      // If content is empty, the next lines might still be part of the title
+      // Peak ahead for orphan title continuation 
       while (!content && i + 1 < lines.length) {
           const nextLine = lines[i + 1];
           const nextTrimmed = nextLine.trim();
@@ -318,7 +319,10 @@ export const ClauseRenderer: React.FC<{ text: string; searchQuery?: string }> = 
   // Fall back to plain prose if no clause structure detected
   if (clauses.length < 2) {
     return (
-      <div className="text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap font-sans">
+      <div className="text-[13px] text-slate-700 leading-relaxed whitespace-pre-wrap font-sans max-h-[600px] overflow-y-auto p-4 bg-slate-50/50 rounded-xl border border-slate-200">
+        <div className="text-[10px] font-bold text-slate-400 mb-4 uppercase tracking-widest border-b border-slate-200 pb-2 flex items-center gap-2">
+           <Search className="h-3 w-3" /> Raw Document Text (Parsing Refined)
+        </div>
         {text}
       </div>
     );

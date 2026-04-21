@@ -114,7 +114,7 @@ export const ImportMapper: React.FC<ImportMapperProps> = ({ onMappingComplete })
             <div className="bg-slate-50/50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden">
               <div className="px-6 py-3 border-b bg-white/50 flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-green-600" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Government Schema</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Standard Columns</span>
               </div>
               <ScrollArea className="flex-1 p-6">
                 <div className="space-y-3">

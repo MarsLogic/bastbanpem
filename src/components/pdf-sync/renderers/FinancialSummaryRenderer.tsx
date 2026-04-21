@@ -281,16 +281,22 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
           </SelectContent>
         </Select>
         
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleExportExcel}
-          className="h-7 text-[10px] gap-1.5 px-2.5 border-slate-200 hover:bg-slate-100 shrink-0"
-        >
-          <FileDown className="h-3 w-3" />
-          Export Excel
-        </Button>
-      </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportExcel}
+            className="h-7 text-[10px] font-bold gap-1.5 px-2.5 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shrink-0"
+          >
+            <FileDown className="h-3 w-3" />
+            Export Excel
+          </Button>
+
+          <div className="w-px h-4 bg-slate-200 shrink-0" />
+          
+          <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tabular-nums tracking-tight shrink-0">
+            {filtered.length} / {hydratedLedger.length} RECORDS
+          </div>
+        </div>
 
       <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm bg-white overflow-x-auto">
         <table className="w-full text-[11px] border-collapse min-w-[1100px]">
@@ -419,8 +425,16 @@ const RecipientFinancialGrid: React.FC<{ ledger: any[]; financials: any; searchQ
               <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
             
-            <div className="flex items-center px-4 h-7 bg-white rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 tabular-nums">
-              <span className="text-slate-900 font-bold">{page + 1}</span>
+            <div className="flex items-center px-4 h-7 bg-white rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 tabular-nums shadow-sm">
+              <input 
+                className="w-8 text-center bg-transparent border-0 p-0 focus:outline-none font-bold text-slate-900" 
+                value={page + 1}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (!isNaN(val) && val > 0 && val <= totalPages) setPage(val - 1);
+                }}
+                onFocus={(e) => e.target.select()}
+              />
               <span className="mx-1 text-slate-300">/</span>
               <span>{totalPages}</span>
             </div>

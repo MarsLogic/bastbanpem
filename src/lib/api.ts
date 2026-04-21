@@ -1,7 +1,7 @@
 // [UIUX-001] Axios Backend Communication Bridge
 import axios from 'axios';
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = ((import.meta as any).env?.VITE_API_URL || 'http://127.0.0.1:8000') + '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -95,11 +95,12 @@ export const saveContract = async (
   metadata: Record<string, any> | null,
   ultraRobust?: Record<string, any> | null,
   tables?: any[],
+  rows?: any[],
 ): Promise<void> => {
   await api.post(
     `/contracts/save?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&target_value=${targetValue}`,
     {
-      rows: [],
+      rows: rows ?? [],
       metadata: metadata ?? null,
       ultra_robust: ultraRobust ?? null,
       tables: tables ?? [],
@@ -117,6 +118,7 @@ export const loadContractIntelligence = async (
   metadata: Record<string, any> | null;
   ultraRobust: Record<string, any> | null;
   tables: any[];
+  recipients: any[];
 } | null> => {
   try {
     const { data } = await api.get(`/contracts/load/${encodeURIComponent(contractId)}`);
@@ -124,6 +126,7 @@ export const loadContractIntelligence = async (
       metadata:     data.metadata     ?? null,
       ultraRobust:  data.ultra_robust ?? null,
       tables:       data.tables       ?? [],
+      recipients:   data.recipients   ?? [],
     };
   } catch (err: any) {
     if (err?.response?.status === 404) return null; // never scanned — silent

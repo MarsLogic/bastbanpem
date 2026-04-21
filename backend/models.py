@@ -1,5 +1,11 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
+from enum import Enum
+
+class ExcelArchetype(str, Enum):
+    LABELED = "LABELED"         # Standards headers (NIK, Nama, etc)
+    POSITIONAL = "POSITIONAL"   # No headers, raw data starts at row 0
+    UNKNOWN = "UNKNOWN"
 
 class KtpResult(BaseModel):
     nik: Optional[str] = None
@@ -140,6 +146,7 @@ class PipelineRow(BaseModel):
     is_synced: bool = False
     is_excluded: bool = False
     page_source: int = 0
+    notes: str = "" # Captures context like 'Hama Putih', 'Wereng', etc
     # Portal Alignment IDs
     idkontrak: Optional[str] = None
     idtermin: Optional[str] = None
@@ -180,7 +187,9 @@ class ExcelIngestResult(BaseModel):
     is_balanced: bool = False
     header_index: int
     pollution_count: int
+    archetype: ExcelArchetype = ExcelArchetype.UNKNOWN
     sheets: List[ExcelSheetProbe] = [] # Added for Phase 1 context
+    header_meta: Dict[str, str] = {}   # Mapping: HealedName -> OriginalHeader
 
 class AutomationRequest(BaseModel):
     nik: str

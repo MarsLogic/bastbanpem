@@ -10,7 +10,9 @@ from backend.services.ktp_service import extract_ktp_data
 from backend.services.automation_service import submit_to_government_site
 from backend.services.data_engine import reconcile_files, ingest_excel_to_models, apply_magic_balance, probe_excel_structure
 from backend.services.location_service import location_service
-from backend.services.pdf_intelligence import pdf_intel
+from backend.services.vault_service import vault_service
+import uuid
+import uuid as uuid_pkg # sometimes useful if shadowing
 from backend.models import (
     KtpResult, ReconciliationResult, AutomationRequest,
     BundleRequest, PipelineRow, ExcelIngestResult, LocationData,
@@ -22,6 +24,7 @@ from backend.services.cpcl_extractor import cpcl_extractor
 from backend.services.watcher_service import watcher_service
 from backend.services.portal_service import portal_service
 from backend.services.batch_worker import batch_worker
+from backend.services.alignment_worker import alignment_worker
 from backend.services.generate_bast import bast_generator
 
 router = APIRouter()
@@ -112,6 +115,57 @@ async def excel_ingest(file: UploadFile = File(...), sheet_name: Optional[str] =
         return ingest_excel_to_models(content, target_sheet=sheet_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# --- Background Ingestion Endpoints [EXPERT-010] ---
+
+@router.post("/excel/start")
+async def excel_start_job(
+    background_tasks: BackgroundTasks,
+    contract_id: str = Body(...),
+    file: UploadFile = File(...), 
+    sheet_name: Optional[str] = Body(None)
+):
+    try:
+        job_id = str(uuid.uuid4())
+        content = await file.read()
+        
+        # 1. Initialize record in DB
+        vault_service.save_alignment_job(job_id, contract_id, "PENDING")
+        
+        # 2. Add to background worker
+        background_tasks.add_task(
+            alignment_worker.run_alignment_task,
+            job_id,
+            contract_id,
+            content,
+            sheet_name
+        )
+        
+        return {"status": "success", "job_id": job_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/excel/status/{job_id}")
+async def excel_job_status(job_id: str):
+    job = vault_service.get_alignment_job(job_id)
+    if not job:
+        # Check for active job by contract id if user refreshed
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Update heartbeat to keep worker lease alive
+    alignment_worker.update_heartbeat(job_id)
+    
+    return job
+
+@router.get("/excel/active-job/{contract_id}")
+async def get_active_excel_job(contract_id: str):
+    job = vault_service.get_latest_job_for_contract(contract_id)
+    return {"job": job}
+
+@router.post("/excel/cancel/{job_id}")
+async def excel_cancel_job(job_id: str):
+    alignment_worker.cancel_job(job_id)
+    return {"status": "success", "message": "Cancellation signal sent."}
 
 @router.post("/excel/balance", response_model=List[PipelineRow])
 async def excel_balance(rows: List[PipelineRow] = Body(...), target_total: float = Body(...)):
@@ -309,16 +363,11 @@ async def save_contract_data(
             metadata=request.metadata,
             ultra_robust=request.ultra_robust,
             tables=request.tables,
+            rows=[PipelineRow(**r) if isinstance(r, dict) else r for r in request.rows] if request.rows else None
         )
-        if request.rows:
-            pipeline_rows = [
-                PipelineRow(**r) if isinstance(r, dict) else r
-                for r in request.rows
-            ]
-            vault_service.save_recipients(id, pipeline_rows)
         return {
             "status": "success",
-            "message": f"Saved contract '{name}' with {len(request.rows)} recipients.",
+            "message": f"Saved contract '{name}' with {len(request.rows) if request.rows else 0} recipients.",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -348,6 +397,7 @@ async def load_contract_data(contract_id: str):
             "metadata": metadata_obj.model_dump() if metadata_obj else None,
             "ultra_robust": contract.get("ultra_robust"),
             "tables": contract.get("tables", []),
+            "recipients": contract.get("recipients", []),
         }
     except HTTPException:
         raise
@@ -431,3 +481,14 @@ async def dispatch_bundle(idkontrak: str = Body(...), rows: List[Dict] = Body(..
         return {"status": "success", "bundle": bundle}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/health")
+async def health_check():
+    from backend.services.license_service import LicenseService
+    license_svc = LicenseService()
+    license_status = license_svc.validate_license()
+    return {
+        "status": "ok",
+        "license": license_status.get("status"),
+        "hwid": license_svc.get_machine_id()
+    }

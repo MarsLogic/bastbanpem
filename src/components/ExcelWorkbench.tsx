@@ -5,7 +5,7 @@ import {
     FileSpreadsheet, AlertCircle, CheckCircle2, Wand2, Download, Trash2, 
     Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Filter,
     Eye, EyeOff, XCircle, ShieldAlert, ArrowUpDown, RotateCcw,
-    CornerDownLeft, Info, RefreshCcw, PlusCircle, ChevronDown, ExternalLink,
+    CornerDownLeft, Info, RefreshCcw, PlusCircle, ChevronUp, ChevronDown, ExternalLink,
     Image as ImageIcon, Loader2, ListTree
 } from 'lucide-react';
 import { ingestExcel, balanceExcel } from '../lib/api';
@@ -74,26 +74,27 @@ const TablePagination = ({
           <ChevronLeft size={16}/>
         </Button>
         
-        <div className="flex items-center gap-2 mx-1">
-          <span className="text-[10px] font-bold text-slate-500 uppercase">Page</span>
-          <Input 
-            className="h-8 w-12 text-center text-[11px] font-bold p-0 bg-white ring-1 ring-slate-200" 
-            value={currentPage}
-            onChange={(e) => {
-              const val = parseInt(e.target.value);
-              if (!isNaN(val) && val > 0 && val <= totalPages) setCurrentPage(val);
-            }}
-          />
-          <span className="text-[10px] font-bold text-slate-500 uppercase">of {totalPages || 1}</span>
-        </div>
+          <div className="flex items-center px-4 h-7 bg-white rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 tabular-nums shadow-sm">
+            <input 
+              className="w-8 text-center bg-transparent border-0 p-0 focus:outline-none font-bold text-slate-900" 
+              value={currentPage}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                if (!isNaN(val) && val > 0 && val <= totalPages) setCurrentPage(val);
+              }}
+              onFocus={(e) => e.target.select()}
+            />
+            <span className="mx-1 text-slate-300">/</span>
+            <span>{totalPages || 1}</span>
+          </div>
 
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p: number) => Math.min(totalPages || 1, p + 1))}>
-          <ChevronRight size={16}/>
-        </Button>
-        <Button variant="outline" size="icon" className="h-8 w-8" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(totalPages)}>
-          <ChevronsRight size={16}/>
-        </Button>
-      </div>
+          <Button variant="outline" size="icon" className="h-7 w-7 border-slate-200" disabled={currentPage >= totalPages} onClick={() => setCurrentPage((p: number) => Math.min(totalPages || 1, p + 1))}>
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="outline" size="icon" className="h-7 w-7 border-slate-200" disabled={currentPage >= totalPages} onClick={() => setCurrentPage(totalPages)}>
+            <ChevronsRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
     </div>
   );
 };
@@ -105,6 +106,7 @@ interface ExcelWorkbenchProps {
   setGlobalConfig: (config: any) => void;
   globalNIKRegistry?: Map<string, { id: string, name: string }[]>;
   currentContractId?: string;
+  initialHeaders?: string[];
 }
 
 export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
@@ -113,7 +115,8 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
     globalConfig,
     setGlobalConfig,
     globalNIKRegistry,
-    currentContractId
+    currentContractId,
+    initialHeaders = []
 }) => {
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -122,7 +125,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc'|'desc' } | null>(null);
-  const [discoveredHeaders, setDiscoveredHeaders] = useState<string[]>([]);
+  const [discoveredHeaders, setDiscoveredHeaders] = useState<string[]>(initialHeaders);
   const [totalTarget, setTotalTarget] = useState(0);
 
   const processedRows = useMemo(() => {
@@ -152,10 +155,13 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
 
   useEffect(() => {
     if (rows.length > 0) {
-      const sum = rows.filter(r => !r.is_excluded).reduce((acc, r) => acc + (r.financials.target_value || 0), 0);
+      const sum = rows.filter(r => !r.is_excluded).reduce((acc, r) => acc + (r.financials?.target_value || 0), 0);
       setTotalTarget(sum);
     }
-  }, [rows]);
+    if (initialHeaders.length > 0 && discoveredHeaders.length === 0) {
+      setDiscoveredHeaders(initialHeaders);
+    }
+  }, [rows, initialHeaders]);
 
   const handleMappedData = (mappedRows: any[]) => {
     const transformed = mappedRows.map(r => ({
@@ -192,7 +198,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
       onDataLoaded(result.rows);
       setTotalTarget(result.total_target);
       setCurrentPage(1);
-      toast.success(`Elite Sync Success! Imported ${result.rows.length} rows.`);
+      toast.success(`Import complete! Loaded ${result.rows.length} rows.`);
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Excel Import Failed');
     } finally { setIsProcessing(false); }
@@ -207,6 +213,8 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
 
   const displayRows = useMemo(() => {
     let result = [...processedRows];
+    
+    // Search
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(r => 
@@ -215,8 +223,48 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
         r.location.desa?.toLowerCase().includes(q)
       );
     }
+
+    // Sort
+    if (sortConfig) {
+        const { key, direction } = sortConfig;
+        result.sort((a, b) => {
+            let valA: any, valB: any;
+            
+            // Map keys to data structure
+            if (key === 'name') { valA = a.name; valB = b.name; }
+            else if (key === 'nik') { valA = a.nik; valB = b.nik; }
+            else if (key === 'desa') { valA = a.location?.desa; valB = b.location?.desa; }
+            else if (key === 'kecamatan') { valA = a.location?.kecamatan; valB = b.location?.kecamatan; }
+            else if (key === 'qty') { valA = a.financials?.qty; valB = b.financials?.qty; }
+            else if (key === 'target_value') { valA = a.financials?.target_value; valB = b.financials?.target_value; }
+            else if (key === 'gap') { valA = a.financials?.gap; valB = b.financials?.gap; }
+            else { valA = a.column_data?.[key]; valB = b.column_data?.[key]; }
+
+            const aNum = parseFloat(String(valA || 0).replace(/[^0-9.-]+/g, ""));
+            const bNum = parseFloat(String(valB || 0).replace(/[^0-9.-]+/g, ""));
+
+            if (!isNaN(aNum) && !isNaN(bNum) && typeof valA !== 'string') {
+                return direction === 'asc' ? aNum - bNum : bNum - aNum;
+            }
+
+            return direction === 'asc' 
+              ? String(valA || "").localeCompare(String(valB || ""))
+              : String(valB || "").localeCompare(String(valA || ""));
+        });
+    }
+
     return result;
-  }, [processedRows, searchQuery]);
+  }, [processedRows, searchQuery, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig(current => {
+      if (current?.key === key) {
+        if (current.direction === 'asc') return { key, direction: 'desc' };
+        return null;
+      }
+      return { key, direction: 'asc' };
+    });
+  };
 
   const totalPages = Math.ceil(displayRows.length / itemsPerPage);
   const paginatedRows = displayRows.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -260,7 +308,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
     try {
         const balanced = await balanceExcel(rows, totalTarget);
         onDataLoaded(balanced);
-        toast.success("Elite Magic Balance Complete");
+        toast.success("Data reconciliation complete");
     } catch (e: any) {
         toast.error("Balancing failed.");
     } finally {
@@ -276,7 +324,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
                     <div className="p-1.5 bg-indigo-600 rounded-lg shadow-md shadow-indigo-100">
                         <ListTree size={16} className="text-white" />
                     </div>
-                    <span className="font-black text-[10px] uppercase tracking-widest text-slate-500">Visual Schema Alignment Engine</span>
+                    <span className="font-black text-[10px] uppercase tracking-widest text-slate-500">Field Mapping</span>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setShowMapper(false)} className="h-8 text-[10px] font-bold uppercase hover:bg-red-50 hover:text-red-600">Cancel</Button>
             </div>
@@ -301,7 +349,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
             </div>
             <div className="flex gap-2">
                <Button variant="outline" size="sm" onClick={() => setShowMapper(true)} className="h-8 gap-2 text-[10px] font-bold border-slate-200 text-slate-700 hover:bg-slate-50">
-                  <ListTree size={12} /> SMART MAPPER
+                  <ListTree size={12} /> COLUMN MAPPER
                </Button>
                <Button variant="outline" size="sm" onClick={clearWorkbench} className="h-8 gap-2 text-[10px] font-bold border-slate-200 text-slate-700 hover:bg-slate-50">
                   <Trash2 size={12} /> CLEAR
@@ -311,7 +359,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
                </Button>
                <Button size="sm" onClick={handleMagicBalance} disabled={isBalanced || isProcessing} className={cn("h-8 gap-2 text-[10px] font-bold", isBalanced ? "bg-slate-100 text-slate-400" : "bg-black text-white hover:bg-zinc-800")}>
                   {isProcessing ? <Loader2 className="animate-spin" size={12} /> : <Wand2 size={12} />}
-                  AUTO-BALANCE
+                  RECONCILE DATA
                </Button>
             </div>
           </div>
@@ -332,7 +380,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
           <FileSpreadsheet size={40} className="text-slate-300" />
           <div className="text-center">
             <p className="font-semibold text-slate-900">Upload Excel Distribution Payload</p>
-            <p className="text-[10px] text-slate-400 uppercase mt-1">Or use SMART MAPPER for custom formats</p>
+            <p className="text-[10px] text-slate-400 uppercase mt-1">Or use COLUMN MAPPER for custom formats</p>
           </div>
           <Button variant="outline" className="mt-2" disabled={isProcessing}>
             {isProcessing ? "Processing via Python..." : "Select XLSX File"}
@@ -346,7 +394,7 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
                 <Input placeholder="Search records..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="pl-9 h-9 text-[13px] bg-slate-50/50" />
              </div>
              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden md:block">
-                Elite Workbench Interface
+                Data Workbench
              </div>
           </div>
           <TablePagination 
@@ -360,24 +408,65 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
           <ScrollArea className="w-full">
             <div className="min-w-fit">
               <Table>
-                <TableHeader className="admin-table-header sticky top-0 z-10 bg-slate-50/80 backdrop-blur-sm">
-                  <TableRow className="hover:bg-transparent border-none">
-                    <TableHead className="w-20 px-4">TOOLS</TableHead>
-                    <TableHead className="w-16 text-center">AUDIT</TableHead>
-                    <TableHead className="whitespace-nowrap px-4 py-3 text-[10px] font-black text-slate-500 uppercase">NIK</TableHead>
-                    <TableHead className="whitespace-nowrap px-4 py-3 text-[10px] font-black text-slate-500 uppercase">Nama Penerima</TableHead>
-                    <TableHead className="whitespace-nowrap px-4 py-3 text-[10px] font-black text-slate-500 uppercase">Desa</TableHead>
-                    <TableHead className="whitespace-nowrap px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-right">Volume</TableHead>
-                    <TableHead className="whitespace-nowrap px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-right">Total Price</TableHead>
+                <TableHeader className="sticky top-0 z-30 bg-white/95 backdrop-blur-md">
+                  <TableRow className="hover:bg-transparent border-b border-slate-200">
+                    {/* FIXED SECTION (LEFT) */}
+                    <TableHead className="sticky left-0 z-40 bg-white min-w-[70px] border-r border-slate-100 px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">TOOLS</TableHead>
+                    <TableHead className="sticky left-[70px] z-40 bg-white min-w-[60px] border-r border-slate-100 text-center text-[9px] font-black text-slate-400 uppercase tracking-widest">AUDIT</TableHead>
+                    <TableHead 
+                      onClick={() => handleSort('name')}
+                      className="sticky left-[130px] z-40 bg-white min-w-[200px] border-r border-slate-200 px-4 py-3 text-[10px] font-black text-slate-800 uppercase tracking-tight cursor-pointer hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        Nama Penerima
+                        {sortConfig?.key === 'name' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}
+                      </div>
+                    </TableHead>
+                    
+                    {/* SCROLLABLE SECTION */}
+                    <TableHead onClick={() => handleSort('nik')} className="min-w-[140px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center justify-between">NIK {sortConfig?.key === 'nik' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}</div>
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('group')} className="min-w-[120px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center justify-between">Poktan/Group {sortConfig?.key === 'group' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}</div>
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('desa')} className="min-w-[140px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center justify-between">Desa/Kel {sortConfig?.key === 'desa' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}</div>
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('kecamatan')} className="min-w-[120px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center justify-between">Kecamatan {sortConfig?.key === 'kecamatan' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}</div>
+                    </TableHead>
+                    
+                    <TableHead className="min-w-[80px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest text-right bg-slate-50/50">Luas (Ha)</TableHead>
+                    <TableHead onClick={() => handleSort('qty')} className="min-w-[100px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest text-right bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center justify-end gap-2">Qty {sortConfig?.key === 'qty' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}</div>
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('target_value')} className="min-w-[120px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest text-right bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center justify-end gap-2">Target Val {sortConfig?.key === 'target_value' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}</div>
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('gap')} className="min-w-[120px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest text-right bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center justify-end gap-2">Diff/Gap {sortConfig?.key === 'gap' ? (sortConfig.direction === 'asc' ? <ChevronUp size={12}/> : <ChevronDown size={12}/>) : <ArrowUpDown size={10} className="opacity-20"/>}</div>
+                    </TableHead>
+                    
+                    <TableHead className="min-w-[140px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50">Jadwal Tanam</TableHead>
+                    <TableHead className="min-w-[140px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50">OPT Dominan</TableHead>
+                    <TableHead className="min-w-[150px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50">Nominal BAST</TableHead>
+                    <TableHead className="min-w-[100px] px-4 py-3 text-[9px] font-black text-slate-500 uppercase tracking-widest bg-slate-50/50">Phone</TableHead>
+
+                    {/* DYNAMIC METADATA COLUMNS */}
+                    {discoveredHeaders.filter(h => !["nik", "nama", "desa", "qty", "unit_price", "target_value", "group"].includes(h.toLowerCase())).map(h => (
+                       <TableHead key={h} className="min-w-[120px] px-4 py-3 text-[8px] font-bold text-slate-400 uppercase tracking-tighter bg-slate-50/20">{h}</TableHead>
+                    ))}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedRows.map((row) => (
-                    <TableRow key={row.id} className={cn("hover:bg-slate-50/50 transition-colors h-10", row.is_excluded && "opacity-40 grayscale bg-slate-50")}>
-                      <TableCell className="px-4 py-1">
+                   {paginatedRows.map((row) => (
+                    <TableRow key={row.id} className={cn("hover:bg-slate-50/50 transition-colors h-10 group", row.is_excluded && "opacity-40 grayscale bg-slate-50")}>
+                      {/* FIXED SECTION (LEFT) */}
+                      <TableCell className="sticky left-0 z-20 bg-white border-r border-slate-100 px-4 py-1 group-hover:bg-slate-50">
                          <div className="flex items-center gap-1">
                             <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white hover:shadow-sm" onClick={() => toggleExclude(row.id)} title="Toggle Exclude">
-                               {row.is_excluded ? <EyeOff size={13} /> : <Eye size={13} />}
+                               {row.is_excluded ? <EyeOff size={13} className="text-slate-300" /> : <Eye size={13} className="text-slate-600" />}
                             </Button>
                             <Button variant="ghost" size="icon" className="h-7 w-7 rounded-md hover:bg-white hover:shadow-sm" onClick={() => resetRow(row.id)} title="Reset Row">
                                <RotateCcw size={13} className="text-slate-400" />
@@ -385,55 +474,66 @@ export const ExcelWorkbench: React.FC<ExcelWorkbenchProps> = ({
                          </div>
                       </TableCell>
 
-                      <TableCell className="text-center p-0">
+                      <TableCell className="sticky left-[70px] z-20 bg-white border-r border-slate-100 text-center p-0 group-hover:bg-slate-50">
                          <div className="flex flex-col items-center gap-0.5 group relative">
                             <AuditPill status={row.is_excluded ? 'grey' : row.isGlobalDouble ? 'red' : row.isDuplicate ? 'orange' : row.is_synced ? 'green' : 'red'} />
-                            {row.isDuplicate && <span className="text-[8px] font-black text-orange-600 leading-none">DBL</span>}
-                            {row.isGlobalDouble && (
-                                <>
-                                    <span className="text-[8px] font-black text-red-600 leading-none">GLOB</span>
-                                    <div className="absolute left-full top-0 ml-2 hidden group-hover:block z-50 bg-white border border-slate-200 shadow-xl rounded-lg p-3 min-w-[200px] text-left">
-                                        <div className="flex items-center gap-2 text-red-600 mb-2">
-                                            <ShieldAlert size={14} />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">Global Duplicate</span>
-                                        </div>
-                                        <div className="space-y-1">
-                                            {row.otherContracts?.map((c: any) => (
-                                                <div key={c.id} className="text-[10px] font-mono bg-slate-50 p-1.5 rounded border border-slate-100 flex items-center justify-between">
-                                                    <span className="truncate max-w-[120px]">{c.name}</span>
-                                                    <ExternalLink size={10} className="text-slate-400" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </>
-                            )}
                          </div>
                       </TableCell>
-                      
-                      <TableCell className="p-0 border-l border-slate-100 min-w-[140px]">
-                        <Input 
-                            value={row.nik} 
-                            onChange={(e) => handleCellEdit(row.id, 'nik', e.target.value)}
-                            className="h-10 border-none bg-transparent text-[11px] font-mono focus:bg-white"
-                        />
-                      </TableCell>
-                      <TableCell className="p-0 border-l border-slate-100 min-w-[180px]">
+
+                      <TableCell className="sticky left-[130px] z-20 bg-white border-r border-slate-200 p-0 font-black text-[11px] uppercase text-slate-900 group-hover:bg-slate-50 transition-colors">
                         <Input 
                             value={row.name} 
                             onChange={(e) => handleCellEdit(row.id, 'name', e.target.value)}
-                            className="h-10 border-none bg-transparent text-[11px] font-bold focus:bg-white uppercase"
+                            className="h-10 border-none bg-transparent text-[11px] font-black focus:bg-white uppercase px-4"
                         />
                       </TableCell>
-                      <TableCell className="px-4 py-1 text-[11px] border-l border-slate-100">
+                      
+                      {/* SCROLLABLE SECTION */}
+                      <TableCell className="px-4 py-1 text-[11px] font-mono text-slate-500 border-r border-slate-100">
+                        {row.nik}
+                      </TableCell>
+                      <TableCell className="px-4 py-1 text-[10px] font-bold text-slate-400 uppercase border-r border-slate-100">
+                        {row.group || "-"}
+                      </TableCell>
+                      <TableCell className="px-4 py-1 text-[10px] font-bold text-slate-900 uppercase border-r border-slate-100">
                         {row.location?.desa}
                       </TableCell>
-                      <TableCell className="px-4 py-1 text-right text-[11px] font-mono font-bold border-l border-slate-100">
+                      <TableCell className="px-4 py-1 text-[9px] font-bold text-slate-400 uppercase border-r border-slate-100">
+                        {row.location?.kecamatan}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-1 text-right text-[11px] font-mono font-bold text-slate-900 border-r border-slate-100 bg-slate-50/20">
+                        {row.column_data?.luas_lahan || "-"}
+                      </TableCell>
+                      <TableCell className="px-4 py-1 text-right text-[11px] font-mono font-bold text-slate-900 border-r border-slate-100">
                         {row.financials?.qty}
                       </TableCell>
-                      <TableCell className="px-4 py-1 text-right text-[11px] font-bold border-l border-slate-100">
+                      <TableCell className="px-4 py-1 text-right text-[11px] font-bold text-slate-900 border-r border-slate-100 bg-slate-50/30">
                         {formatIDR(row.financials?.target_value || 0)}
                       </TableCell>
+                      <TableCell className={cn("px-4 py-1 text-right text-[10px] font-mono font-black border-r border-slate-100", Math.abs(row.financials?.gap || 0) > 1 ? "text-red-500" : "text-green-600")}>
+                        {row.financials?.gap !== 0 ? formatIDR(row.financials?.gap) : "OK"}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-1 text-[10px] font-bold text-slate-500 border-r border-slate-100">
+                        {row.jadwal_tanam || "-"}
+                      </TableCell>
+                      <TableCell className="px-4 py-1 text-[10px] font-bold text-slate-500 border-r border-slate-100 italic">
+                        {row.column_data?.opt_dominan || "-"}
+                      </TableCell>
+                      <TableCell className="px-4 py-1 text-[11px] font-bold text-indigo-600 border-r border-slate-100 font-mono">
+                        {row.column_data?.nominal_bast ? formatIDR(parseFloat(row.column_data.nominal_bast)) : "-"}
+                      </TableCell>
+                      <TableCell className="px-4 py-1 text-[10px] font-mono text-slate-400 border-r border-slate-100">
+                        {row.phone || "-"}
+                      </TableCell>
+
+                      {/* DYNAMIC METADATA CELLS */}
+                      {discoveredHeaders.filter(h => !["nik", "nama", "desa", "qty", "unit_price", "target_value", "group"].includes(h.toLowerCase())).map(h => (
+                         <TableCell key={h} className="px-4 py-1 text-[9px] text-slate-400 border-r border-slate-100 italic bg-slate-50/5">
+                            {row.column_data?.[h] || "-"}
+                         </TableCell>
+                      ))}
                     </TableRow>
                   ))}
                 </TableBody>

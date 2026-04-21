@@ -168,24 +168,24 @@ export const ReconciliationTab: React.FC<ReconciliationTabProps> = ({ contract }
         </Card>
         <Card className="bg-white border-slate-200 text-right">
           <CardContent className="pt-6 flex justify-end gap-2">
-             <Button 
+              <Button 
                 variant="outline" 
                 size="sm" 
                 className="h-10 gap-2 font-bold bg-black text-white hover:bg-zinc-800 hover:text-white border-slate-300 shadow-sm"
                 onClick={handleInjectToGov}
                 disabled={isInjecting || isBundling}
-             >
+              >
                 {isInjecting ? (
                     <>
                         <Loader2 className="animate-spin" size={16} />
-                        Injecting...
+                        Uploading...
                     </>
                 ) : (
                     <>
-                        <ExternalLink size={16} /> Inject to Gov
+                        <ExternalLink size={16} /> Upload to Portal
                     </>
                 )}
-             </Button>
+              </Button>
              <Button 
                 variant="outline" 
                 size="sm" 

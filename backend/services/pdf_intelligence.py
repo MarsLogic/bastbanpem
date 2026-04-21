@@ -113,20 +113,25 @@ class PDFIntelligence:
         """
         Parses the cleaned SSKK string layout into structured JSON clauses based on physical column offsets.
         Implements a Sliding Margin algorithm to prevent word-tearing when kerning eliminates column gaps.
+        # The PDF text from pdfplumber usually has a consistent left margin of spaces
+        # for article numbers in column layout. We loosen the search to 4-30 spaces.
+        # Support both '1.' and '1)' markers, optionally bolded.
         """
-        clauses = []
-        if not cleaned_text:
-            return clauses
-            
-        pattern = r'(?m)^\s{10,24}(\d+)\.\s+'
+        pattern = r'(?m)^ {4,30}(?:\*\*)?(\d+)[.)](?:\*\*)?\s+'
         matches = list(re.finditer(pattern, cleaned_text))
         
+        if not matches:
+            # Fallback: strict start of line if layout preservation failed
+            pattern = r'(?m)^(?:\*\*)?(\d+)[.)](?:\*\*)?\s+'
+            matches = list(re.finditer(pattern, cleaned_text))
+
+        clauses = []
         for i, match in enumerate(matches):
             nomor = match.group(1)
-            start_idx = match.end()
+            start_pos = match.end()
             end_idx = matches[i+1].start() if i + 1 < len(matches) else len(cleaned_text)
             
-            block = cleaned_text[start_idx:end_idx]
+            block = cleaned_text[start_pos:end_idx]
             lines = block.strip('\n').split('\n')
             
             title_words = []

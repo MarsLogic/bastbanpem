@@ -4,7 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import {
   FileSpreadsheet, Loader2, Table as TableIcon, X,
   AlertCircle, Search, ChevronLeft, ChevronRight,
-  ChevronsLeft, ChevronsRight,
+  ChevronsLeft, ChevronsRight, ChevronUp, ChevronDown, FileDown
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,14 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { ingestExcel, probeExcel } from '../lib/api';
+import { cleanValue, stripRegionalPrefix } from '@/lib/dataCleaner';
+import { exportStyledExcel } from '@/lib/excelExpert';
+import * as XLSX from 'xlsx';
+import { ingestExcel, probeExcel, saveContract } from '../lib/api';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
+import { ExcelIngestionLoader } from './pdf-sync/ExcelIngestionLoader';
+import { useMasterDataStore } from '../lib/masterDataStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,12 +53,14 @@ interface IngestRow {
     calculated_value: number;
     gap: number;
   };
+  column_data?: Record<string, any>;
 }
 
 interface IngestResult {
   rows: IngestRow[];
   headers: string[];
   sheet_name: string;
+  header_meta?: Record<string, string>;
 }
 
 // Keep parent-compatible interface even if not all props are consumed here
@@ -67,13 +74,44 @@ interface Props {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const formatIDR = (value: number): string =>
-  new Intl.NumberFormat('id-ID', {
+/**
+ * Robust Indonesian Numeric Parser: Handles '1.000.000,50' formatting.
+ */
+const parseNumberID = (v: any): number => {
+  if (typeof v === 'number') return v;
+  if (!v) return 0;
+  const s = String(v).trim().replace(/Rp| /gi, '');
+  // If it has BOTH dot and comma, it's definitely Indonesian (dot=thousands, comma=decimal)
+  if (s.includes('.') && s.includes(',')) {
+    return parseFloat(s.replace(/\./g, '').replace(/,/g, '.'));
+  }
+  // If it only has a comma, treat as decimal
+  if (s.includes(',') && !s.includes('.')) {
+    return parseFloat(s.replace(/,/g, '.'));
+  }
+  // If it's plain or has dots as thousands
+  return parseFloat(s.replace(/\./g, '')) || parseFloat(s) || 0;
+};
+
+const formatIDR = (value: any): string => {
+  const num = typeof value === 'number' ? value : parseNumberID(value);
+  return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(value ?? 0);
+  }).format(num);
+};
+
+const formatDecimal = (v: any): string => {
+  const num = parseNumberID(v);
+  if (isNaN(num)) return String(v ?? '');
+  
+  return new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num);
+};
 
 const safeStr = (v: unknown): string => (v == null ? '' : String(v));
 
@@ -90,19 +128,33 @@ const rowMatchesSearch = (row: IngestRow, term: string): boolean => {
   );
 };
 
-// ─── Spinner ─────────────────────────────────────────────────────────────────
+// ─── Data Alignment Engine ────────────────────────────────────────────────
 
-const Spinner = ({ label }: { label: string }) => (
-  <div className="flex flex-col items-center justify-center gap-4 py-24">
-    <Loader2 className="h-8 w-8 text-slate-900 animate-spin" />
-    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
-  </div>
-);
-
+/**
+ * Triangulates butchered location strings using the Master Data store.
+ * Operates in-place on IngestResult to ensure zero UI jitter.
+ */
+/**
+ * Asynchronously aligns location data in chunks to prevent UI freezing.
+ */
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
+export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded, contract }) => {
   const [stage, setStage] = useState<Stage>('IDLE');
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [simulatedProgress, setSimulatedProgress] = useState(0);
+  
+  // contract info for job key
+  const contractId = contract?.nomorKontrak || contract?.id || 'unknown';
+
+  const fetchMasterData = useMasterDataStore((state: any) => state.fetchMasterData);
+  // Master Data Cache
+  const isMasterLoaded = useMasterDataStore((state: any) => state.isLoaded);
+  const findDesa = useMasterDataStore((state: any) => state.findDesa);
+
+  useEffect(() => {
+    fetchMasterData().catch(console.error);
+  }, [fetchMasterData]);
   const [currentFile, setCurrentFile] = useState<File | null>(null);
   const [probedSheets, setProbedSheets] = useState<ProbeSheet[]>([]);
   const [loadedSheets, setLoadedSheets] = useState<Record<string, IngestResult>>({});
@@ -112,42 +164,89 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc'|'desc' } | null>(null);
+
+  // ── Recovery & Initial Hydration ──────────────────────────────────────────
+
+  useEffect(() => {
+    // Initial Hydration: Load saved recipients
+    if (contract?.recipients && contract.recipients.length > 0 && Object.keys(loadedSheets).length === 0) {
+      const savedResult: IngestResult = {
+        rows: contract.recipients,
+        headers: ['NIK', 'NAMA PENERIMA', 'DESA', 'KECAMATAN', 'QTY', 'TOTAL_VALUE'],
+        sheet_name: 'Saved List'
+      };
+      
+      // If we have custom column data from a previous extraction, try to recover headers
+      if (contract.recipients[0]?.column_data) {
+        savedResult.headers = Object.keys(contract.recipients[0].column_data);
+      }
+
+      setLoadedSheets({ 'Saved List': savedResult });
+      setActiveSheetName('Saved List');
+      setStage('READY');
+      onDataLoaded(contract.recipients);
+    }
+  }, [contractId, contract?.recipients, onDataLoaded]); // Trigger on mount or contract change
 
   // Reset to page 1 whenever search term changes
   useEffect(() => { setCurrentPage(1); }, [search]);
 
+
   // ── Ingest a single sheet ─────────────────────────────────────────────────
 
   const ingestSheet = useCallback(
-    async (sheetName: string, file: File, cachedSheets: Record<string, IngestResult>) => {
-      // Already cached — just activate it
-      if (cachedSheets[sheetName]) {
-        setActiveSheetName(sheetName);
-        setStage('READY');
-        setSearch('');
-        setCurrentPage(1);
-        return;
-      }
-
+    async (sheetName: string, file: File) => {
       setStage('LOADING');
-      const tid = toast.loading(`Parsing "${sheetName}"…`);
+      setIsExtracting(true);
+      setSimulatedProgress(2);
+
+      // 1. Kick off simulated progress (PDF style)
+      const timer = setInterval(() => {
+        setSimulatedProgress(prev => {
+          if (prev >= 95) return prev; // Hold at 98%
+          const step = (100 - prev) * 0.1; // Logarithmic slowing
+          return prev + step;
+        });
+      }, 400) as any;
 
       try {
-        const result: IngestResult = await ingestExcel(file, sheetName);
-        setLoadedSheets(prev => ({ ...prev, [sheetName]: result }));
-        setActiveSheetName(sheetName);
-        setStage('READY');
-        setSearch('');
-        setCurrentPage(1);
-        onDataLoaded(result.rows);
-        toast.success(`${result.rows.length} rows captured`, { id: tid });
+        const data = await ingestExcel(file, sheetName);
+        
+        // 2. Wrap up on success
+        clearInterval(timer);
+        setSimulatedProgress(100);
+        
+        // Wait a small moment for UI to 'feel' the completion
+        setTimeout(() => {
+          setLoadedSheets(prev => ({ ...prev, [data.sheet_name]: data }));
+          setActiveSheetName(data.sheet_name);
+          setStage('READY');
+          setIsExtracting(false);
+          onDataLoaded(data.rows);
+          toast.success(`Intelligence Applied: ${data.rows.length} rows extracted`);
+          
+          // Auto-save result to vault
+          const sqliteId = contractId.replace(/\s+/g, '_');
+          saveContract(
+            sqliteId,
+            contract?.nomorKontrak || 'RECOVERED_CONTRACT',
+            contract?.ultraRobust?.financials?.grand_total ?? 0,
+            contract?.metadata ?? null,
+            contract?.ultraRobust ?? null,
+            contract?.tables ?? [],
+            data.rows
+          ).catch(e => console.warn('Failed to auto-save vault:', e));
+        }, 800);
+
       } catch (err: any) {
-        toast.error(err?.message ?? 'Failed to parse sheet', { id: tid });
-        // Revert to sheet picker if nothing loaded, else stay on current table
-        setStage(Object.keys(cachedSheets).length > 0 ? 'READY' : 'SELECTING');
+        clearInterval(timer);
+        setIsExtracting(false);
+        toast.error('Failed to process Excel sheet');
+        setStage('SELECTING');
       }
     },
-    [onDataLoaded],
+    [contractId, contract, onDataLoaded],
   );
 
   // ── Drop handler ──────────────────────────────────────────────────────────
@@ -158,9 +257,8 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
       if (!file) return;
 
       // Reset all sheet state before processing new file
-      const freshCache: Record<string, IngestResult> = {};
       setCurrentFile(file);
-      setLoadedSheets(freshCache);
+      setLoadedSheets({});
       setActiveSheetName(null);
       setSearch('');
       setCurrentPage(1);
@@ -176,8 +274,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
         toast.dismiss(tid);
 
         if (sheets.length === 1) {
-          // Single sheet: auto-ingest, pass freshCache to skip stale-closure issue
-          await ingestSheet(sheets[0].name, file, freshCache);
+          await ingestSheet(sheets[0].name, file);
         } else {
           setStage('SELECTING');
         }
@@ -219,8 +316,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
       const remaining = Object.keys(next);
 
       if (remaining.length === 0) {
-        setActiveSheetName(null);
-        setStage('SELECTING');
+        handleReset();
       } else if (activeSheetName === name) {
         setActiveSheetName(remaining[0]);
         setSearch('');
@@ -228,7 +324,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
       }
       return next;
     });
-  }, [activeSheetName]);
+  }, [activeSheetName, handleReset]);
 
   const handleTabSwitch = useCallback((name: string) => {
     if (name === activeSheetName) return;
@@ -246,26 +342,92 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
     return activeData.rows.filter(row => rowMatchesSearch(row, search));
   }, [activeData, search]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / perPage));
-  // Clamp safePage so page never exceeds total (e.g. after search narrows results)
+  const sortedRows = useMemo(() => {
+    let result = [...filteredRows];
+    if (sortConfig) {
+        const { key, direction } = sortConfig;
+        result.sort((a, b) => {
+          if (key === '#') {
+            const idA = parseInt(String(a.id || 0).split('-').pop() || '0');
+            const idB = parseInt(String(b.id || 0).split('-').pop() || '0');
+            return direction === 'asc' ? idA - idB : idB - idA;
+          }
+
+          let valA = a.column_data?.[key] ?? '';
+          let valB = b.column_data?.[key] ?? '';
+        
+        const numA = parseFloat(String(valA).replace(/[^0-9.-]+/g, ""));
+        const numB = parseFloat(String(valB).replace(/[^0-9.-]+/g, ""));
+        
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return direction === 'asc' ? numA - numB : numB - numA;
+        }
+        
+        return direction === 'asc' 
+          ? String(valA).localeCompare(String(valB))
+          : String(valB).localeCompare(String(valA));
+      });
+    }
+    return result;
+  }, [filteredRows, sortConfig]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedRows.length / perPage));
   const safePage = Math.min(Math.max(1, currentPage), totalPages);
 
   const pagedRows = useMemo(() => {
     const start = (safePage - 1) * perPage;
-    return filteredRows.slice(start, start + perPage);
-  }, [filteredRows, safePage, perPage]);
+    return sortedRows.slice(start, start + perPage);
+  }, [sortedRows, safePage, perPage]);
 
-  const sheetNames = Object.keys(loadedSheets);
-  // Only show "+ Add Sheet" if more probed sheets exist than are loaded
-  const hasMoreSheets = probedSheets.length > sheetNames.length;
+  const handleSort = (key: string) => {
+    setSortConfig(current => {
+      if (current?.key === key) {
+        if (current.direction === 'asc') return { key, direction: 'desc' };
+        return null;
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const handleExportExcel = async () => {
+    if (!activeData?.rows) return;
+    
+    // Use the Elite Export Engine [EXCEL-600]
+    // This applies design, healing, and proper number formatting
+    await exportStyledExcel(
+      sortedRows.map(r => r.column_data).filter((d): d is Record<string, any> => !!d),
+      activeData.headers,
+      {
+        sheetName: activeSheetName || 'Recipient List',
+        filename: `recipient_list_${activeSheetName}_${new Date().toISOString().split('T')[0]}.xlsx`,
+        headerMeta: activeData.header_meta
+      }
+    );
+  };
+
+  const sheetNames = useMemo(() => {
+    const names = Object.keys(loadedSheets);
+    if (activeSheetName && !names.includes(activeSheetName)) {
+      names.push(activeSheetName);
+    }
+    return names;
+  }, [loadedSheets, activeSheetName]);
+
+  const hasMoreSheets = probedSheets.length > (Object.keys(loadedSheets).length);
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div>
 
-      {/* ── IDLE ─────────────────────────────────────────────────────────── */}
-      {stage === 'IDLE' && (
+      {/* ── REHYDRATION / IDLE ────────────────────────────────────────────── */}
+      {stage === 'IDLE' && contract?.recipients?.length > 0 ? (
+        <div className="flex flex-col items-center justify-center p-20 text-center animate-in fade-in duration-700">
+           <Loader2 className="h-10 w-10 text-slate-200 animate-spin mb-4" />
+           <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Loading Data...</h3>
+           <p className="text-[11px] text-slate-300 mt-2">Restoring previously uploaded recipient lists.</p>
+        </div>
+      ) : stage === 'IDLE' && (
         <div
           {...getRootProps()}
           className={cn(
@@ -297,8 +459,10 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
 
       {/* ── ANALYZING / LOADING ──────────────────────────────────────────── */}
       {(stage === 'ANALYZING' || stage === 'LOADING') && (
-        <Spinner label={stage === 'ANALYZING' ? 'Detecting structure…' : 'Parsing data…'} />
+        <ExcelIngestionLoader progress={stage === 'ANALYZING' ? 10 : simulatedProgress} />
       )}
+
+
 
       {/* ── SELECTING ────────────────────────────────────────────────────── */}
       {stage === 'SELECTING' && (
@@ -325,7 +489,7 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
                 <button
                   key={sheet.name}
                   disabled={isLoaded}
-                  onClick={() => ingestSheet(sheet.name, currentFile!, loadedSheets)}
+                  onClick={() => ingestSheet(sheet.name, currentFile!)}
                   className={cn(
                     'text-left p-4 rounded-xl border-2 transition-all',
                     isLoaded
@@ -355,11 +519,9 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
         </div>
       )}
 
-      {/* ── READY ────────────────────────────────────────────────────────── */}
-      {stage === 'READY' && activeData && (
-        <div className="flex flex-col">
-
-          {/* Sheet tabs + file controls */}
+      {/* ── WORKBENCH (READY) ──────────────────────────────────────────────── */}
+      {stage === 'READY' && activeSheetName && (
+        <div className="flex flex-col h-[700px] bg-white animate-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100">
             <div className="flex items-center gap-0.5 flex-wrap">
               {sheetNames.map(name => (
@@ -368,19 +530,22 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
                     onClick={() => handleTabSwitch(name)}
                     className={cn(
                       'flex items-center gap-1.5 h-7 px-3 rounded-md text-[10px] font-black',
-                      'uppercase tracking-tight transition-all',
+                      'uppercase tracking-tight transition-all relative overflow-hidden',
                       activeSheetName === name
                         ? 'bg-slate-900 text-white'
                         : 'text-slate-500 hover:bg-slate-100',
                     )}
                   >
+                    {activeSheetName === name && !loadedSheets[name] && (
+                      <div className="absolute inset-0 bg-slate-800/10 animate-pulse" />
+                    )}
                     <TableIcon className="h-3 w-3 shrink-0" />
                     <span className="truncate max-w-[120px]">{name}</span>
                     <span className={cn(
                       'font-mono text-[9px] shrink-0',
                       activeSheetName === name ? 'text-slate-300' : 'text-slate-400',
                     )}>
-                      {loadedSheets[name].rows.length}
+                      {loadedSheets[name] ? loadedSheets[name].rows.length : <Loader2 className="h-2 w-2 animate-spin" />}
                     </span>
                   </button>
                   <button
@@ -425,36 +590,100 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
                 className="pl-8 h-8 text-[11px] bg-white border-slate-200 focus-visible:ring-slate-900"
               />
             </div>
-            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase ml-auto shrink-0">
-              {filteredRows.length} records
+            <span className="text-[10px] font-mono font-bold text-slate-400 uppercase ml-auto shrink-0 flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportExcel}
+                className="h-7 text-[10px] font-bold gap-2 px-3 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shadow-sm"
+              >
+                <FileDown className="h-3.5 w-3.5" />
+                EXPORT EXCEL
+              </Button>
+              <div className="w-px h-4 bg-slate-200" />
+              <span>{filteredRows.length} / {activeData?.rows?.length || 0} RECORDS</span>
             </span>
           </div>
 
+
           {/* Data table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-[11px] border-collapse">
+          <div className="w-full overflow-x-auto scrollbar-thin scrollbar-track-slate-50 scrollbar-thumb-slate-200">
+            <table className="w-full min-w-[max-content] text-[11px] border-collapse bg-white">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  {['#', 'Nama Penerima', 'NIK', 'Poktan/Group', 'Desa/Kel', 'Kecamatan', 'QTY', 'Target Val', 'Jadwal'].map(
-                    (col, i) => (
+                <tr className="border-b border-slate-200 bg-slate-50/80 backdrop-blur-sm">
+                  <th 
+                    onClick={() => handleSort('#')}
+                    className={cn(
+                      "px-3 py-2.5 text-[10px] font-black uppercase tracking-wider text-center w-10 border-r border-slate-100 cursor-pointer select-none transition-colors group",
+                      sortConfig?.key === '#' ? "bg-slate-100 text-slate-900" : "text-slate-400 hover:bg-slate-100/50"
+                    )}
+                  >
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span>#</span>
+                      <div className={cn("transition-opacity", sortConfig?.key === '#' ? "opacity-100" : "opacity-0 group-hover:opacity-40")}>
+                        {sortConfig?.key === '#' && sortConfig.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : (sortConfig?.key === '#' && sortConfig.direction === 'desc' ? <ChevronDown className="h-3 w-3" /> : <div className="h-2 w-2 border-x border-slate-300 opacity-20" />)}
+                      </div>
+                    </div>
+                  </th>
+                  {activeData ? activeData.headers.map((header) => {
+                    const hUpper = header.toUpperCase();
+                    const isRight = ['QTY', 'TOTAL_VALUE', 'HARGA SATUAN', 'ONGKOS KIRIM', 'NOMINAL BAST', 'LUAS LAHAN', 'VOLUME', 'JUMLAH', 'VALUE', 'TOTAL', 'HARGA'].some(k => hUpper.includes(k));
+                    const isSorted = sortConfig?.key === header;
+                    const dir = isSorted ? sortConfig?.direction : null;
+                    
+                    return (
                       <th
-                        key={col}
+                        key={header}
+                        onClick={() => handleSort(header)}
                         className={cn(
-                          'px-3 py-2.5 text-[10px] font-black text-slate-500 uppercase tracking-wider whitespace-nowrap',
-                          i === 0 ? 'w-10' : '',
-                          i >= 6 && i <= 7 ? 'text-right' : 'text-left',
+                          'px-4 py-2.5 text-[10px] font-black text-slate-500 uppercase tracking-wider whitespace-nowrap cursor-pointer transition-colors group select-none',
+                          isRight ? 'text-right' : 'text-left',
+                          isSorted ? 'bg-slate-100 text-slate-900' : 'hover:bg-slate-100/50'
                         )}
                       >
-                        {col}
+                        <div className={cn("flex flex-col gap-0.5", isRight ? "items-end" : "items-start")}>
+                           <div className={cn("flex items-center gap-1.5", isRight && "flex-row-reverse")}>
+                              {header.replace(/_/g, ' ')}
+                             <div className={cn("transition-all duration-300", isSorted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1 group-hover:opacity-40 group-hover:translate-y-0")}>
+                                {dir === 'asc' ? <ChevronUp className="h-2.5 w-2.5" /> : (dir === 'desc' ? <ChevronDown className="h-2.5 w-2.5" /> : <div className="h-2 w-2 border-x border-slate-300 opacity-20" />)}
+                             </div>
+                          </div>
+                          {activeData?.header_meta?.[header] && activeData.header_meta[header] !== header && (
+                            <span className="text-[8px] font-bold text-slate-400 lowercase italic line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">
+                              ({activeData.header_meta[header]})
+                            </span>
+                          )}
+                        </div>
                       </th>
-                    ),
+                    );
+                  }) : (
+                    <>
+                      <th className="px-4 py-2.5 text-[10px] font-black text-slate-300 uppercase tracking-wider text-left">NIK</th>
+                      <th className="px-4 py-2.5 text-[10px] font-black text-slate-300 uppercase tracking-wider text-left">NAMA PENERIMA</th>
+                      <th className="px-4 py-2.5 text-[10px] font-black text-slate-300 uppercase tracking-wider text-left">PROVINSI</th>
+                      <th className="px-4 py-2.5 text-[10px] font-black text-slate-300 uppercase tracking-wider text-left">KABUPATEN</th>
+                      <th className="px-4 py-2.5 text-[10px] font-black text-slate-300 uppercase tracking-wider text-right">QTY</th>
+                      <th className="px-4 py-2.5 text-[10px] font-black text-slate-300 uppercase tracking-wider text-right">TOTAL_VALUE</th>
+                    </>
                   )}
                 </tr>
               </thead>
-              <tbody>
-                {pagedRows.length === 0 ? (
+            <tbody>
+              {!activeData ? (
+                Array.from({ length: 15 }).map((_, i) => (
+                  <tr key={i} className="border-b border-slate-50 animate-pulse">
+                    <td className="px-3 py-4 border-r border-slate-50"><div className="h-2 w-4 bg-slate-100 rounded mx-auto" /></td>
+                    <td className="px-4 py-4"><div className="h-2 w-24 bg-slate-100 rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-2 w-40 bg-slate-100 rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-2 w-20 bg-slate-100 rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-2 w-20 bg-slate-100 rounded" /></td>
+                    <td className="px-4 py-4"><div className="h-2 w-12 bg-slate-100 rounded ml-auto" /></td>
+                    <td className="px-4 py-4"><div className="h-2 w-20 bg-slate-100 rounded ml-auto" /></td>
+                  </tr>
+                ))
+              ) : pagedRows.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-16 text-center">
+                    <td colSpan={(activeData?.headers?.length || 0) + 1} className="px-4 py-16 text-center">
                       <div className="flex flex-col items-center gap-2 text-slate-400">
                         <AlertCircle className="h-5 w-5" />
                         <p className="text-[11px] font-bold uppercase tracking-wide">
@@ -469,37 +698,47 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
                     <tr
                       key={row.id ?? `row-${globalIdx}`}
                       className={cn(
-                        'border-b border-slate-100 hover:bg-blue-50/20 transition-colors',
-                        idx % 2 === 1 ? 'bg-slate-50/30' : 'bg-white',
-                      )}
+                        'border-b border-slate-100 hover:bg-highlight hover:shadow-sm transition-all',
+                        idx % 2 === 1 ? 'bg-slate-50/20' : 'bg-white',
+                    )}
                     >
-                      <td className="px-3 py-2.5 text-slate-400 font-mono tabular-nums text-[10px]">
+                      <td className="px-3 py-2.5 text-slate-300 font-mono tabular-nums text-[10px] text-center border-r border-slate-50">
                         {globalIdx}
                       </td>
-                      <td className="px-3 py-2.5 font-bold text-slate-900 whitespace-nowrap">
-                        {row.name || '—'}
-                      </td>
-                      <td className="px-3 py-2.5 font-mono text-slate-600 tabular-nums">
-                        {row.nik || '—'}
-                      </td>
-                      <td className="px-3 py-2.5 text-slate-600">
-                        {row.group || '—'}
-                      </td>
-                      <td className="px-3 py-2.5 text-slate-600">
-                        {row.location?.desa || '—'}
-                      </td>
-                      <td className="px-3 py-2.5 text-slate-600">
-                        {row.location?.kecamatan || '—'}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono font-bold text-slate-700 tabular-nums">
-                        {row.financials?.qty ?? 0}
-                      </td>
-                      <td className="px-3 py-2.5 text-right font-mono text-slate-700 tabular-nums whitespace-nowrap">
-                        {formatIDR(row.financials?.target_value ?? 0)}
-                      </td>
-                      <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">
-                        {row.jadwal_tanam || '—'}
-                      </td>
+                      {activeData.headers.map((header) => {
+                        const val = row.column_data?.[header] ?? '—';
+                        const hUpper = header.toUpperCase();
+                        const isNIK = hUpper.includes('NIK') || hUpper === 'ID' || hUpper.includes('KTP') || hUpper.includes('IDX') || hUpper.includes('SOURCE') || hUpper.includes('HP') || hUpper.includes('WA') || hUpper.includes('TELEPON');
+                        const isMain = hUpper === 'NAMA PENERIMA' || hUpper === 'PENERIMA' || hUpper === 'NAMA';
+                        
+                        const isPrice = hUpper.includes('HARGA') || hUpper.includes('PRICE') || hUpper.includes('VALUE') || hUpper.includes('NOMINAL') || hUpper.includes('TOTAL') || hUpper.includes('ONGKOS') || hUpper.includes('KIRIM') || hUpper.includes('BIAYA');
+                        const isVolume = hUpper.includes('QTY') || hUpper.includes('VOLUME') || hUpper.includes('JUMLAH') || hUpper.includes('UNIT') || hUpper.includes('LUAS');
+                        
+                        // Robust Content Check: If value looks like a number, treat it as one for alignment/formatting
+                        // Skip this for NIK to prevent decimal/separator pollution [NIK-700]
+                        const isNumericContent = !isNIK && (typeof val === 'number' || (typeof val === 'string' && /^-?\d+(\.\d+)?$/.test(val.trim())));
+
+                        return (
+                          <td 
+                            key={header} 
+                            className={cn(
+                              "px-4 py-2.5 whitespace-nowrap transition-colors border-r border-slate-50/50",
+                              "text-[11px] text-slate-600 font-medium", // Uniform Font & Size
+                              isMain ? "font-bold text-slate-900 bg-slate-50/10" : "",
+                              (isPrice || isVolume || isNumericContent) ? "text-right font-mono tabular-nums" : "", // Align numbers right
+                              isNIK ? "font-mono" : ""
+                            )}
+                          >
+                            {isPrice 
+                              ? formatIDR(Number(val)) 
+                              : (isNIK 
+                                  ? cleanValue(safeStr(val), header) 
+                                  : (isVolume || isNumericContent ? formatDecimal(val) : cleanValue(safeStr(val), header))
+                                )
+                            }
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
                 })}
@@ -519,9 +758,10 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[20, 50, 100].map(n => (
+                  {[10, 20, 50, 100].map(n => (
                     <SelectItem key={n} value={String(n)}>{n}</SelectItem>
                   ))}
+                  <SelectItem value={String(activeData?.rows?.length || 1000)}>All</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -542,9 +782,19 @@ export const DistributionIntelligence: React.FC<Props> = ({ onDataLoaded }) => {
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
 
-              <span className="text-[10px] font-bold text-slate-500 uppercase mx-2 tabular-nums">
-                {safePage} / {totalPages}
-              </span>
+              <div className="flex items-center px-4 h-7 bg-white rounded-lg border border-slate-200 text-[11px] font-mono text-slate-600 tabular-nums shadow-sm">
+                <input 
+                  className="w-8 text-center bg-transparent border-0 p-0 focus:outline-none font-bold text-slate-900" 
+                  value={currentPage}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (!isNaN(val) && val > 0 && val <= totalPages) setCurrentPage(val);
+                  }}
+                  onFocus={(e) => e.target.select()}
+                />
+                <span className="mx-1 text-slate-300">/</span>
+                <span>{totalPages}</span>
+              </div>
 
               <Button
                 variant="outline" size="icon" className="h-7 w-7"

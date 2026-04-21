@@ -80,10 +80,10 @@ const UploadDropzone: React.FC<{ onFile: (f: File) => void }> = ({ onFile }) => 
           />
         </div>
         <div>
-          <h2 className="text-xl font-black text-slate-900 mb-2">Connect Master PDF</h2>
+          <h2 className="text-xl font-black text-slate-900 mb-2">Select Contract PDF</h2>
           <p className="text-slate-500 text-sm leading-relaxed">
             Drop your Surat Pesanan PDF here, or click to browse.<br />
-            Previously scanned intelligence loads automatically.
+            Previously extracted data is loaded automatically.
           </p>
         </div>
         <Button
@@ -324,7 +324,7 @@ const ContractHeaderStrip: React.FC<{
           >
             {isExtracting
               ? <><Loader2 className="animate-spin h-3.5 w-3.5 mr-2" />Scanning...</>
-              : <><Zap className="h-3.5 w-3.5 mr-2" />PDF SCAN</>
+              : <><Zap className="h-3.5 w-3.5 mr-2" />Scan Document</>
             }
           </Button>
         )}
@@ -346,7 +346,7 @@ const OfflinePlaceholder: React.FC<{
     <div>
       <h4 className="text-sm font-black text-slate-800">No Data Yet</h4>
       <p className="text-[11px] text-slate-400 max-w-[260px] mt-1.5 leading-relaxed">
-        Click <strong>PDF Scan</strong> to extract contract details, financials, recipients, and document sections.
+        Click <strong>Scan Document</strong> to extract contract details, financials, recipients, and document sections.
       </p>
     </div>
     <Button
@@ -356,7 +356,7 @@ const OfflinePlaceholder: React.FC<{
     >
       {isExtracting
         ? <><Loader2 className="animate-spin h-4 w-4 mr-2" />Scanning...</>
-        : <><Zap className="h-4 w-4 mr-2" />Run PDF Scan</>
+        : <><Zap className="h-4 w-4 mr-2" />Run Scan</>
       }
     </Button>
   </div>
@@ -426,6 +426,7 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         if (saved.metadata?.nama_penyedia) updates.namaPenyedia = saved.metadata.nama_penyedia;
         if (saved.metadata?.nama_pemesan)  updates.namaPemesan  = saved.metadata.nama_pemesan;
         if (saved.metadata?.parsed_sskk_clauses) updates.sskkClauses = saved.metadata.parsed_sskk_clauses;
+        if (saved.recipients?.length)      updates.recipients   = saved.recipients;
 
         if (Object.keys(updates).length > 0) {
           onUpdate(updates);
@@ -640,15 +641,15 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
           <div className="w-20 h-20 rounded-3xl bg-white shadow-xl shadow-slate-200 flex items-center justify-center mb-6 border border-slate-100">
             <Zap className="h-10 w-10 text-slate-300 animate-pulse" />
           </div>
-          <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Intelligence Ready</h3>
+          <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">Ready to Scan</h3>
           <p className="text-[13px] text-slate-500 max-w-sm leading-relaxed mb-8 font-medium">
-            Contract PDF is securely loaded. Please trigger the <span className="text-slate-900 font-black">PDF SCAN</span> above to reconstruct the document structure and extract SSKK articulations.
+            Contract PDF is securely loaded. Please trigger the <span className="text-slate-900 font-black">Scan Document</span> above to reconstruct the document structure and extract SSKK data.
           </p>
           <Button 
             onClick={handleAutoExtract}
             className="h-12 px-8 bg-slate-900 hover:bg-black text-white rounded-xl shadow-xl shadow-slate-300 transition-all active:scale-95 flex items-center gap-2"
           >
-            <Zap className="h-4 w-4 fill-white" /> Launch Intelligence Engine
+            <Zap className="h-4 w-4 fill-white" /> Start Extraction
           </Button>
         </div>
       );
@@ -744,8 +745,8 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
           
           {/* Navigation Sidebar — Sticky column with explicit height to prevent flex collapse */}
           <div 
-            className="w-56 shrink-0 sticky top-4 self-start z-30 bg-white border-r border-slate-300 shadow-sm rounded-br-2xl"
-            style={{ height: 'calc(100vh - 40px)' }}
+            className="w-56 shrink-0 sticky top-20 self-start z-30 bg-white border-r border-slate-300 shadow-sm rounded-br-2xl"
+            style={{ maxHeight: 'calc(100vh - 120px)' }}
           >
             <InspectorSidebar
               activeId={activeNavId}
@@ -767,9 +768,9 @@ export const PdfSyncModule: React.FC<PdfSyncModuleProps> = ({ contract, onUpdate
         </div>
 
         {/* Footer spacer */}
-        <div className="h-32 bg-white border-t border-slate-100 flex items-center justify-center">
+        <div className="h-16 bg-white border-t border-slate-100 flex items-center justify-center">
           <p className="text-[10px] text-slate-300 font-black uppercase tracking-widest">
-            End of Contract Intelligence
+            End of Contract Data
           </p>
         </div>
 

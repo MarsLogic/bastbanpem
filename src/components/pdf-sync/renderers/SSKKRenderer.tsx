@@ -8,9 +8,11 @@ import {
   ChevronsDownUp, 
   ChevronsUpDown,
   FileText,
-  AlignLeft
+  AlignLeft,
+  FileDown
 } from 'lucide-react';
 import { Highlight } from '@/components/ui/highlight';
+import { exportStyledExcel } from '@/lib/excelExpert';
 
 interface SSKKClause {
   nomor: string;
@@ -61,6 +63,19 @@ export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery
     });
   };
 
+  const handleExport = async () => {
+    const data = clauses.map(c => ({
+      'ARTICLE': c.nomor,
+      'TITLE': c.judul,
+      'CONTENT': c.isi
+    }));
+    
+    await exportStyledExcel(data, ['ARTICLE', 'TITLE', 'CONTENT'], {
+      sheetName: 'SSKK Clauses',
+      filename: `sskk_clauses_${new Date().toISOString().split('T')[0]}.xlsx`
+    });
+  };
+
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
       {/* Search & Actions Panel */}
@@ -84,6 +99,15 @@ export const SSKKRenderer: React.FC<SSKKRendererProps> = ({ clauses, searchQuery
             ? <><ChevronsDownUp className="h-3.5 w-3.5 mr-2 opacity-70" />Collapse All</>
             : <><ChevronsUpDown className="h-3.5 w-3.5 mr-2 opacity-70" />Expand All</>
           }
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          className="h-9 px-3 text-[10px] font-bold gap-2 border-emerald-100 bg-emerald-50/10 text-emerald-600 hover:bg-emerald-50 transition-all shadow-sm shrink-0"
+        >
+          <FileDown className="h-3.5 w-3.5" />
+          EXPORT EXCEL
         </Button>
       </div>
 
